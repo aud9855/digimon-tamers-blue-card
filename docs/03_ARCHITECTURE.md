@@ -325,7 +325,8 @@ interface IntentView {
 - JSON이 아니라 **TypeScript 객체**로 씁니다. `satisfies CardDef[]`로 타입 검사를 받아 오타를 컴파일 때 잡습니다.
 - id는 영문 소문자와 밑줄(`rock_breaker`), 이름(`name`)은 한국어.
 - `constants.ts`에 넣는 것: `HAND_SIZE`, `HAND_LIMIT`, `MAX_OVERDRAW`, `ACCEL_PER_POINT`, `ATTR_STRONG`, `ATTR_WEAK`, `WEAK_MULT`, `VULNERABLE_MULT`, `EVOLVE_BASE_COST`, `REST_HEAL_PCT`, `ACT_CLEAR_HEAL_PCT`, `ACT_COUNT`, 보상 가중치, 비트 범위, 상점 가격, 지도 행별 가중치.
-- **찾는 길은 하나**: `core`는 데이터 파일을 직접 import하지 않고 `src/data/index.ts`의 함수(`getCard`, `getForm`, `getEnemy`, `getEncounters(act, tier)`, `getChip`, `getEvent`, `getTamer`, `constants`)로만 읽습니다. 이 함수들은 `registry` 객체 하나를 봅니다. 테스트에서 정의를 더하는 방법은 8.1에 있습니다.
+- **찾는 길은 하나**: `core`는 데이터 파일을 직접 import하지 않고 `src/data/index.ts`의 함수(`getCard`, `getForm(line, stage)`, `getEnemy`, `getEncounter`, `getEncounters(act, tier)`, `getChip`, `getEvent`, `getTamer`, 목록을 돌려주는 `getCards`·`getChips`·`getEvents` 등, `constants`)로만 읽습니다.
+- `constants.ts`에는 위 상수 말고도 단계 순서(`STAGE_ORDER`), 고르기 장수(`CARD_OFFER_SIZE`), 상점 진열 수, 지도 크기와 행 규칙(`MAP_ROW_RULES`), 칩이 없을 때의 비트(`NO_CHIP_BITS`), 막 클리어 메모리 증가량을 둡니다. 이 함수들은 `registry` 객체 하나를 봅니다. 테스트에서 정의를 더하는 방법은 8.1에 있습니다.
 - **무결성 테스트** (`tests/data/integrity.test.ts`): id가 겹치지 않음, 참조하는 id가 모두 있음(조우→적, 형태→필살기, 테이머→시작 덱, 이벤트·적→카드), 적 순환의 행동 id가 있음, 보상에 나오는 희귀도(일반·고급·희귀)마다 카드가 3장 이상, 막마다 일반 적 속성이 2:2:2, 보스는 속성 `none`, 모든 카드에 두 면이 있음, 필살기는 `retain`을 가짐.
 
 ## 7. 봇과 측정 (src/sim)
