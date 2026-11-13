@@ -261,7 +261,7 @@ damage = max(0, floor(raw × mult))
 | `loseHp` | `amount` | 플레이어 HP 직접 감소 |
 | `applyStatus` | `status`, `amount`, `target`: `enemy`·`allEnemies`·`self` | 상태 효과 부여 |
 | `freeEvolve` | — | `freeEvolve = true` (이번 턴 다음 진화 비용 0) |
-| `addCard` | `cardId`, `to`: `hand`·`discard`·`draw`, `count` | 임시 카드를 만들어 넣음. `draw`는 무작위 위치 |
+| `addCard` | `cardId`, `to`: `hand`·`discard`·`draw`, `count` | 임시 카드를 만들어 넣음. `draw`는 무작위 위치. `hand`는 손패가 10장이면 `discardPile`로 (3.4, 3.7과 같음) |
 | `ifStage` | `min`, `then`, `else`(선택) | 지금 단계가 `min` 이상이면 `then`, 아니면 `else` 실행 |
 | `ifEvolvedThisTurn` | `then`, `else`(선택) | 이번 턴에 진화했으면 `then`, 아니면 `else` 실행 |
 

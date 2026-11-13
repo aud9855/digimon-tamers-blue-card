@@ -48,6 +48,8 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  ├─ engine.ts           applyAction, getLegalActions (행동을 아래 모듈로 넘김)
 │  │  ├─ battle/
 │  │  │  ├─ start.ts         전투 시작 (02 3.2)
+│  │  │  ├─ piles.ts         뽑기·임시 카드 넣기 (02 3.4). drawPile은 배열의 끝이 맨 위
+│  │  │  ├─ outcome.ts       승패 (02 3.11)
 │  │  │  ├─ turn.ts          턴 시작·턴 끝·뽑기 (02 3.3, 3.4, 3.10)
 │  │  │  ├─ cards.ts         카드 내기 (02 3.5)
 │  │  │  ├─ effects.ts       효과 op 실행 (02 4.3)
@@ -63,7 +65,9 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  │  ├─ event.ts         이벤트·보물·런 효과 (02 7.4, 7.5)
 │  │  │  └─ act.ts           막 넘어가기 (02 7.6)
 │  │  ├─ chips.ts            칩 발동 (02 5)
-│  │  └─ describe.ts         카드·칩·인텐트 설명 글 만들기
+│  │  ├─ describe.ts         카드·칩·인텐트 설명 글 만들기
+│  │  ├─ helpers.ts          여러 모듈이 함께 쓰는 작은 도우미 (단계 순서, 지금 형태, 카드 면)
+│  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
 │  │  ├─ forms.ts  cards.ts  enemies.ts  encounters.ts
@@ -80,7 +84,9 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ data/                  데이터 무결성 테스트
 │  ├─ sim/                   봇 스모크·결정성·골든 테스트
 │  └─ helpers/               테스트용 전투 만들기 등
-├─ scripts/vitest.mjs        npm test 실행기 (Windows 소문자 드라이브 경로 문제를 피함)
+├─ scripts/
+│  ├─ vitest.mjs             npm test 실행기 (Windows 소문자 드라이브 경로 문제를 피함)
+│  └─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
 └─ .github/workflows/ci.yml
 ```
 
@@ -305,6 +311,7 @@ interface IntentView {
 - 알고리즘: mulberry32 (32비트 정수 상태 하나, 공개 도메인 알고리즘, 직접 구현).
 - 줄기 4개: `map`(지도), `battle`(섞기·무작위 대상), `reward`(보상·상점·보물), `event`(이벤트).
 - 초기값: `k`를 map 1, battle 2, reward 3, event 4로 두고 `(seed + k × 0x9E3779B9) >>> 0`.
+- 줄기를 쓰는 곳: `map`은 지도 생성 전부, `battle`은 섞기·`randomEnemy`·`addCard`의 뽑을 더미 위치, `reward`는 전투 보상·카드 고르기(이벤트의 `offerCards` 포함)·상점 진열·보물, `event`는 이벤트의 `addRandomCard`·`addRandomChip`.
 - 줄기를 나누는 이유: 전투에서 카드를 한 장 더 뽑아도 지도나 보상이 달라지지 않게 하기 위해서입니다.
 - 쓰는 함수: `nextInt(state, 줄기, n)` (0 이상 n 미만 정수), `shuffle(state, 줄기, items)` (섞은 새 배열), `weightedPick(state, 줄기, [{ item, weight }])` (가중치는 0 이상 정수, 0이면 안 뽑힘). 모두 `state.rng`의 값을 갱신합니다.
 
@@ -438,6 +445,7 @@ src/ui/
 | `npm run lint` | ESLint |
 | `npm test` | Vitest 전체 |
 | `npm run sim -- …` | 봇 측정 (7.2) |
+| `npm run card-texts` | 카드·칩 설명 글 출력 (`docs/balance/card-texts.md`) |
 | `npm run dev` / `npm run build` | (1단계) 개발 서버 / 빌드 |
 
 - **작업을 끝냈다고 하기 전에** `npm run typecheck`, `npm run lint`, `npm test`가 모두 통과해야 합니다.
