@@ -14,7 +14,8 @@
     "test": "node scripts/vitest.mjs run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "card-texts": "tsx scripts/card-texts.ts"
+    "card-texts": "tsx scripts/card-texts.ts",
+    "sim": "tsx src/sim/cli.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

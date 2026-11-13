@@ -17,4 +17,4 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
-      # 봇 측정(npm run sim -- --policy random --runs 100)은 T0-10에서 추가합니다.
+      - run: npm run sim -- --policy random --runs 100
