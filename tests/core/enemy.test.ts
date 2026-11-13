@@ -53,7 +53,7 @@ describe('페이즈 (미히라몬)', () => {
       hp: 999,
       maxHp: 999,
       drawPile: DRAW,
-      enemyOverrides: [{ hp: 60 }], // 120의 50%
+      enemyOverrides: [{ hp: 69 }], // 138의 50%
     });
     const r1 = act(state, { type: 'endTurn' });
     // 페이즈 1 첫 행동(덮치기)을 먼저 하고, 다음 인텐트를 정할 때 바뀜
@@ -92,7 +92,7 @@ describe('페이즈 (미히라몬)', () => {
       hp: 999,
       maxHp: 999,
       drawPile: DRAW,
-      enemyOverrides: [{ hp: 61 }],
+      enemyOverrides: [{ hp: 70 }],
     });
     const { moves, state: next } = endTurns(state, 4);
     expect(moves).toEqual(['pounce', 'claw_flurry', 'crouch', 'pounce']);
@@ -106,9 +106,9 @@ describe('페이즈 (미히라몬)', () => {
       maxHp: 999,
       hand: ['heavy_strike'],
       drawPile: DRAW,
-      enemyOverrides: [{ hp: 70 }],
+      enemyOverrides: [{ hp: 75 }],
     });
-    // 강타 14 → 56 (50% 이하). 인텐트는 그대로 덮치기
+    // 강타 14 → 61 (50% 이하). 인텐트는 그대로 덮치기
     const hit = act(state, {
       type: 'playCard',
       cardUid: battleOf(state).hand[0]?.uid ?? -1,

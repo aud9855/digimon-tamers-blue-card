@@ -398,10 +398,10 @@ describe('7.6 막 넘어가기 (ACT_COUNT 2, 시험용 2막 조우)', () => {
   it('2막에서는 완전체까지 진화할 수 있다', () => {
     const state = makeBattle({ maxStage: 'ultimate', memory: 3 });
     const s1 = applyAction(state, { type: 'evolve' }).state;
-    expect(battleOf(s1).memory).toBe(2); // 성숙기 비용 1
+    expect(battleOf(s1).memory).toBe(1); // 성숙기 비용 2
     const s2 = applyAction(s1, { type: 'evolve' }).state;
     expect(battleOf(s2).stage).toBe('ultimate');
-    expect(battleOf(s2).memory).toBe(-1); // 완전체 비용 3
+    expect(battleOf(s2).memory).toBe(-2); // 완전체 비용 3
   });
 });
 

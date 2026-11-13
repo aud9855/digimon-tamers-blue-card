@@ -9,7 +9,7 @@ export const enemies = [
     name: '고부리몬',
     tier: 'normal',
     attribute: 'virus',
-    maxHp: 20,
+    maxHp: 35,
     moves: [
       { id: 'club', name: '몽둥이질', effects: [{ op: 'attack', amount: 6 }] },
       {
@@ -25,7 +25,7 @@ export const enemies = [
     name: '이빌몬',
     tier: 'normal',
     attribute: 'virus',
-    maxHp: 16,
+    maxHp: 28,
     moves: [
       {
         id: 'nightmare',
@@ -44,7 +44,7 @@ export const enemies = [
     name: '알로몬',
     tier: 'normal',
     attribute: 'data',
-    maxHp: 28,
+    maxHp: 49,
     moves: [
       { id: 'bite', name: '물기', effects: [{ op: 'attack', amount: 9 }] },
       { id: 'brace', name: '버티기', effects: [{ op: 'shield', amount: 6 }] },
@@ -56,7 +56,7 @@ export const enemies = [
     name: '고릴라몬',
     tier: 'normal',
     attribute: 'data',
-    maxHp: 34,
+    maxHp: 60,
     moves: [
       { id: 'brace', name: '버티기', effects: [{ op: 'shield', amount: 8 }] },
       { id: 'smash', name: '내려치기', effects: [{ op: 'attack', amount: 15 }] },
@@ -69,7 +69,7 @@ export const enemies = [
     name: '하피몬',
     tier: 'normal',
     attribute: 'vaccine',
-    maxHp: 18,
+    maxHp: 32,
     moves: [
       { id: 'peck', name: '쪼기', effects: [{ op: 'attack', amount: 3, hits: 3 }] },
       { id: 'flutter', name: '날갯짓', effects: [{ op: 'shield', amount: 5 }] },
@@ -81,7 +81,7 @@ export const enemies = [
     name: '썬더버드몬',
     tier: 'normal',
     attribute: 'vaccine',
-    maxHp: 24,
+    maxHp: 42,
     moves: [
       { id: 'thunder', name: '낙뢰', effects: [{ op: 'attack', amount: 8 }] },
       {
@@ -99,7 +99,7 @@ export const enemies = [
     name: '아이스데블몬',
     tier: 'elite',
     attribute: 'virus',
-    maxHp: 60,
+    maxHp: 90,
     moves: [
       { id: 'ice_claw', name: '얼음 발톱', effects: [{ op: 'attack', amount: 12 }] },
       {
@@ -126,7 +126,7 @@ export const enemies = [
     name: '무사몬',
     tier: 'elite',
     attribute: 'data',
-    maxHp: 55,
+    maxHp: 83,
     moves: [
       { id: 'triple_cut', name: '삼단 베기', effects: [{ op: 'attack', amount: 5, hits: 3 }] },
       { id: 'great_cut', name: '큰 베기', effects: [{ op: 'attack', amount: 14 }] },
@@ -145,7 +145,7 @@ export const enemies = [
     name: '미히라몬',
     tier: 'boss',
     attribute: 'none',
-    maxHp: 120,
+    maxHp: 138,
     moves: [
       { id: 'pounce', name: '덮치기', effects: [{ op: 'attack', amount: 12 }] },
       { id: 'claw_flurry', name: '연속 할퀴기', effects: [{ op: 'attack', amount: 4, hits: 3 }] },

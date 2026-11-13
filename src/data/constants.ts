@@ -21,12 +21,12 @@ export const constants = {
   HAND_SIZE: 5,
   HAND_LIMIT: 10,
   MAX_OVERDRAW: 3,
-  ACCEL_PER_POINT: 0.25,
+  ACCEL_PER_POINT: 0.35,
   ATTR_STRONG: 1.5,
   ATTR_WEAK: 0.75,
   WEAK_MULT: 0.75,
   VULNERABLE_MULT: 1.5,
-  EVOLVE_BASE_COST: { champion: 2, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
+  EVOLVE_BASE_COST: { champion: 3, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
 
   // ── 막 (02 2절, 7.6) ──
   ACT_COUNT: 1,

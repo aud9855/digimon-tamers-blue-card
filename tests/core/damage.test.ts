@@ -62,9 +62,10 @@ describe('검산 예시 (02 3.8)', () => {
     expect(playerHitDamage(state, 14, 0).damage).toBe(15);
   });
 
-  it('5. 고릴라몬(데이터) 공격 15, 가속 2, 길몬(바이러스)이 맞음 → 16', () => {
+  it('5. 고릴라몬(데이터) 공격 15, 가속 2, 길몬(바이러스)이 맞음 → 19', () => {
     const state = makeBattle({ enemies: ['gorillamon'], enemyOverrides: [{ accel: 2 }] });
-    expect(enemyHitDamage(state, 15, 0).damage).toBe(16);
+    // floor(15 × (1 + 0.35 × 2) × 0.75) = floor(19.125)
+    expect(enemyHitDamage(state, 15, 0).damage).toBe(19);
   });
 
   it('6. 고부리몬(바이러스) 공격 6, 힘 2, 취약 걸린 길몬이 맞음 → 12', () => {

@@ -45,8 +45,8 @@ describe('발동 시점 (02 5절)', () => {
   it('onEvolve: 진화할 때', () => {
     const state = freshBattle(['test_on_evolve']);
     const { state: next, events } = act(state, { type: 'evolve' });
-    // 3 - 2 + 1
-    expect(battleOf(next).memory).toBe(2);
+    // 3 - 3 + 1
+    expect(battleOf(next).memory).toBe(1);
     expect(eventsOf(events, 'chipTriggered').map((e) => e.chipId)).toEqual(['test_on_evolve']);
   });
 
@@ -74,7 +74,7 @@ describe('수치 보정 (02 5절)', () => {
   it('evolveCostDelta: 진화 비용에 더함', () => {
     const state = freshBattle(['test_evolve_cost']);
     const next = act(state, { type: 'evolve' }).state;
-    expect(battleOf(next).memory).toBe(3 - 1);
+    expect(battleOf(next).memory).toBe(3 - (3 - 1));
   });
 
   it('battleBitsBonus: 전투 보상 비트에 더함', () => {

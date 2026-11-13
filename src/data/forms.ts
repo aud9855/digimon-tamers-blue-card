@@ -17,7 +17,7 @@ export const forms = [
     line: 'guilmon',
     stage: 'champion',
     attribute: 'virus',
-    tempHp: 8,
+    tempHp: 5,
     power: 1,
     signatureCardId: 'exhaust_flame',
   },

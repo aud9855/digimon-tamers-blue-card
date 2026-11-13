@@ -283,7 +283,25 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
   }
   if (bestAttack) return bestAttack;
 
-  // 6. 턴 끝
+  // 6. 마무리: 당겨써서라도 낸 공격 하나로 적 하나를 쓰러뜨릴 수 있으면 냄
+  //      (쓰러뜨린 적은 가속을 받지 않음). 비용이 가장 적은 것
+  let finisher: PlayAction | null = null;
+  let finisherCost = Infinity;
+  for (const options of byCard.values()) {
+    for (const a of options) {
+      const card = cardOf(state, a.cardUid);
+      if (!card || !isAttackCard(card) || a.targetIndex === undefined) continue;
+      const enemy = battle.enemies[a.targetIndex];
+      if (!enemy || expectedDamage(state, card, a.targetIndex) < enemy.hp + enemy.shield) continue;
+      if (costOf(card) < finisherCost) {
+        finisher = a;
+        finisherCost = costOf(card);
+      }
+    }
+  }
+  if (finisher) return finisher;
+
+  // 7. 턴 끝
   return { type: 'endTurn' };
 }
 

@@ -14,10 +14,10 @@ afterEach(() => restore());
 
 describe('진화 비용 표 (02 3.7)', () => {
   it('열린 최고 단계별 6칸', () => {
-    expect(baseEvolveCost('champion', 'champion')).toBe(2);
-    expect(baseEvolveCost('champion', 'ultimate')).toBe(1);
+    expect(baseEvolveCost('champion', 'champion')).toBe(3);
+    expect(baseEvolveCost('champion', 'ultimate')).toBe(2);
     expect(baseEvolveCost('ultimate', 'ultimate')).toBe(3);
-    expect(baseEvolveCost('champion', 'mega')).toBe(0);
+    expect(baseEvolveCost('champion', 'mega')).toBe(1);
     expect(baseEvolveCost('ultimate', 'mega')).toBe(2);
     expect(baseEvolveCost('mega', 'mega')).toBe(4);
   });
@@ -29,8 +29,8 @@ describe('진화 비용 표 (02 3.7)', () => {
   });
 
   it('비용을 낼 수 없으면 (memory - cost < -3) 진화할 수 없다', () => {
-    const state = makeBattle({ memory: -2 });
-    expect(evolveCost(state)).toBe(2);
+    const state = makeBattle({ memory: -1 });
+    expect(evolveCost(state)).toBe(3);
     expect(previewEvolveCost(state)).toBeNull();
     expect(getLegalActions(state)).not.toContainEqual({ type: 'evolve' });
   });
@@ -42,8 +42,8 @@ describe('진화 처리 (02 3.7)', () => {
     const { state: next, events } = act(state, { type: 'evolve' });
     const battle = battleOf(next);
     expect(battle.stage).toBe('champion');
-    expect(battle.memory).toBe(1);
-    expect(battle.tempHp).toBe(8);
+    expect(battle.memory).toBe(0);
+    expect(battle.tempHp).toBe(5);
     expect(battle.evolvedThisTurn).toBe(true);
     expect(battle.evolveCount).toBe(1);
     const sig = battle.hand.find((c) => c.defId === 'exhaust_flame');
@@ -52,14 +52,14 @@ describe('진화 처리 (02 3.7)', () => {
       type: 'evolved',
       from: 'rookie',
       to: 'champion',
-      cost: 2,
-      tempHpGained: 8,
+      cost: 3,
+      tempHpGained: 5,
     });
   });
 
   it('시험용 형태로 성장기에서 궁극체까지 한 단계씩 진화', () => {
-    const state = makeBattle({ maxStage: 'mega', memory: 3 });
-    // 비용: 성숙기 0, 완전체 2, 궁극체 4 → 3 - 0 - 2 = 1, 1 - 4 = -3 (가능)
+    const state = makeBattle({ maxStage: 'mega', memory: 4 });
+    // 비용: 성숙기 1, 완전체 2, 궁극체 4 → 4 - 1 - 2 = 1, 1 - 4 = -3 (가능)
     const s1 = act(state, { type: 'evolve' }).state;
     expect(battleOf(s1).stage).toBe('champion');
     expect(battleOf(s1).memory).toBe(3);
@@ -69,7 +69,7 @@ describe('진화 처리 (02 3.7)', () => {
     const s3 = act(s2, { type: 'evolve' }).state;
     expect(battleOf(s3).stage).toBe('mega');
     expect(battleOf(s3).memory).toBe(-3);
-    expect(battleOf(s3).tempHp).toBe(8 + 12 + 18);
+    expect(battleOf(s3).tempHp).toBe(5 + 12 + 18);
     expect(
       battleOf(s3)
         .hand.map((c) => c.defId)
@@ -126,8 +126,8 @@ describe('진화 처리 (02 3.7)', () => {
     });
     const evolved = act(state, { type: 'evolve' }).state;
     const next = act(evolved, { type: 'endTurn' }).state;
-    // 공격 10, 임시 HP 8 → HP 2 감소
+    // 공격 10, 임시 HP 5 → HP 5 감소
     expect(battleOf(next).tempHp).toBe(0);
-    expect(next.run?.hp).toBe(48);
+    expect(next.run?.hp).toBe(45);
   });
 });

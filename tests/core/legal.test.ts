@@ -274,7 +274,7 @@ describe('설명 글 (03 5.3)', () => {
   });
 
   it('previewEvolveCost: 지금 진화 비용, 못 하면 null', () => {
-    expect(previewEvolveCost(makeBattle({ memory: 3 }))).toBe(2);
+    expect(previewEvolveCost(makeBattle({ memory: 3 }))).toBe(3);
     expect(previewEvolveCost(makeBattle({ stage: 'champion' }))).toBeNull();
     expect(previewEvolveCost(createInitialState(1))).toBeNull();
   });

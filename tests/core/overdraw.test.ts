@@ -50,7 +50,7 @@ describe('당겨쓰기 (02 3.6)', () => {
 });
 
 describe('가속 (02 3.8, 3.9)', () => {
-  it('가속은 공격 피해를 1점당 +25% 올리고, 공격한 뒤 0이 된다', () => {
+  it('가속은 공격 피해를 1점당 +35% 올리고, 공격한 뒤 0이 된다', () => {
     const state = makeBattle({
       enemies: ['test_attacker'],
       hp: 50,
@@ -58,8 +58,8 @@ describe('가속 (02 3.8, 3.9)', () => {
       drawPile: DRAW,
     });
     const { state: next, events } = act(state, { type: 'endTurn' });
-    // 공격 10 × 1.5 = 15
-    expect(next.run?.hp).toBe(35);
+    // 공격 10 × 1.7 = 17
+    expect(next.run?.hp).toBe(33);
     expect(battleOf(next).enemies[0]?.accel).toBe(0);
     const accelEvents = eventsOf(events, 'accelChanged');
     expect(accelEvents.map((e) => e.accel)).toEqual([2, 0]);
@@ -75,9 +75,9 @@ describe('가속 (02 3.8, 3.9)', () => {
     });
     const after = act(state, { type: 'endTurn' }).state;
     expect(battleOf(after).enemies[0]?.accel).toBe(1);
-    // 다음 턴: 공격 10 × 1.25 = 12, 그 뒤 0
+    // 다음 턴: 공격 10 × 1.35 = 13, 그 뒤 0
     const after2 = act(after, { type: 'endTurn' }).state;
-    expect(after2.run?.hp).toBe(38);
+    expect(after2.run?.hp).toBe(37);
     expect(battleOf(after2).enemies[0]?.accel).toBe(0);
   });
 });
