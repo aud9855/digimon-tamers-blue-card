@@ -206,7 +206,7 @@ export type Phase = 'title' | 'map' | 'battle' | 'reward' | 'shop' | 'rest' | 'e
 export interface GameState {
   version: number;                 // 저장 형식 버전
   seed: number;
-  rng: { map: number; battle: number; reward: number; event: number };
+  rng: Record<RngStream, number>;  // RngStream = 'map' | 'battle' | 'reward' | 'event'
   phase: Phase;
   run: RunState | null; battle: BattleState | null; pending: Pending | null;
   nextUid: number;                 // 다음 CardInstance uid
@@ -306,7 +306,7 @@ interface IntentView {
 - 줄기 4개: `map`(지도), `battle`(섞기·무작위 대상), `reward`(보상·상점·보물), `event`(이벤트).
 - 초기값: `k`를 map 1, battle 2, reward 3, event 4로 두고 `(seed + k × 0x9E3779B9) >>> 0`.
 - 줄기를 나누는 이유: 전투에서 카드를 한 장 더 뽑아도 지도나 보상이 달라지지 않게 하기 위해서입니다.
-- 쓰는 함수: `nextInt(state, 줄기, n)` (0 이상 n 미만 정수), `shuffle`, `weightedPick`. 모두 `state.rng`의 값을 갱신합니다.
+- 쓰는 함수: `nextInt(state, 줄기, n)` (0 이상 n 미만 정수), `shuffle(state, 줄기, items)` (섞은 새 배열), `weightedPick(state, 줄기, [{ item, weight }])` (가중치는 0 이상 정수, 0이면 안 뽑힘). 모두 `state.rng`의 값을 갱신합니다.
 
 ### 5.2 `getLegalActions`가 돌려주는 것
 - `playCard`: 낼 수 있는 카드마다, 대상이 필요하면 살아 있는 적마다 하나씩.

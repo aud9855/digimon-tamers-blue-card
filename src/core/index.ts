@@ -1,2 +1,4 @@
-// core가 밖에 내보내는 것 (03 5절). T0-2부터 채웁니다.
-export {};
+// core가 밖에 내보내는 것 (03 5절)
+export { createInitialState } from './state';
+export { applyAction, getLegalActions, IllegalActionError } from './engine';
+export type * from './types';
