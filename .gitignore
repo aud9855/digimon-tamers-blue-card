@@ -1,0 +1,39 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+
+# Godot
+.godot/
+.import/
+export_presets.cfg
+*.translation
+
+# 빌드·배포 결과
+publish/
+dist/
+build/
+
+# 밸런스 측정 결과 (용량 큼)
+tools/**/runs/
+*.log
+
+# 비밀 값
+.env
+*.pem
+*.key
+*.p12
+*.keystore
+credentials.json
+
+# 출처 확인 전 원화 (저장소에 올리지 않음)
+art/raw/
+
+# OS·편집기
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
