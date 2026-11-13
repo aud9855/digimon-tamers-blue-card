@@ -80,6 +80,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ data/                  데이터 무결성 테스트
 │  ├─ sim/                   봇 스모크·결정성·골든 테스트
 │  └─ helpers/               테스트용 전투 만들기 등
+├─ scripts/vitest.mjs        npm test 실행기 (Windows 소문자 드라이브 경로 문제를 피함)
 └─ .github/workflows/ci.yml
 ```
 
