@@ -2,26 +2,29 @@
 
 디지몬 테이머즈를 바탕으로 한 **모바일 덱빌딩 로그라이크** 팬 게임입니다. 테이머가 되어 카드를 긁어(카드 슬래시) 파트너 디지몬을 싸움 중에 진화시키며, 현실 세계와 디지털 월드를 3막에 걸쳐 지나갑니다. 한 판 20~30분.
 
-지금은 **기획 단계**입니다. 코드는 아직 없습니다.
+## 지금 상태
+
+**기획과 설계가 끝났고, 코드는 아직 없습니다.** 다음 작업은 [작업 목록](docs/04_ROADMAP.md)의 T0-1입니다.
 
 ## 문서
 
 | 문서 | 내용 |
 | :--- | :--- |
-| [docs/01_GAME_DESIGN_DRAFT.md](docs/01_GAME_DESIGN_DRAFT.md) | 기획 초안: 정한 것, 컨셉, 테이머·막 구성, 한국 방영판 이름표, 전투·진화 규칙, 보상, 메타 진행, 기술 스택, 로드맵 |
+| [docs/01_GAME_DESIGN.md](docs/01_GAME_DESIGN.md) | 기획: 컨셉, 설계 기둥, 테이머·막 구성, 한국 방영판 이름표, 저작권 원칙 |
+| [docs/02_RULES_SPEC.md](docs/02_RULES_SPEC.md) | 규칙 명세: 전투 순서, 피해 공식, 진화, 지도 생성, 보상, 0단계 카드·적 수치, 밸런스 목표 |
+| [docs/03_ARCHITECTURE.md](docs/03_ARCHITECTURE.md) | 구조 설계: 폴더, 타입, 엔진 약속, 봇, 테스트, 화면 원칙 |
+| [docs/04_ROADMAP.md](docs/04_ROADMAP.md) | 작업 목록: 단계별 작업과 끝났다는 기준 |
 
-## 계획한 구조
+## 구조
 
-TypeScript 웹 앱(Vite) + Capacitor APK.
+TypeScript 웹 앱(Vite + React) + Capacitor APK.
 
 ```
-DigimonTamersBlueCard/
-├─ src/core/     게임 규칙 (화면 무관)
-├─ src/ui/       모바일 화면 (세로)
-├─ data/         디지몬·카드·적·이벤트 JSON
-├─ tools/sim/    자동 플레이 봇 · 밸런스 측정
-├─ tests/        단위 테스트 (Vitest)
-└─ android/      Capacitor APK
+src/core/   규칙 엔진 (순수 함수, 화면 무관)
+src/data/   카드·적·칩 수치
+src/sim/    자동 플레이 봇 · 밸런스 측정
+src/ui/     모바일 화면 (세로)
+tests/      테스트
 ```
 
 ## 저작권 고지
