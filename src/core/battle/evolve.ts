@@ -1,6 +1,6 @@
 // 02 3.7 진화
 import { constants, getForm, getTamer } from '../../data/index';
-import { nextStage, requireBattle, requireRun, stageIndex } from '../helpers';
+import { formTempHp, nextStage, requireBattle, requireRun, stageIndex } from '../helpers';
 import { evolveCostDelta, triggerChips } from '../chips';
 import type { GameEvent, GameState, Stage } from '../types';
 import { createTempCards } from './piles';
@@ -50,8 +50,9 @@ export function evolve(state: GameState, events: GameEvent[]): void {
   battle.stage = next;
   const form = getForm(getTamer(run.tamerId).line, next);
   // 3.
-  battle.tempHp += form.tempHp;
-  events.push({ type: 'evolved', from, to: next, cost, tempHpGained: form.tempHp });
+  const tempHp = formTempHp(state, form);
+  battle.tempHp += tempHp;
+  events.push({ type: 'evolved', from, to: next, cost, tempHpGained: tempHp });
   // 4. 필살기를 임시 카드로 손패에 (가득이면 버림 더미)
   if (form.signatureCardId) createTempCards(state, events, form.signatureCardId, 'hand', 1);
   // 5.

@@ -1,4 +1,6 @@
-import { getTamers } from '../../data/index';
+import { describeTamer } from '../../core/index';
+import { getForm, getTamers } from '../../data/index';
+import { ATTRIBUTE_BG } from '../components/labels';
 import { Screen } from '../components/Screen';
 import { SettingsButton } from '../components/Settings';
 import { useGame } from '../store';
@@ -11,23 +13,42 @@ export function TitleScreen() {
       <div className="flex justify-end px-4 pt-3">
         <SettingsButton />
       </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-10 px-6 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 overflow-y-auto px-6 text-center">
         <div>
           <p className="text-sm tracking-widest text-sky-300">DIGIMON TAMERS</p>
           <h1 className="mt-2 text-3xl font-black">블루 카드</h1>
           <p className="mt-3 text-xs text-slate-400">비공식 팬 게임</p>
         </div>
-        <div className="flex w-full max-w-xs flex-col gap-3">
-          {getTamers().map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className="min-h-12 rounded-xl bg-sky-600 font-bold active:bg-sky-500"
-              onClick={() => dispatch({ type: 'startRun', tamerId: t.id })}
-            >
-              {t.name}로 시작
-            </button>
-          ))}
+        <div className="flex w-full max-w-sm flex-col gap-3">
+          <p className="text-left text-sm text-slate-400">테이머를 고르세요</p>
+          {getTamers().map((t) => {
+            const partner = getForm(t.line, 'rookie');
+            return (
+              <button
+                key={t.id}
+                type="button"
+                data-tamer={t.id}
+                className="flex min-h-16 items-center gap-3 rounded-xl bg-slate-800 p-3 text-left active:bg-slate-700"
+                onClick={() => dispatch({ type: 'startRun', tamerId: t.id })}
+              >
+                <span
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${ATTRIBUTE_BG[partner.attribute]} text-xs font-bold`}
+                >
+                  {partner.name}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <b>{t.name}</b>
+                    <span className="text-xs text-rose-300">HP {t.maxHp}</span>
+                  </span>
+                  <span className="block text-xs text-sky-200">{t.trait}</span>
+                  <span className="block text-xs leading-snug text-slate-400">
+                    {describeTamer(t.id)}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"

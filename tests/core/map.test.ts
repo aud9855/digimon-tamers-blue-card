@@ -3,7 +3,8 @@ import { applyAction, getLegalActions, IllegalActionError } from '../../src/core
 import { generateMap } from '../../src/core/run/map';
 import { createInitialState } from '../../src/core/state';
 import type { ActMap, GameState, MapNode } from '../../src/core/types';
-import { constants, getCard, getEncounter, getEvents } from '../../src/data/index';
+import { startedRun } from '../helpers/battle';
+import { constants, getCard, getEncounter, getEvents, getTamer } from '../../src/data/index';
 
 function mapFor(seed: number): ActMap {
   return generateMap(createInitialState(seed), 1);
@@ -135,10 +136,10 @@ describe('지도 생성 (02 6절), 시드 200개', () => {
 
 describe('런 시작과 이동 (02 8절, 6절 7번)', () => {
   function started(seed = 1): GameState {
-    return applyAction(createInitialState(seed), { type: 'startRun', tamerId: 'takato' }).state;
+    return startedRun(seed);
   }
 
-  it('startRun 뒤 국면이 reward이고 강화된 일반 카드 3장이 보임 (오유민 특성)', () => {
+  it('startRun과 시작 칩 뒤 국면이 reward이고 강화된 일반 카드 3장이 보임 (오유민 특성)', () => {
     for (let seed = 1; seed <= 30; seed++) {
       const state = started(seed);
       expect(state.phase).toBe('reward');
@@ -164,9 +165,10 @@ describe('런 시작과 이동 (02 8절, 6절 7번)', () => {
     expect(skipped.run?.deck).toHaveLength(10);
   });
 
-  it('시작 상태: HP 75, 비트 0, 최고 단계 성숙기, 메모리 3, 시작 덱 10장', () => {
+  it('시작 상태: 테이머 HP, 비트 0, 최고 단계 성숙기, 메모리 3, 시작 덱 10장', () => {
     const run = started().run;
-    expect(run).toMatchObject({ hp: 75, maxHp: 75, bits: 0, maxStage: 'champion', maxMemory: 3 });
+    const hp = getTamer('takato').maxHp;
+    expect(run).toMatchObject({ hp, maxHp: hp, bits: 0, maxStage: 'champion', maxMemory: 3 });
     expect(run?.deck).toHaveLength(10);
   });
 
@@ -199,6 +201,23 @@ describe('런 시작과 이동 (02 8절, 6절 7번)', () => {
       expect(() => applyAction(state, { type: 'chooseNode', nodeId: notLinked.id })).toThrow(
         IllegalActionError,
       );
+    }
+  });
+});
+
+describe('2·3막 지도 (02 12.1)', () => {
+  it('그 막의 조우와, acts에 그 막이 든 이벤트만 나온다', () => {
+    for (const act of [2, 3]) {
+      for (let seed = 1; seed <= 50; seed++) {
+        const map = generateMap(createInitialState(seed), act);
+        for (const node of map.nodes) {
+          if (node.encounterId) expect(getEncounter(node.encounterId).act).toBe(act);
+          if (node.eventId) {
+            expect(getEvents().find((e) => e.id === node.eventId)?.acts).toContain(act);
+          }
+        }
+        expect(map.bossNodeId).toBe(`a${act}_boss`);
+      }
     }
   });
 });

@@ -7,6 +7,7 @@ import {
   type CardInstance,
   type GameState,
 } from '../../core/index';
+import { getCard } from '../../data/index';
 import { CardView } from '../components/CardView';
 import { EnemyView } from '../components/EnemyView';
 import { Hand } from '../components/Hand';
@@ -95,6 +96,18 @@ export function BattleView({
       </div>
 
       <div className="flex flex-col gap-2">
+        {battle.companions.length > 0 && (
+          <div className="flex gap-2 px-4" data-testid="companions">
+            {battle.companions.map((c) => (
+              <span
+                key={c.uid}
+                className="rounded-full border border-lime-400 bg-lime-950 px-2 py-0.5 text-xs text-lime-200"
+              >
+                {getCard(c.defId).name}
+              </span>
+            ))}
+          </div>
+        )}
         <PartnerView state={state} onEvolve={onEvolve} />
         <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
         <div ref={handRef}>

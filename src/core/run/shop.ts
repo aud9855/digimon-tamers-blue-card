@@ -1,7 +1,7 @@
 // 02 7.2 상점
 import { constants, getCard, getChips } from '../../data/index';
 import { setPhase } from '../phase';
-import { gainChip } from '../chips';
+import { gainChip, isRandomChip } from '../chips';
 import { requireRun } from '../helpers';
 import { nextInt } from '../rng';
 import type { GameEvent, GameState, Pending } from '../types';
@@ -19,7 +19,7 @@ function cardPrice(defId: string): number {
 export function enterShop(state: GameState, events: GameEvent[]): void {
   const run = requireRun(state);
   const cards = makeCardChoices(state, 'reward', constants.SHOP_CARD_COUNT, constants.SHOP_WEIGHTS);
-  const remaining = getChips().filter((c) => !run.chips.includes(c.id));
+  const remaining = getChips().filter((c) => isRandomChip(c) && !run.chips.includes(c.id));
   const chips: ShopPending['chips'] = [];
   for (let i = 0; i < constants.SHOP_CHIP_COUNT && remaining.length > 0; i++) {
     const [pick] = remaining.splice(nextInt(state, 'reward', remaining.length), 1);

@@ -2,7 +2,7 @@
 import { constants, getCards, getChips } from '../../data/index';
 import type { RarityWeights } from '../../data/constants';
 import { setPhase } from '../phase';
-import { battleBitsBonus, gainChip } from '../chips';
+import { battleBitsBonus, gainChip, isRandomChip } from '../chips';
 import { newCardInstance, requireRun } from '../helpers';
 import { nextInt, weightedPick } from '../rng';
 import type {
@@ -95,7 +95,7 @@ export function gainRandomChip(
   stream: RngStream,
 ): string | null {
   const run = requireRun(state);
-  const candidates = getChips().filter((c) => !run.chips.includes(c.id));
+  const candidates = getChips().filter((c) => isRandomChip(c) && !run.chips.includes(c.id));
   const pick = candidates[candidates.length > 0 ? nextInt(state, stream, candidates.length) : 0];
   if (!pick) {
     gainBits(state, events, constants.NO_CHIP_BITS);
@@ -122,6 +122,21 @@ function rollBits(state: GameState, range: { min: number; max: number }): number
   return range.min + nextInt(state, 'reward', range.max - range.min + 1);
 }
 
+/**
+ * 전투 보상의 카드 고르기 (02 7.1). 막에 따라 카드마다 강화되어 나올 수 있음 (02 12.2).
+ * 확률이 0이면 난수를 쓰지 않습니다.
+ */
+function battleOffer(state: GameState, weights: RarityWeights): CardOffer {
+  const offer = makeOffer(state, constants.CARD_OFFER_SIZE, weights, false);
+  const chance = constants.UPGRADE_CHANCE[requireRun(state).act] ?? 0;
+  if (chance > 0) {
+    for (const card of offer.cards) {
+      if (nextInt(state, 'reward', 100) < chance) card.upgraded = true;
+    }
+  }
+  return offer;
+}
+
 /** 전투 승리 뒤 (02 7.1). 비트와 칩은 들어올 때 바로 받음 */
 export function enterBattleReward(
   state: GameState,
@@ -141,26 +156,14 @@ export function enterBattleReward(
   const bonus = battleBitsBonus(state);
   if (kind === 'normal') {
     gainBits(state, events, rollBits(state, constants.BITS_NORMAL) + bonus);
-    pushOffer(
-      state,
-      makeOffer(state, constants.CARD_OFFER_SIZE, constants.REWARD_WEIGHTS_NORMAL, false),
-      false,
-    );
+    pushOffer(state, battleOffer(state, constants.REWARD_WEIGHTS_NORMAL), false);
   } else if (kind === 'elite') {
     gainBits(state, events, rollBits(state, constants.BITS_ELITE) + bonus);
     gainRandomChip(state, events, 'reward');
-    pushOffer(
-      state,
-      makeOffer(state, constants.CARD_OFFER_SIZE, constants.REWARD_WEIGHTS_ELITE, false),
-      false,
-    );
+    pushOffer(state, battleOffer(state, constants.REWARD_WEIGHTS_ELITE), false);
   } else {
     gainBits(state, events, rollBits(state, constants.BITS_BOSS) + bonus);
-    pushOffer(
-      state,
-      makeOffer(state, constants.CARD_OFFER_SIZE, constants.REWARD_WEIGHTS_BOSS, false),
-      true,
-    );
+    pushOffer(state, battleOffer(state, constants.REWARD_WEIGHTS_BOSS), true);
   }
   setPhase(state, events, 'reward');
 }

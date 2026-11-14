@@ -10,7 +10,7 @@ const nondeterministicGlobals = [
 ];
 
 export default tseslint.config(
-  { ignores: ['node_modules/', 'dist/', 'build/', 'coverage/'] },
+  { ignores: ['node_modules/', 'dist/', 'build/', 'coverage/', 'android/'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

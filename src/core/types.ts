@@ -4,7 +4,9 @@ export type Stage = 'rookie' | 'champion' | 'ultimate' | 'mega';
 export type Attribute = 'vaccine' | 'data' | 'virus' | 'none';
 export type StatusId = 'strength' | 'weak' | 'vulnerable';
 export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako';
-export type CardType = 'attack' | 'skill' | 'signature' | 'curse';
+export type CardType = 'attack' | 'skill' | 'signature' | 'curse' | 'companion';
+/** 형태 특성 (02 12.5) */
+export type FormTraitId = 'tough' | 'sharp';
 export type Rarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
 export type Keyword = 'exhaust' | 'retain' | 'innate' | 'unplayable';
 
@@ -30,13 +32,23 @@ export type Effect =
   | { op: 'freeEvolve' }
   | { op: 'addCard'; cardId: string; to: 'hand' | 'discard' | 'draw'; count: number }
   | { op: 'ifStage'; min: Stage; then: Effect[]; else?: Effect[] }
-  | { op: 'ifEvolvedThisTurn'; then: Effect[]; else?: Effect[] };
+  | { op: 'ifEvolvedThisTurn'; then: Effect[]; else?: Effect[] }
+  /** 이 카드보다 먼저 이번 턴에 낸 카드가 min장 이상이면 (02 12.11) */
+  | { op: 'ifPlayedThisTurn'; min: number; then: Effect[]; else?: Effect[] };
 
 // ── 정의 (src/data가 채움, 바뀌지 않음) ──
+/** 동료 효과 (02 12.6): 칩과 같은 구조 */
+export interface CompanionEffect {
+  trigger?: ChipTrigger;
+  effects?: Effect[];
+  modifiers?: { evolveCostDelta?: number };
+}
 export interface CardFace {
   cost: number;
   effects: Effect[];
   keywords?: Keyword[];
+  /** 동료 카드만: 동료 자리에 있는 동안의 효과 */
+  companion?: CompanionEffect;
 }
 export interface CardDef {
   id: string;
@@ -94,8 +106,14 @@ export interface ChipDef {
   name: string;
   trigger?: ChipTrigger;
   effects?: Effect[];
+  /** 테이머 특성용 숨은 칩: 보상·상점에 안 나오고 칩으로 보이지 않음 (02 12.3) */
+  hidden?: boolean;
+  /** 시작 칩: 판 시작에만 고름 (02 12.7) */
+  start?: boolean;
   modifiers?: {
     evolveCostDelta?: number;
+    /** 그 턴에 처음 내는 카드의 비용에 더함 (02 12.11) */
+    firstCardCostDelta?: number;
     battleBitsBonus?: number;
     handSizeBonus?: number;
     maxHpBonus?: number;
@@ -111,6 +129,8 @@ export type RunEffect =
   | { op: 'addCard'; cardId: string };
 export interface EventDef {
   id: string;
+  /** 나오는 막 (02 12.1) */
+  acts: number[];
   title: string;
   text: string;
   choices: { label: string; effects: RunEffect[] }[];
@@ -118,6 +138,8 @@ export interface EventDef {
 export interface TamerDef {
   id: TamerId;
   name: string;
+  /** 테이머 특성 이름 (02 8절, 12.3) */
+  trait: string;
   line: string;
   maxHp: number;
   startBits: number;
@@ -161,10 +183,14 @@ export interface BattleState {
   statuses: Statuses;
   evolvedThisTurn: boolean;
   freeEvolve: boolean;
+  /** 이번 턴에 낸 카드 수. 카드를 옮긴 뒤 올림 (02 12.3) */
+  cardsPlayedThisTurn: number;
   drawPile: CardInstance[];
   hand: CardInstance[];
   discardPile: CardInstance[];
   exhaustPile: CardInstance[];
+  /** 동료 자리 (02 12.6) */
+  companions: CardInstance[];
   enemies: EnemyState[];
 }
 export type NodeType = 'battle' | 'elite' | 'event' | 'shop' | 'rest' | 'treasure' | 'boss';
@@ -195,6 +221,8 @@ export interface RunState {
   nodeId: string | null; // 지금 있는 칸 (막 시작 전에는 null)
   path: string[]; // 이번 막에서 지나온 칸 id (지금 칸 포함)
   removalsBought: number;
+  /** 단계별로 고른 형태 특성 (02 12.5) */
+  formTraits: Partial<Record<Stage, FormTraitId>>;
 }
 // 플레이어 HP는 run.hp 하나뿐입니다. 전투 중에도 run.hp를 직접 고칩니다.
 // 지금 형태는 getForm(tamer.line, battle.stage)로 찾습니다. 전투 밖에서는 성장기입니다.
@@ -212,9 +240,12 @@ export type Pending =
   | { kind: 'rest' }
   | { kind: 'event'; eventId: string }
   | { kind: 'treasure'; chipId: string | null }
-  | { kind: 'actClear' };
+  | { kind: 'startChip'; chipIds: string[] }
+  /** traitStage: 특성을 고를 단계 (고르면 null) */
+  | { kind: 'actClear'; traitStage: Stage | null };
 export type Phase =
   | 'title'
+  | 'startChip'
   | 'map'
   | 'battle'
   | 'reward'
@@ -252,7 +283,9 @@ export type Action =
   | { type: 'restHeal' }
   | { type: 'restUpgrade'; cardUid: number }
   | { type: 'eventChoose'; index: number }
-  | { type: 'proceed' };
+  | { type: 'proceed' }
+  | { type: 'chooseStartChip'; index: number }
+  | { type: 'chooseFormTrait'; index: number };
 
 // ── 일어난 일 목록 (03 4.1) ──
 export type Who = 'player' | number; // number: 적의 위치(index)
@@ -265,7 +298,13 @@ export type GameEvent =
   | { type: 'deckShuffled' }
   | { type: 'cardDrawn'; cardUid: number }
   | { type: 'cardPlayed'; cardUid: number; targetIndex?: number }
-  | { type: 'cardMoved'; cardUid: number; to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' }
+  | {
+      type: 'cardMoved';
+      cardUid: number;
+      to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' | 'companion';
+    }
+  | { type: 'companionTriggered'; cardUid: number }
+  | { type: 'formTraitChosen'; stage: Stage; traitId: FormTraitId }
   | { type: 'cardCreated'; cardUid: number; defId: string; to: 'hand' | 'draw' | 'discard' }
   | { type: 'memoryChanged'; memory: number }
   | {

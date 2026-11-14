@@ -43,35 +43,43 @@ function expectUniqueIds(list: readonly { id: string }[]): void {
 const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
-describe('0단계 콘텐츠 개수 (04 T0-3)', () => {
-  it('카드 23개: 기본 3, 일반 9, 고급 6, 희귀 3, 필살기 1, 저주 1', () => {
+describe('콘텐츠 개수 (02 9절, 12절)', () => {
+  it('카드: 기본 5, 일반 21, 고급 17, 희귀 10, 필살기 9, 저주 1 (동료 4장 포함)', () => {
     const all = getCards();
-    expect(all).toHaveLength(23);
+    expect(all).toHaveLength(63);
     expect(countBy(all, (c) => c.rarity)).toEqual({
-      basic: 3,
-      common: 9,
-      uncommon: 6,
-      rare: 3,
-      special: 2,
+      basic: 5,
+      common: 21,
+      uncommon: 17,
+      rare: 10,
+      special: 10,
     });
-    expect(all.filter((c) => c.type === 'signature')).toHaveLength(1);
+    expect(all.filter((c) => c.type === 'signature')).toHaveLength(9);
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(1);
   });
 
-  it('형태 2, 적 9, 조우 13, 칩 6, 이벤트 2, 테이머 1', () => {
-    expect(getForms()).toHaveLength(2);
-    expect(getEnemies()).toHaveLength(9);
-    expect(getAllEncounters()).toHaveLength(13);
-    expect(getChips()).toHaveLength(6);
-    expect(getEvents()).toHaveLength(2);
-    expect(getTamers()).toHaveLength(1);
+  it('형태 12, 적 24, 조우 39, 칩 11, 이벤트 8, 테이머 3', () => {
+    expect(getForms()).toHaveLength(12);
+    expect(getEnemies()).toHaveLength(24);
+    expect(getAllEncounters()).toHaveLength(39);
+    expect(getChips()).toHaveLength(11);
+    expect(getEvents()).toHaveLength(8);
+    expect(getTamers()).toHaveLength(3);
   });
 
-  it('조우 난이도별 개수: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4)', () => {
-    expect(getEncounters(1, 'easy')).toHaveLength(4);
-    expect(getEncounters(1, 'normal')).toHaveLength(6);
-    expect(getEncounters(1, 'elite')).toHaveLength(2);
-    expect(getEncounters(1, 'boss')).toHaveLength(1);
+  it('막마다 조우: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4, 12.10)', () => {
+    for (const act of [1, 2, 3]) {
+      expect(getEncounters(act, 'easy')).toHaveLength(4);
+      expect(getEncounters(act, 'normal')).toHaveLength(6);
+      expect(getEncounters(act, 'elite')).toHaveLength(2);
+      expect(getEncounters(act, 'boss')).toHaveLength(1);
+    }
+  });
+
+  it('막마다 이벤트가 하나 이상 (02 12.1)', () => {
+    for (let act = 1; act <= constants.ACT_COUNT; act++) {
+      expect(getEvents().filter((e) => e.acts.includes(act)).length).toBeGreaterThan(0);
+    }
   });
 });
 
@@ -253,10 +261,42 @@ describe('카드', () => {
     }
   });
 
-  it('0단계에서는 기본~희귀 카드가 모두 takato 풀 (02 4.1)', () => {
-    const takato: TamerId = 'takato';
-    for (const card of getCards().filter((c) => c.rarity !== 'special')) {
-      expect(card.pool).toBe(takato);
+  it('공용 카드는 타격·방어와 플러그인류 (02 12.8)', () => {
+    const neutral = getCards()
+      .filter((c) => c.pool === 'neutral')
+      .map((c) => c.id)
+      .sort();
+    expect(neutral).toEqual(
+      [
+        'attack_plugin',
+        'charge',
+        'defense_plugin',
+        'guard',
+        'recovery_floppy',
+        'speed_plugin',
+        'strike',
+        'juri',
+        'kazu',
+        'kenta',
+        'calumon',
+      ].sort(),
+    );
+  });
+
+  it('테이머의 시작 덱은 그 테이머 풀이나 공용 카드', () => {
+    for (const tamer of getTamers()) {
+      for (const id of tamer.startDeck) {
+        const pool: TamerId | 'neutral' | 'none' = getCard(id).pool;
+        expect([tamer.id, 'neutral']).toContain(pool);
+      }
+    }
+  });
+
+  it('테이머마다 자기 계열의 형태가 네 단계 모두 있음', () => {
+    for (const tamer of getTamers()) {
+      for (const stage of ['rookie', 'champion', 'ultimate', 'mega'] as const) {
+        expect(() => getForm(tamer.line, stage)).not.toThrow();
+      }
     }
   });
 
@@ -278,6 +318,28 @@ describe('칩', () => {
       expect(triggered).toBe((chip.effects?.length ?? 0) > 0);
       expect(triggered || chip.modifiers !== undefined).toBe(true);
     }
+  });
+
+  it('동료 효과는 target enemy를 쓰지 않고, 수치 보정은 evolveCostDelta만 (02 12.6)', () => {
+    for (const card of getCards().filter((c) => c.type === 'companion')) {
+      for (const face of [card.base, card.upgraded]) {
+        expect(face.companion).toBeDefined();
+        for (const e of flatten(face.companion?.effects ?? [])) {
+          if ('target' in e) expect(e.target).not.toBe('enemy');
+        }
+        expect(Object.keys(face.companion?.modifiers ?? {})).toEqual(
+          face.companion?.modifiers ? ['evolveCostDelta'] : [],
+        );
+      }
+    }
+  });
+
+  it('시작 칩 3개 (02 12.7)', () => {
+    expect(
+      getChips()
+        .filter((c) => c.start)
+        .map((c) => c.id),
+    ).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
   });
 
   it("칩 효과는 target 'enemy'를 쓰지 않는다 (02 5절)", () => {
@@ -325,22 +387,22 @@ describe('overrideRegistry (03 8.1)', () => {
         { ...originalStrike, name: '바뀐 타격' },
         { ...originalStrike, id: 'test_card', name: '시험 카드' },
       ],
-      constants: { ACT_COUNT: 2 },
+      constants: { ACT_COUNT: 7 },
     });
     expect(getCard('strike').name).toBe('바뀐 타격');
     expect(getCard('test_card').name).toBe('시험 카드');
-    expect(constants.ACT_COUNT).toBe(2);
+    expect(constants.ACT_COUNT).toBe(7);
 
     restore();
     restore = null;
     expect(getCard('strike').name).toBe('타격');
     expect(() => getCard('test_card')).toThrow();
-    expect(constants.ACT_COUNT).toBe(1);
+    expect(constants.ACT_COUNT).toBe(3);
   });
 
   it('없는 id를 찾으면 예외', () => {
     expect(() => getCard('no_such_card')).toThrow();
     expect(() => getEnemy('no_such_enemy')).toThrow();
-    expect(() => getForm('guilmon', 'mega')).toThrow();
+    expect(() => getForm('no_such_line', 'rookie')).toThrow();
   });
 });

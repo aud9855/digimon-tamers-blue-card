@@ -3,10 +3,9 @@ import { applyAction, getLegalActions, IllegalActionError } from '../../src/core
 import { enterEvent, enterTreasure, runRunEffects } from '../../src/core/run/event';
 import { enterRest } from '../../src/core/run/rest';
 import { enterShop, removalPrice } from '../../src/core/run/shop';
-import { createInitialState } from '../../src/core/state';
 import type { CardDef, GameEvent, GameState, Pending } from '../../src/core/types';
 import { constants, getCard, getCards, getChips, overrideRegistry } from '../../src/data/index';
-import { battleOf, eventsOf, makeBattle, play } from '../helpers/battle';
+import { battleOf, eventsOf, makeBattle, play, randomChipIds, startedRun } from '../helpers/battle';
 import { baseFixtures } from '../helpers/fixtures';
 
 let restore: () => void;
@@ -17,8 +16,7 @@ afterEach(() => restore());
 
 /** 런을 시작하고 첫 카드 고르기를 건너뛴 지도 국면 */
 function mapState(seed = 1): GameState {
-  const started = applyAction(createInitialState(seed), { type: 'startRun', tamerId: 'takato' });
-  return applyAction(started.state, { type: 'skipCards' }).state;
+  return applyAction(startedRun(seed), { type: 'skipCards' }).state;
 }
 
 /** 한 방에 끝나는 전투에서 이김 */
@@ -77,7 +75,7 @@ describe('7.1 전투 보상', () => {
   });
 
   it('칩을 받을 차례인데 가지지 않은 칩이 없으면 비트 50', () => {
-    const allChips = getChips().map((c) => c.id);
+    const allChips = randomChipIds();
     const { state } = winBattle('elite', { seed: 1, chips: allChips });
     expect(state.run?.chips).toEqual(allChips);
     const bits = state.run?.bits ?? 0;
@@ -102,7 +100,7 @@ describe('7.1 전투 보상', () => {
   });
 
   it('보스 (마지막 막): 보상 없이 바로 runWon', () => {
-    const { state, events } = winBattle('boss');
+    const { state, events } = winBattle('boss', { act: 3 });
     expect(state.phase).toBe('runWon');
     expect(state.run?.bits).toBe(0);
     expect(eventsOf(events, 'runEnded')[0]?.won).toBe(true);
@@ -182,9 +180,7 @@ describe('7.2 상점', () => {
   });
 
   it('남은 칩이 2개보다 적으면 있는 만큼만', () => {
-    const allButOne = getChips()
-      .map((c) => c.id)
-      .slice(1);
+    const allButOne = randomChipIds().slice(1);
     expect(shopOf(shopState(1, 1000, allButOne)).chips).toHaveLength(1);
   });
 
@@ -242,10 +238,11 @@ describe('7.3 휴식', () => {
 
   it('restHeal: floor(maxHp × 0.3) 회복 (최대 HP까지), 그 뒤 map', () => {
     const healed = applyAction(restState(30), { type: 'restHeal' }).state;
-    expect(healed.run?.hp).toBe(30 + Math.floor(75 * 0.3));
+    const maxHp = healed.run?.maxHp ?? 0;
+    expect(healed.run?.hp).toBe(30 + Math.floor(maxHp * 0.3));
     expect(healed.phase).toBe('map');
-    const capped = applyAction(restState(70), { type: 'restHeal' }).state;
-    expect(capped.run?.hp).toBe(75);
+    const capped = applyAction(restState(maxHp - 5), { type: 'restHeal' }).state;
+    expect(capped.run?.hp).toBe(maxHp);
   });
 
   it('restUpgrade: 강화할 수 있는 카드 1장을 강화', () => {
@@ -268,9 +265,10 @@ describe('7.3 휴식', () => {
 describe('7.4 보물', () => {
   it('들어올 때 가지지 않은 칩 1개를 받고, proceed로 map', () => {
     const state = mapState();
+    const before = state.run?.chips.length ?? 0;
     enterTreasure(state, []);
     expect(state.phase).toBe('treasure');
-    expect(state.run?.chips).toHaveLength(1);
+    expect(state.run?.chips).toHaveLength(before + 1);
     const next = applyAction(state, { type: 'proceed' }).state;
     expect(next.phase).toBe('map');
   });
@@ -278,7 +276,7 @@ describe('7.4 보물', () => {
   it('칩이 하나도 안 남았으면 비트 50', () => {
     const state = mapState();
     if (!state.run) throw new Error('런 없음');
-    state.run.chips = getChips().map((c) => c.id);
+    state.run.chips = randomChipIds();
     enterTreasure(state, []);
     expect(state.run.bits).toBe(50);
     expect(state.pending).toEqual({ kind: 'treasure', chipId: null });
@@ -330,7 +328,7 @@ describe('7.5 이벤트와 런 효과', () => {
     enterEvent(state, [], 'card_pile');
     const next = applyAction(state, { type: 'eventChoose', index: 0 }).state;
     expect(next.phase).toBe('reward');
-    expect(next.run?.hp).toBe(70);
+    expect(next.run?.hp).toBe((next.run?.maxHp ?? 0) - 5);
     expect(rewardOf(next).offers[0]?.cards).toHaveLength(3);
     expect(applyAction(next, { type: 'skipCards' }).state.phase).toBe('map');
   });
@@ -346,10 +344,11 @@ describe('7.5 이벤트와 런 효과', () => {
 
   it('addRandomChip: 가지지 않은 칩 1개, 없으면 비트 50', () => {
     const state = mapState();
+    const before = state.run?.chips.length ?? 0;
     runRunEffects(state, [], [{ op: 'addRandomChip' }]);
-    expect(state.run?.chips).toHaveLength(1);
+    expect(state.run?.chips).toHaveLength(before + 1);
     if (!state.run) throw new Error('런 없음');
-    state.run.chips = getChips().map((c) => c.id);
+    state.run.chips = randomChipIds();
     runRunEffects(state, [], [{ op: 'addRandomChip' }]);
     expect(state.run.bits).toBe(50);
   });
@@ -359,11 +358,11 @@ describe('7.5 이벤트와 런 효과', () => {
     enterEvent(state, [], 'card_pile');
     const next = applyAction(state, { type: 'eventChoose', index: 1 }).state;
     expect(next.phase).toBe('map');
-    expect(next.run?.hp).toBe(75);
+    expect(next.run?.hp).toBe(next.run?.maxHp);
   });
 });
 
-describe('7.6 막 넘어가기 (ACT_COUNT 2, 시험용 2막 조우)', () => {
+describe('7.6 막 넘어가기 (ACT_COUNT 2로 줄여 확인)', () => {
   let restoreAct: () => void;
   beforeEach(() => {
     restoreAct = overrideRegistry({ constants: { ACT_COUNT: 2 } });
@@ -378,15 +377,22 @@ describe('7.6 막 넘어가기 (ACT_COUNT 2, 시험용 2막 조우)', () => {
     expect(cleared.run?.hp).toBe(20 + Math.floor(75 * 0.5));
     expect(cleared.run?.maxStage).toBe('ultimate');
     expect(cleared.run?.maxMemory).toBe(4);
-    expect(getLegalActions(cleared)).toEqual([{ type: 'proceed' }]);
+    // 새로 열린 완전체의 형태 특성을 먼저 고름 (02 12.5)
+    expect(getLegalActions(cleared)).toEqual([
+      { type: 'chooseFormTrait', index: 0 },
+      { type: 'chooseFormTrait', index: 1 },
+    ]);
+    const traited = applyAction(cleared, { type: 'chooseFormTrait', index: 1 }).state;
+    expect(traited.run?.formTraits).toEqual({ ultimate: 'sharp' });
+    expect(getLegalActions(traited)).toEqual([{ type: 'proceed' }]);
 
-    const act2 = applyAction(cleared, { type: 'proceed' }).state;
+    const act2 = applyAction(traited, { type: 'proceed' }).state;
     expect(act2.phase).toBe('map');
     expect(act2.run?.act).toBe(2);
     expect(act2.run?.nodeId).toBeNull();
     expect(act2.run?.path).toEqual([]);
     const boss = act2.run?.map.nodes.find((n) => n.type === 'boss');
-    expect(boss?.encounterId).toBe('test_a2_boss');
+    expect(boss?.encounterId).toBe('a2_boss_zhuqiaomon');
     expect(boss?.id).toBe('a2_boss');
   });
 
@@ -410,5 +416,61 @@ describe('보상 국면 비트 상수', () => {
     expect(constants.BITS_NORMAL).toEqual({ min: 12, max: 18 });
     expect(constants.BITS_ELITE).toEqual({ min: 28, max: 35 });
     expect(constants.NO_CHIP_BITS).toBe(50);
+  });
+});
+
+describe('12.2 보상 카드가 강화되어 나올 확률', () => {
+  function upgradedRatio(act: number): number {
+    let upgraded = 0;
+    let total = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const offer = rewardOf(winBattle('normal', { seed, act }).state).offers[0];
+      for (const c of offer?.cards ?? []) {
+        total++;
+        if (c.upgraded) upgraded++;
+      }
+    }
+    return upgraded / total;
+  }
+
+  it('1막 0%, 2막 약 15%, 3막 약 30%', () => {
+    expect(upgradedRatio(1)).toBe(0);
+    const act2 = upgradedRatio(2);
+    expect(act2).toBeGreaterThan(0.1);
+    expect(act2).toBeLessThan(0.2);
+    const act3 = upgradedRatio(3);
+    expect(act3).toBeGreaterThan(0.24);
+    expect(act3).toBeLessThan(0.36);
+  });
+
+  it('이벤트의 카드 고르기에는 쓰지 않는다', () => {
+    const state = mapState();
+    if (!state.run) throw new Error('런 없음');
+    state.run.act = 3;
+    for (let i = 0; i < 20; i++) {
+      runRunEffects(state, [], [{ op: 'offerCards', count: 3 }]);
+    }
+    const all = rewardOf(state).offers.flatMap((o) => o.cards);
+    expect(all.every((c) => !c.upgraded)).toBe(true);
+  });
+});
+
+describe('숨은 칩과 시작 칩은 무작위로 나오지 않음 (02 12.3, 12.7)', () => {
+  it('보물·상점·강적 보상의 칩 후보에서 빠진다', () => {
+    const hidden = getChips()
+      .filter((c) => c.hidden || c.start)
+      .map((c) => c.id);
+    expect(hidden.length).toBeGreaterThan(0);
+    for (let seed = 1; seed <= 40; seed++) {
+      const state = mapState(seed);
+      const owned = [...(state.run?.chips ?? [])];
+      enterTreasure(state, []);
+      enterShop(state, []);
+      const shop = shopOf(state);
+      const gained = (state.run?.chips ?? []).filter((id) => !owned.includes(id));
+      for (const id of [...gained, ...shop.chips.map((c) => c.chipId)]) {
+        expect(hidden).not.toContain(id);
+      }
+    }
   });
 });

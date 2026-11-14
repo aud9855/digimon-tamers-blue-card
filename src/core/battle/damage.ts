@@ -1,6 +1,6 @@
 // 02 3.8 피해 계산·적용
 import { constants, getEnemy } from '../../data/index';
-import { currentForm, floorNonNegative, requireBattle, requireRun } from '../helpers';
+import { currentForm, floorNonNegative, formPower, requireBattle, requireRun } from '../helpers';
 import type { Attribute, GameEvent, GameState } from '../types';
 import { checkDefeat } from './outcome';
 
@@ -27,7 +27,7 @@ export function playerHitDamage(state: GameState, amount: number, enemyIndex: nu
   if (!enemy) throw new Error(`없는 적 위치: ${enemyIndex}`);
   const form = currentForm(state);
   const attrMult = attributeMultiplier(form.attribute, getEnemy(enemy.defId).attribute);
-  const raw = amount + form.power + battle.statuses.strength;
+  const raw = amount + formPower(state) + battle.statuses.strength;
   const mult =
     attrMult *
     (battle.statuses.weak > 0 ? constants.WEAK_MULT : 1) *

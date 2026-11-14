@@ -10,7 +10,10 @@ import type {
   TamerDef,
   TamerId,
 } from '../core/types';
+import { acts, type ActDef } from './acts';
 import { cards } from './cards';
+import { henryCards } from './cards-henry';
+import { rikaCards } from './cards-rika';
 import { chips } from './chips';
 import { constants, type Constants } from './constants';
 import { encounters } from './encounters';
@@ -33,7 +36,7 @@ interface Registry {
 }
 
 const registry: Registry = {
-  cards: [...cards],
+  cards: [...cards, ...rikaCards, ...henryCards],
   forms: [...forms],
   enemies: [...enemies],
   encounters: [...encounters],
@@ -125,6 +128,16 @@ export function getTamer(id: TamerId): TamerDef {
 export function getTamers(): readonly TamerDef[] {
   return registry.tamers;
 }
+
+/** 막 이름과 시작 글 (화면용) */
+export function getAct(act: number): ActDef {
+  return must(
+    acts.find((a) => a.act === act),
+    '막',
+    String(act),
+  );
+}
+export type { ActDef };
 
 export interface RegistryOverride {
   cards?: CardDef[];

@@ -84,6 +84,14 @@ function runEffect(state: GameState, events: GameEvent[], effect: Effect, ctx: E
     case 'ifEvolvedThisTurn':
       runEffects(state, events, battle.evolvedThisTurn ? effect.then : (effect.else ?? []), ctx);
       return;
+    case 'ifPlayedThisTurn':
+      runEffects(
+        state,
+        events,
+        battle.cardsPlayedThisTurn >= effect.min ? effect.then : (effect.else ?? []),
+        ctx,
+      );
+      return;
   }
 }
 

@@ -1,7 +1,7 @@
 // 지도 화면 (04 T1-5): 갈 수 있는 칸만 눌림. 지나온 길이 보임
 import { useEffect, useMemo, useRef } from 'react';
 import { getLegalActions, type MapNode, type NodeType } from '../../core/index';
-import { constants } from '../../data/index';
+import { constants, getAct } from '../../data/index';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
@@ -63,9 +63,19 @@ export function MapScreen() {
   return (
     <Screen>
       <RunHeader state={state} />
-      <p className="px-4 pt-1 text-xs text-slate-400">
-        {run.nodeId === null ? '시작할 칸을 고르세요' : '다음 칸을 고르세요'}
-      </p>
+      {run.nodeId === null ? (
+        <div className="mx-4 mt-2 rounded-xl bg-slate-900 px-3 py-2" data-testid="act-intro">
+          <p className="text-sm font-bold text-sky-200">
+            {run.act}막 · {getAct(run.act).name}
+          </p>
+          <p className="text-xs leading-snug text-slate-300">{getAct(run.act).intro}</p>
+          <p className="mt-1 text-xs text-slate-500">시작할 칸을 고르세요</p>
+        </div>
+      ) : (
+        <p className="px-4 pt-1 text-xs text-slate-400">
+          {run.act}막 · {getAct(run.act).name} — 다음 칸을 고르세요
+        </p>
+      )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto" data-testid="map">
         <div className="relative mx-auto" style={{ width, height }}>
           <svg className="absolute inset-0" width={width} height={height} aria-hidden>

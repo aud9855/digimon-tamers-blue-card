@@ -43,6 +43,20 @@ export function currentForm(state: GameState): FormDef {
   return getForm(getTamer(run.tamerId).line, stage);
 }
 
+/** 지금 형태의 공격력 (형태 특성 sharp 포함, 02 12.5) */
+export function formPower(state: GameState): number {
+  const run = requireRun(state);
+  const stage = state.battle?.stage;
+  const bonus = stage && run.formTraits[stage] === 'sharp' ? constants.FORM_TRAIT_POWER : 0;
+  return currentForm(state).power + bonus;
+}
+
+/** 그 단계로 진화할 때 얻는 임시 HP (형태 특성 tough 포함, 02 12.5) */
+export function formTempHp(state: GameState, form: FormDef): number {
+  const tough = requireRun(state).formTraits[form.stage] === 'tough';
+  return form.tempHp + (tough ? constants.FORM_TRAIT_TEMP_HP : 0);
+}
+
 /** 카드 인스턴스가 쓰는 면 (기본 / 강화) */
 export function cardFace(card: { defId: string; upgraded: boolean }): CardFace {
   const def = getCard(card.defId);

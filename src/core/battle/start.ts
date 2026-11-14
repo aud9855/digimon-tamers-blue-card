@@ -44,10 +44,12 @@ export function startBattle(
     statuses: emptyStatuses(),
     evolvedThisTurn: false,
     freeEvolve: false,
+    cardsPlayedThisTurn: 0,
     drawPile,
     hand: [],
     discardPile: [],
     exhaustPile: [],
+    companions: [],
     enemies: encounter.enemies.map(createEnemy),
   };
   state.pending = null;

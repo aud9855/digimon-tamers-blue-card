@@ -12,6 +12,8 @@ describe('화면 상태 (03 9.1)', () => {
   it('제목 화면에서 런을 시작하면 국면이 바뀐다', () => {
     expect(useGame.getState().state.phase).toBe('title');
     useGame.getState().dispatch({ type: 'startRun', tamerId: 'takato' });
+    expect(useGame.getState().state.phase).toBe('startChip');
+    useGame.getState().dispatch({ type: 'chooseStartChip', index: 0 });
     expect(useGame.getState().state.phase).toBe('reward');
     expect(useGame.getState().lastEvents.length).toBeGreaterThan(0);
     useGame.getState().dispatch({ type: 'skipCards' });

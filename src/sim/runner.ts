@@ -28,7 +28,8 @@ export interface RunConfig {
   evolve: EvolveMode;
 }
 
-export type BattleRecord = Extract<GameEvent, { type: 'battleEnded' }>;
+/** 전투 결과와 그 전투가 있던 막 */
+export type BattleRecord = Extract<GameEvent, { type: 'battleEnded' }> & { act: number };
 
 export interface RunRecord {
   seed: number;
@@ -39,6 +40,8 @@ export interface RunRecord {
   battles: BattleRecord[];
   turnsEnded: number;
   overdrawTurns: number;
+  /** 막별 [끝낸 턴, 당겨쓴 턴] */
+  turnsByAct: Record<number, [number, number]>;
   /** 카드 보상에서 고른 카드 id */
   picks: string[];
   finalState: GameState;
@@ -56,6 +59,7 @@ export function runOne(seed: number, config: RunConfig): RunRecord {
     battles: [],
     turnsEnded: 0,
     overdrawTurns: 0,
+    turnsByAct: {},
     picks: [],
     finalState: state,
   };
@@ -68,14 +72,18 @@ export function runOne(seed: number, config: RunConfig): RunRecord {
       const picked = state.pending.offers[0]?.cards[action.index];
       if (picked) record.picks.push(picked.defId);
     }
+    const actBefore = state.run?.act ?? 1;
     const result = applyAction(state, action);
     state = result.state;
     record.actions += 1;
     for (const e of result.events) {
-      if (e.type === 'battleEnded') record.battles.push(e);
+      if (e.type === 'battleEnded') record.battles.push({ ...e, act: actBefore });
       if (e.type === 'turnEnded') {
         record.turnsEnded += 1;
         if (e.memory < 0) record.overdrawTurns += 1;
+        const byAct = (record.turnsByAct[actBefore] ??= [0, 0]);
+        byAct[0] += 1;
+        if (e.memory < 0) byAct[1] += 1;
       }
     }
   }

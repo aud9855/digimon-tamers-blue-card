@@ -32,6 +32,41 @@ export const chips = [
     trigger: 'onEvolve',
     effects: [{ op: 'shield', amount: 5 }],
   },
+  // ── 시작 칩 (판 시작에 고름, 02 12.7) ──
+  {
+    id: 'card_reader',
+    name: '카드 리더',
+    start: true,
+    trigger: 'onFirstTurn',
+    effects: [{ op: 'draw', count: 2 }],
+  },
+  {
+    id: 'guard_chip',
+    name: '가드 칩',
+    start: true,
+    trigger: 'onBattleStart',
+    effects: [{ op: 'shield', amount: 8 }],
+  },
+  {
+    id: 'bit_scanner',
+    name: '비트 스캐너',
+    start: true,
+    modifiers: { battleBitsBonus: 10, maxHpBonus: 5 },
+  },
+  // ── 테이머 특성 (숨은 칩, 02 12.3) ──
+  {
+    id: 'trait_card_battler',
+    name: '카드 배틀 실력자',
+    hidden: true,
+    modifiers: { firstCardCostDelta: -1 },
+  },
+  {
+    id: 'trait_calm',
+    name: '침착함',
+    hidden: true,
+    trigger: 'onTurnStart',
+    effects: [{ op: 'shield', amount: 2 }],
+  },
   {
     id: 'bit_pouch',
     name: '비트 주머니',

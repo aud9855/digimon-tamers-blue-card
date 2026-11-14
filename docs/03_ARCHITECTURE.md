@@ -70,8 +70,8 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
-│  │  ├─ forms.ts  cards.ts  enemies.ts  encounters.ts
-│  │  ├─ chips.ts  events.ts  tamers.ts
+│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  enemies.ts  encounters.ts
+│  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
 │  │  ├─ policies/random.ts  policies/greedy.ts
@@ -85,7 +85,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ sim/                   봇 스모크·결정성·골든 테스트
 │  └─ helpers/               테스트용 전투 만들기 등
 ├─ scripts/
-│  ├─ vitest.mjs             npm test 실행기 (Windows 소문자 드라이브 경로 문제를 피함)
+│  ├─ upper-drive.mjs        dev·build·test·e2e 실행기 (Windows 소문자 드라이브 경로에서 vitest·Tailwind가 깨지는 문제를 피함)
 │  └─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
 └─ .github/workflows/ci.yml
 ```
@@ -155,7 +155,7 @@ export type RunEffect =
   | { op: 'addRandomChip' } | { op: 'addCard'; cardId: string };
 export interface EventDef { id: string; title: string; text: string; choices: { label: string; effects: RunEffect[] }[] }
 export interface TamerDef {
-  id: TamerId; name: string; line: string; maxHp: number;
+  id: TamerId; name: string; trait: string; line: string; maxHp: number;
   startBits: number; startMaxStage: Stage; startMaxMemory: number;
   startDeck: string[]; startEffects: RunEffect[]; startChips: string[];
 }
@@ -285,8 +285,10 @@ applyAction(state: GameState, action: Action): { state: GameState; events: GameE
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
 describeChip(chipId: string): string
 describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
+describeTamer(tamerId): string   // 테이머 특성 설명
 describeIntent(state: GameState, enemyIndex: number): IntentView   // 화면에 보일 종류·피해량·횟수
 previewEvolveCost(state: GameState): number | null   // 지금 진화 비용 (못 하면 null)
+previewCardCost(state, cardUid): number | null   // 지금 낼 때의 비용 (처음 내는 카드 할인 포함)
 previewOverdraw(state, { cardUid } | 'evolve'): number   // 그것을 하고 바로 턴을 끝내면 적이 얻을 가속 (당겨쓰기 경고)
 class IllegalActionError extends Error
 
@@ -349,7 +351,7 @@ interface IntentView {
 1. **끝낼 수 있으면 끝냄**: 공격 카드를 피해가 큰 순으로 당겨쓰기까지 써서 모든 적을 죽일 수 있는지 복사한 상태에서 시험해 보고, 되면 그 순서의 첫 행동.
 2. **진화**: 당겨쓰지 않고 진화할 수 있으면 진화. 진화 방식 설정에 따라 다릅니다: `asap`(기본, 할 수 있으면 바로), `turn2`(2턴째부터), `never`(안 함).
 3. **막기**: 이번 적 턴에 받을 피해(인텐트 합 - 실드 - 임시 HP)가 0보다 크고, 낼 수 있는 실드 카드가 있으면 실드가 가장 큰 것. 받을 피해가 지금 HP의 30% 이상이면 당겨써서라도 내고, 아니면 당겨쓰지 않는 카드만 냅니다.
-4. **준비 카드**: 비용 0 카드, 뽑기 카드, 힘 카드를 당겨쓰지 않고 낼 수 있으면 냄.
+4. **준비 카드**: 비용 0 카드, 뽑기 카드, 힘 카드, 동료 카드를 당겨쓰지 않고 낼 수 있으면 냄.
 5. **공격**: 당겨쓰지 않고 낼 수 있는 공격 카드 중 (예상 피해 ÷ max(비용, 1))이 가장 큰 것. 대상은 이번에 죽일 수 있는 적, 없으면 공격 인텐트 피해가 가장 큰 적, 없으면 HP가 가장 적은 적.
 6. **마무리** (T0-11에서 추가): 당겨써서라도 낸 공격 카드 하나로 적 하나를 쓰러뜨릴 수 있으면, 그런 카드 중 비용이 가장 적은 것. 쓰러뜨린 적은 가속을 받지 않으므로 사람이라면 할 만한 당겨쓰기입니다.
 7. 턴 끝.
@@ -360,6 +362,8 @@ interface IntentView {
 - 상점: 살 수 있으면 점수가 가장 높은 카드 1장(상점 한 곳에서 1장), 남으면 타격 지우기. 칩은 사지 않습니다.
 - 휴식: HP 60% 미만이면 회복, 아니면 점수가 가장 높은 카드 강화.
 - 이벤트: HP 30% 미만이면 HP를 잃지 않는 선택지, 아니면 첫 선택지.
+- 시작 칩: 첫 번째(카드 리더). 형태 특성: 날카로운 이빨(공격력 +1). (T2-7에서 추가)
+- 카드 비용은 core의 `previewCardCost`로 셉니다 (처음 내는 카드 할인 포함).
 
 카드 점수표는 봇 파일 안에 두고, 게임 데이터에는 넣지 않습니다.
 

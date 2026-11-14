@@ -1,4 +1,4 @@
-// 0단계 카드 (02 9.2). 기본 3, 일반 9, 고급 6, 희귀 3, 필살기 1, 저주 1.
+// 카드 (02 9.2, 12.8). 공용(neutral)과 테이머별 풀, 필살기, 저주.
 import type { CardDef } from '../core/types';
 
 export const cards = [
@@ -8,7 +8,7 @@ export const cards = [
     name: '타격',
     type: 'attack',
     rarity: 'basic',
-    pool: 'takato',
+    pool: 'neutral',
     base: { cost: 1, effects: [{ op: 'damage', amount: 6, target: 'enemy' }] },
     upgraded: { cost: 1, effects: [{ op: 'damage', amount: 9, target: 'enemy' }] },
   },
@@ -17,7 +17,7 @@ export const cards = [
     name: '방어',
     type: 'skill',
     rarity: 'basic',
-    pool: 'takato',
+    pool: 'neutral',
     base: { cost: 1, effects: [{ op: 'shield', amount: 5 }] },
     upgraded: { cost: 1, effects: [{ op: 'shield', amount: 8 }] },
   },
@@ -66,7 +66,7 @@ export const cards = [
     name: '공격 플러그인',
     type: 'skill',
     rarity: 'common',
-    pool: 'takato',
+    pool: 'neutral',
     base: {
       cost: 1,
       effects: [{ op: 'applyStatus', status: 'strength', amount: 2, target: 'self' }],
@@ -81,7 +81,7 @@ export const cards = [
     name: '방어 플러그인',
     type: 'skill',
     rarity: 'common',
-    pool: 'takato',
+    pool: 'neutral',
     base: {
       cost: 1,
       effects: [
@@ -110,7 +110,7 @@ export const cards = [
     name: '고속 플러그인',
     type: 'skill',
     rarity: 'common',
-    pool: 'takato',
+    pool: 'neutral',
     base: { cost: 1, effects: [{ op: 'draw', count: 2 }] },
     upgraded: { cost: 1, effects: [{ op: 'draw', count: 3 }] },
   },
@@ -217,7 +217,7 @@ export const cards = [
     name: '기 모으기',
     type: 'skill',
     rarity: 'uncommon',
-    pool: 'takato',
+    pool: 'neutral',
     base: { cost: 0, effects: [{ op: 'gainMemory', amount: 2 }], keywords: ['exhaust'] },
     upgraded: { cost: 0, effects: [{ op: 'gainMemory', amount: 3 }], keywords: ['exhaust'] },
   },
@@ -226,7 +226,7 @@ export const cards = [
     name: '회복 플로피',
     type: 'skill',
     rarity: 'uncommon',
-    pool: 'takato',
+    pool: 'neutral',
     base: { cost: 1, effects: [{ op: 'heal', amount: 6 }], keywords: ['exhaust'] },
     upgraded: { cost: 1, effects: [{ op: 'heal', amount: 9 }], keywords: ['exhaust'] },
   },
@@ -363,6 +363,74 @@ export const cards = [
     },
   },
 
+  // ── 동료 (공용, 02 12.6) ──
+  {
+    id: 'juri',
+    name: '황주연',
+    type: 'companion',
+    rarity: 'uncommon',
+    pool: 'neutral',
+    base: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'heal', amount: 2 }] },
+    },
+    upgraded: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'heal', amount: 3 }] },
+    },
+  },
+  {
+    id: 'kazu',
+    name: '강재호',
+    type: 'companion',
+    rarity: 'uncommon',
+    pool: 'neutral',
+    base: {
+      cost: 1,
+      effects: [],
+      companion: {
+        trigger: 'onTurnStart',
+        effects: [{ op: 'damage', amount: 3, target: 'randomEnemy' }],
+      },
+    },
+    upgraded: {
+      cost: 1,
+      effects: [],
+      companion: {
+        trigger: 'onTurnStart',
+        effects: [{ op: 'damage', amount: 5, target: 'randomEnemy' }],
+      },
+    },
+  },
+  {
+    id: 'kenta',
+    name: '이성우',
+    type: 'companion',
+    rarity: 'uncommon',
+    pool: 'neutral',
+    base: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'shield', amount: 3 }] },
+    },
+    upgraded: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'shield', amount: 5 }] },
+    },
+  },
+  {
+    id: 'calumon',
+    name: '동글몬',
+    type: 'companion',
+    rarity: 'rare',
+    pool: 'neutral',
+    base: { cost: 1, effects: [], companion: { modifiers: { evolveCostDelta: -1 } } },
+    upgraded: { cost: 0, effects: [], companion: { modifiers: { evolveCostDelta: -1 } } },
+  },
+
   // ── 특수 ──
   {
     // 필살기: 0단계에서는 강화가 없으므로 두 면이 같습니다 (02 4.2)
@@ -379,6 +447,46 @@ export const cards = [
     upgraded: {
       cost: 2,
       effects: [{ op: 'damage', amount: 16, target: 'enemy' }],
+      keywords: ['retain'],
+    },
+  },
+  {
+    id: 'atomic_blaster',
+    name: '아토믹 블래스터',
+    type: 'signature',
+    rarity: 'special',
+    pool: 'none',
+    base: {
+      cost: 2,
+      effects: [{ op: 'damage', amount: 24, target: 'enemy' }],
+      keywords: ['retain'],
+    },
+    upgraded: {
+      cost: 2,
+      effects: [{ op: 'damage', amount: 24, target: 'enemy' }],
+      keywords: ['retain'],
+    },
+  },
+  {
+    id: 'royal_saber',
+    name: '로열 세이버',
+    type: 'signature',
+    rarity: 'special',
+    pool: 'none',
+    base: {
+      cost: 3,
+      effects: [
+        { op: 'damage', amount: 32, target: 'enemy' },
+        { op: 'shield', amount: 10 },
+      ],
+      keywords: ['retain'],
+    },
+    upgraded: {
+      cost: 3,
+      effects: [
+        { op: 'damage', amount: 32, target: 'enemy' },
+        { op: 'shield', amount: 10 },
+      ],
       keywords: ['retain'],
     },
   },

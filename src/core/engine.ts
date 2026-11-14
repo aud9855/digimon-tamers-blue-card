@@ -1,9 +1,9 @@
-import { getEvent, getTamers } from '../data/index';
+import { constants, getEvent, getTamers } from '../data/index';
 import { canEvolve, evolve } from './battle/evolve';
 import { cardNeedsTarget, isCardPlayable, playCard } from './battle/cards';
 import { endTurn } from './battle/turn';
 import { isUpgradable, livingEnemyIndexes } from './helpers';
-import { startNextAct } from './run/act';
+import { chooseFormTrait, startNextAct } from './run/act';
 import { reachableNodeIds } from './run/map';
 import { returnToMap } from './phase';
 import { restHeal, restUpgrade } from './run/rest';
@@ -16,7 +16,7 @@ import {
   shopBuyChip,
   shopRemoveCard,
 } from './run/shop';
-import { chooseNode, startRun } from './run/start';
+import { chooseNode, chooseStartChip, startRun } from './run/start';
 import { eventChoose } from './run/event';
 import type { Action, GameEvent, GameState } from './types';
 
@@ -99,8 +99,19 @@ export function getLegalActions(state: GameState): Action[] {
       }));
     }
 
-    case 'treasure':
+    case 'startChip':
+      return state.pending?.kind === 'startChip'
+        ? state.pending.chipIds.map((_, index) => ({ type: 'chooseStartChip', index }))
+        : [];
+
     case 'actClear':
+      // 형태 특성을 먼저 고르고, 그 뒤 다음 막으로 (02 12.5)
+      if (state.pending?.kind === 'actClear' && state.pending.traitStage) {
+        return constants.FORM_TRAITS.map((_, index) => ({ type: 'chooseFormTrait', index }));
+      }
+      return [{ type: 'proceed' }];
+
+    case 'treasure':
       return [{ type: 'proceed' }];
 
     case 'runWon':
@@ -153,6 +164,10 @@ function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
       return restUpgrade(draft, events, action.cardUid);
     case 'eventChoose':
       return eventChoose(draft, events, action.index);
+    case 'chooseStartChip':
+      return chooseStartChip(draft, events, action.index);
+    case 'chooseFormTrait':
+      return chooseFormTrait(draft, events, action.index);
     case 'proceed':
       if (draft.phase === 'actClear') return startNextAct(draft, events);
       return returnToMap(draft, events);

@@ -1,5 +1,5 @@
 // 규칙 상수 (03 6절). 밸런스 조정은 이 파일과 다른 data 파일만 고칩니다.
-import type { NodeType, Rarity, Stage } from '../core/types';
+import type { FormTraitId, NodeType, Rarity, Stage } from '../core/types';
 
 export type RarityWeights = Partial<Record<Rarity, number>>;
 export type EncounterTierForMap = 'easy' | 'normal';
@@ -28,8 +28,14 @@ export const constants = {
   VULNERABLE_MULT: 1.5,
   EVOLVE_BASE_COST: { champion: 3, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
 
+  // ── 동료·형태 특성 (02 12.5, 12.6) ──
+  COMPANION_SLOTS: 2,
+  FORM_TRAITS: ['tough', 'sharp'] as FormTraitId[],
+  FORM_TRAIT_TEMP_HP: 6,
+  FORM_TRAIT_POWER: 1,
+
   // ── 막 (02 2절, 7.6) ──
-  ACT_COUNT: 1,
+  ACT_COUNT: 3,
   ACT_CLEAR_HEAL_PCT: 0.5,
   ACT_CLEAR_MAX_MEMORY_GAIN: 1,
 
@@ -38,6 +44,8 @@ export const constants = {
   REWARD_WEIGHTS_NORMAL: { common: 60, uncommon: 33, rare: 7 } as RarityWeights,
   REWARD_WEIGHTS_ELITE: { common: 45, uncommon: 45, rare: 10 } as RarityWeights,
   REWARD_WEIGHTS_BOSS: { rare: 100 } as RarityWeights,
+  /** 전투 보상 카드가 강화되어 나올 확률 (퍼센트, 막별, 02 12.2) */
+  UPGRADE_CHANCE: { 1: 0, 2: 15, 3: 30 } as Record<number, number>,
   BITS_NORMAL: { min: 12, max: 18 },
   BITS_ELITE: { min: 28, max: 35 },
   BITS_BOSS: { min: 60, max: 60 },
