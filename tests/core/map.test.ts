@@ -4,7 +4,7 @@ import { generateMap } from '../../src/core/run/map';
 import { createInitialState } from '../../src/core/state';
 import type { ActMap, GameState, MapNode } from '../../src/core/types';
 import { startedRun } from '../helpers/battle';
-import { constants, getCard, getEncounter, getEvents } from '../../src/data/index';
+import { constants, getCard, getEncounter, getEvents, getTamer } from '../../src/data/index';
 
 function mapFor(seed: number): ActMap {
   return generateMap(createInitialState(seed), 1);
@@ -165,9 +165,10 @@ describe('런 시작과 이동 (02 8절, 6절 7번)', () => {
     expect(skipped.run?.deck).toHaveLength(10);
   });
 
-  it('시작 상태: HP 75, 비트 0, 최고 단계 성숙기, 메모리 3, 시작 덱 10장', () => {
+  it('시작 상태: 테이머 HP, 비트 0, 최고 단계 성숙기, 메모리 3, 시작 덱 10장', () => {
     const run = started().run;
-    expect(run).toMatchObject({ hp: 75, maxHp: 75, bits: 0, maxStage: 'champion', maxMemory: 3 });
+    const hp = getTamer('takato').maxHp;
+    expect(run).toMatchObject({ hp, maxHp: hp, bits: 0, maxStage: 'champion', maxMemory: 3 });
     expect(run?.deck).toHaveLength(10);
   });
 

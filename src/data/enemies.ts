@@ -183,8 +183,8 @@ export const enemies = [
     maxHp: 50,
     moves: [
       { id: 'harden', name: '굳히기', effects: [{ op: 'shield', amount: 8 }] },
-      { id: 'rock_fist', name: '바위 주먹', effects: [{ op: 'attack', amount: 12 }] },
-      { id: 'pebbles', name: '돌 던지기', effects: [{ op: 'attack', amount: 6, hits: 2 }] },
+      { id: 'rock_fist', name: '바위 주먹', effects: [{ op: 'attack', amount: 9 }] },
+      { id: 'pebbles', name: '돌 던지기', effects: [{ op: 'attack', amount: 5, hits: 2 }] },
     ],
     phases: [{ cycle: ['harden', 'rock_fist', 'pebbles'] }],
   },
@@ -200,7 +200,7 @@ export const enemies = [
         name: '울림 소리',
         effects: [{ op: 'applyStatus', status: 'vulnerable', amount: 2, target: 'player' }],
       },
-      { id: 'horn_blow', name: '나팔 불기', effects: [{ op: 'attack', amount: 10 }] },
+      { id: 'horn_blow', name: '나팔 불기', effects: [{ op: 'attack', amount: 8 }] },
     ],
     phases: [{ cycle: ['croak', 'horn_blow', 'horn_blow'] }],
   },
@@ -211,8 +211,8 @@ export const enemies = [
     attribute: 'virus',
     maxHp: 58,
     moves: [
-      { id: 'scissor', name: '집게', effects: [{ op: 'attack', amount: 7, hits: 2 }] },
-      { id: 'dive', name: '내리꽂기', effects: [{ op: 'attack', amount: 16 }] },
+      { id: 'scissor', name: '집게', effects: [{ op: 'attack', amount: 5, hits: 2 }] },
+      { id: 'dive', name: '내리꽂기', effects: [{ op: 'attack', amount: 12 }] },
       {
         id: 'rage',
         name: '날개 떨기',
@@ -233,15 +233,15 @@ export const enemies = [
         name: '놀리기',
         effects: [
           { op: 'applyStatus', status: 'weak', amount: 1, target: 'player' },
-          { op: 'attack', amount: 6 },
+          { op: 'attack', amount: 5 },
         ],
       },
-      { id: 'pin', name: '바늘 찌르기', effects: [{ op: 'attack', amount: 6, hits: 2 }] },
+      { id: 'pin', name: '바늘 찌르기', effects: [{ op: 'attack', amount: 5, hits: 2 }] },
       {
         id: 'virus_bite',
         name: '바이러스 물기',
         effects: [
-          { op: 'attack', amount: 4 },
+          { op: 'attack', amount: 3 },
           { op: 'addCard', cardId: 'bug_data', to: 'discard', count: 1 },
         ],
       },
@@ -255,9 +255,9 @@ export const enemies = [
     attribute: 'vaccine',
     maxHp: 62,
     moves: [
-      { id: 'charge', name: '돌진', effects: [{ op: 'attack', amount: 14 }] },
+      { id: 'charge', name: '돌진', effects: [{ op: 'attack', amount: 11 }] },
       { id: 'wing_guard', name: '날개 막기', effects: [{ op: 'shield', amount: 10 }] },
-      { id: 'hoof', name: '발굽 차기', effects: [{ op: 'attack', amount: 5, hits: 3 }] },
+      { id: 'hoof', name: '발굽 차기', effects: [{ op: 'attack', amount: 4, hits: 3 }] },
     ],
     phases: [{ cycle: ['charge', 'wing_guard', 'hoof'] }],
   },
@@ -272,11 +272,11 @@ export const enemies = [
         id: 'holy_strike',
         name: '빛의 일격',
         effects: [
-          { op: 'attack', amount: 8 },
+          { op: 'attack', amount: 6 },
           { op: 'shield', amount: 6 },
         ],
       },
-      { id: 'feather', name: '깃털 날리기', effects: [{ op: 'attack', amount: 4, hits: 3 }] },
+      { id: 'feather', name: '깃털 날리기', effects: [{ op: 'attack', amount: 3, hits: 3 }] },
       {
         id: 'pray',
         name: '기도',
@@ -294,7 +294,7 @@ export const enemies = [
     attribute: 'data',
     maxHp: 140,
     moves: [
-      { id: 'coil', name: '똬리 휘감기', effects: [{ op: 'attack', amount: 8, hits: 3 }] },
+      { id: 'coil', name: '똬리 휘감기', effects: [{ op: 'attack', amount: 6, hits: 3 }] },
       {
         id: 'shed',
         name: '허물 벗기',
@@ -303,7 +303,7 @@ export const enemies = [
           { op: 'applyStatus', status: 'strength', amount: 2, target: 'self' },
         ],
       },
-      { id: 'venom_fang', name: '독니', effects: [{ op: 'attack', amount: 20 }] },
+      { id: 'venom_fang', name: '독니', effects: [{ op: 'attack', amount: 15 }] },
     ],
     phases: [{ cycle: ['coil', 'shed', 'venom_fang'] }],
   },
@@ -314,7 +314,7 @@ export const enemies = [
     attribute: 'virus',
     maxHp: 150,
     moves: [
-      { id: 'horn_charge', name: '뿔 들이받기', effects: [{ op: 'attack', amount: 22 }] },
+      { id: 'horn_charge', name: '뿔 들이받기', effects: [{ op: 'attack', amount: 17 }] },
       {
         id: 'war_stance',
         name: '위압',
@@ -323,7 +323,7 @@ export const enemies = [
           { op: 'applyStatus', status: 'vulnerable', amount: 2, target: 'player' },
         ],
       },
-      { id: 'twin_blade', name: '쌍칼', effects: [{ op: 'attack', amount: 9, hits: 2 }] },
+      { id: 'twin_blade', name: '쌍칼', effects: [{ op: 'attack', amount: 7, hits: 2 }] },
     ],
     phases: [{ cycle: ['horn_charge', 'war_stance', 'twin_blade'] }],
   },
@@ -334,10 +334,10 @@ export const enemies = [
     name: '주작몬',
     tier: 'boss',
     attribute: 'none',
-    maxHp: 260,
+    maxHp: 400,
     moves: [
-      { id: 'flame_wing', name: '불꽃 날개', effects: [{ op: 'attack', amount: 15 }] },
-      { id: 'ember_rain', name: '불씨 비', effects: [{ op: 'attack', amount: 5, hits: 4 }] },
+      { id: 'flame_wing', name: '불꽃 날개', effects: [{ op: 'attack', amount: 11 }] },
+      { id: 'ember_rain', name: '불씨 비', effects: [{ op: 'attack', amount: 4, hits: 4 }] },
       {
         id: 'rise',
         name: '날아오르기',
@@ -351,16 +351,16 @@ export const enemies = [
         name: '주작의 불꽃',
         effects: [
           { op: 'applyStatus', status: 'vulnerable', amount: 2, target: 'player' },
-          { op: 'attack', amount: 10 },
+          { op: 'attack', amount: 8 },
         ],
       },
-      { id: 'inferno', name: '업화', effects: [{ op: 'attack', amount: 25 }] },
-      { id: 'phoenix_dive', name: '불새 강하', effects: [{ op: 'attack', amount: 8, hits: 3 }] },
+      { id: 'inferno', name: '업화', effects: [{ op: 'attack', amount: 19 }] },
+      { id: 'phoenix_dive', name: '불새 강하', effects: [{ op: 'attack', amount: 6, hits: 3 }] },
       {
         id: 'ash_storm',
         name: '잿빛 폭풍',
         effects: [
-          { op: 'attack', amount: 10 },
+          { op: 'attack', amount: 8 },
           { op: 'addCard', cardId: 'bug_data', to: 'draw', count: 2 },
         ],
       },
@@ -384,8 +384,8 @@ export const enemies = [
         name: '탐색',
         effects: [{ op: 'applyStatus', status: 'vulnerable', amount: 2, target: 'player' }],
       },
-      { id: 'twin_probe', name: '탐침', effects: [{ op: 'attack', amount: 9, hits: 2 }] },
-      { id: 'delete_beam', name: '삭제 광선', effects: [{ op: 'attack', amount: 18 }] },
+      { id: 'twin_probe', name: '탐침', effects: [{ op: 'attack', amount: 7, hits: 2 }] },
+      { id: 'delete_beam', name: '삭제 광선', effects: [{ op: 'attack', amount: 14 }] },
     ],
     phases: [{ cycle: ['scan', 'twin_probe', 'delete_beam'] }],
   },
@@ -397,12 +397,12 @@ export const enemies = [
     maxHp: 70,
     moves: [
       { id: 'spread', name: '번지기', effects: [{ op: 'shield', amount: 12 }] },
-      { id: 'tendrils', name: '촉수', effects: [{ op: 'attack', amount: 6, hits: 3 }] },
+      { id: 'tendrils', name: '촉수', effects: [{ op: 'attack', amount: 5, hits: 3 }] },
       {
         id: 'corrupt',
         name: '오염',
         effects: [
-          { op: 'attack', amount: 8 },
+          { op: 'attack', amount: 6 },
           { op: 'addCard', cardId: 'bug_data', to: 'draw', count: 1 },
         ],
       },
@@ -416,13 +416,13 @@ export const enemies = [
     attribute: 'virus',
     maxHp: 55,
     moves: [
-      { id: 'barrage', name: '난사', effects: [{ op: 'attack', amount: 4, hits: 4 }] },
+      { id: 'barrage', name: '난사', effects: [{ op: 'attack', amount: 3, hits: 4 }] },
       {
         id: 'jam',
         name: '교란',
         effects: [{ op: 'applyStatus', status: 'weak', amount: 2, target: 'player' }],
       },
-      { id: 'overload', name: '과부하', effects: [{ op: 'attack', amount: 20 }] },
+      { id: 'overload', name: '과부하', effects: [{ op: 'attack', amount: 16 }] },
     ],
     phases: [{ cycle: ['barrage', 'jam', 'overload'] }],
   },
@@ -435,9 +435,9 @@ export const enemies = [
     attribute: 'data',
     maxHp: 180,
     moves: [
-      { id: 'horn_strike', name: '뿔 찌르기', effects: [{ op: 'attack', amount: 28 }] },
+      { id: 'horn_strike', name: '뿔 찌르기', effects: [{ op: 'attack', amount: 22 }] },
       { id: 'carapace', name: '껍질 두르기', effects: [{ op: 'shield', amount: 20 }] },
-      { id: 'triple_horn', name: '세 번 찌르기', effects: [{ op: 'attack', amount: 10, hits: 3 }] },
+      { id: 'triple_horn', name: '세 번 찌르기', effects: [{ op: 'attack', amount: 8, hits: 3 }] },
     ],
     phases: [{ cycle: ['horn_strike', 'carapace', 'triple_horn'] }],
   },
@@ -456,13 +456,13 @@ export const enemies = [
           { op: 'shield', amount: 10 },
         ],
       },
-      { id: 'quad_cut', name: '네 번 베기', effects: [{ op: 'attack', amount: 7, hits: 4 }] },
+      { id: 'quad_cut', name: '네 번 베기', effects: [{ op: 'attack', amount: 6, hits: 4 }] },
       {
         id: 'expose',
         name: '약점 노출',
         effects: [
           { op: 'applyStatus', status: 'vulnerable', amount: 2, target: 'player' },
-          { op: 'attack', amount: 12 },
+          { op: 'attack', amount: 10 },
         ],
       },
     ],
@@ -475,10 +475,10 @@ export const enemies = [
     name: '디 리퍼',
     tier: 'boss',
     attribute: 'none',
-    maxHp: 380,
+    maxHp: 600,
     moves: [
-      { id: 'erase', name: '지우기', effects: [{ op: 'attack', amount: 18 }] },
-      { id: 'swarm', name: '떼 공격', effects: [{ op: 'attack', amount: 6, hits: 4 }] },
+      { id: 'erase', name: '지우기', effects: [{ op: 'attack', amount: 14 }] },
+      { id: 'swarm', name: '떼 공격', effects: [{ op: 'attack', amount: 5, hits: 4 }] },
       {
         id: 'enclose',
         name: '둘러싸기',
@@ -492,8 +492,8 @@ export const enemies = [
         name: '확산',
         effects: [{ op: 'addCard', cardId: 'bug_data', to: 'discard', count: 3 }],
       },
-      { id: 'devour', name: '삼키기', effects: [{ op: 'attack', amount: 28 }] },
-      { id: 'lash', name: '휘감기', effects: [{ op: 'attack', amount: 9, hits: 3 }] },
+      { id: 'devour', name: '삼키기', effects: [{ op: 'attack', amount: 22 }] },
+      { id: 'lash', name: '휘감기', effects: [{ op: 'attack', amount: 7, hits: 3 }] },
       {
         id: 'suppress',
         name: '억누르기',
@@ -507,8 +507,8 @@ export const enemies = [
         name: '최종 처리',
         effects: [{ op: 'applyStatus', status: 'strength', amount: 5, target: 'self' }],
       },
-      { id: 'collapse', name: '붕괴', effects: [{ op: 'attack', amount: 12, hits: 3 }] },
-      { id: 'annihilate', name: '소멸', effects: [{ op: 'attack', amount: 35 }] },
+      { id: 'collapse', name: '붕괴', effects: [{ op: 'attack', amount: 10, hits: 3 }] },
+      { id: 'annihilate', name: '소멸', effects: [{ op: 'attack', amount: 28 }] },
     ],
     phases: [
       { untilHpPct: 0.6, cycle: ['erase', 'swarm', 'enclose'] },

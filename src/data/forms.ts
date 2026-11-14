@@ -57,7 +57,7 @@ export const forms = [
     stage: 'champion',
     attribute: 'data',
     tempHp: 4,
-    power: 1,
+    power: 0,
     signatureCardId: 'fox_tail_inferno',
   },
   {
@@ -67,7 +67,7 @@ export const forms = [
     stage: 'ultimate',
     attribute: 'data',
     tempHp: 10,
-    power: 2,
+    power: 1,
     signatureCardId: 'talisman_of_light',
   },
   {
@@ -96,7 +96,7 @@ export const forms = [
     stage: 'champion',
     attribute: 'vaccine',
     tempHp: 6,
-    power: 1,
+    power: 0,
     signatureCardId: 'gargo_laser',
   },
   {
@@ -106,7 +106,7 @@ export const forms = [
     stage: 'ultimate',
     attribute: 'vaccine',
     tempHp: 13,
-    power: 2,
+    power: 1,
     signatureCardId: 'rapid_fire',
   },
   {
@@ -116,7 +116,7 @@ export const forms = [
     stage: 'mega',
     attribute: 'vaccine',
     tempHp: 20,
-    power: 3,
+    power: 2,
     signatureCardId: 'mega_barrage',
   },
 ] satisfies FormDef[];

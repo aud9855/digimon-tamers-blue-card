@@ -10,6 +10,10 @@ export interface Summary {
   normalHpLoss: number | null;
   evolvedBattleRatio: number | null;
   overdrawTurnRatio: number | null;
+  /** 이긴 판의 평균 전투 수 */
+  battlesPerWonRun: number | null;
+  /** 막별 보스 전투 평균 턴 수 */
+  bossTurnsByAct: Record<number, number | null>;
 }
 
 function mean(values: number[]): number | null {
@@ -20,22 +24,39 @@ function ratio(part: number, whole: number): number | null {
   return whole === 0 ? null : part / whole;
 }
 
-export function summarize(records: RunRecord[]): Summary {
-  const battles = records.flatMap((r) => r.battles);
+/**
+ * 지표 요약. act를 주면 그 막의 전투만 셉니다. 이때 승률은 "그 막 보스를 이긴 판의 비율"입니다
+ * (0단계 지표 M0는 1막만 잽니다, 02 10절).
+ */
+export function summarize(records: RunRecord[], act?: number): Summary {
+  const inAct = (b: BattleRecord) => act === undefined || b.act === act;
+  const battles = records.flatMap((r) => r.battles).filter(inAct);
   const won = battles.filter((b) => b.won);
   const turnsOf = (kind: BattleRecord['kind']) =>
     mean(won.filter((b) => b.kind === kind).map((b) => b.turns));
+  const clearedAct = (r: RunRecord) =>
+    act === undefined ? r.won : r.battles.some((b) => b.act === act && b.kind === 'boss' && b.won);
+  const turns = (r: RunRecord) =>
+    act === undefined ? [r.turnsEnded, r.overdrawTurns] : (r.turnsByAct[act] ?? [0, 0]);
+  const bossTurnsByAct: Record<number, number | null> = {};
+  for (const a of new Set(battles.map((b) => b.act))) {
+    bossTurnsByAct[a] = mean(
+      won.filter((b) => b.act === a && b.kind === 'boss').map((b) => b.turns),
+    );
+  }
   return {
     runs: records.length,
-    winRate: ratio(records.filter((r) => r.won).length, records.length) ?? 0,
+    winRate: ratio(records.filter(clearedAct).length, records.length) ?? 0,
     timedOut: records.filter((r) => r.timedOut).length,
     avgTurns: { normal: turnsOf('normal'), elite: turnsOf('elite'), boss: turnsOf('boss') },
     normalHpLoss: mean(won.filter((b) => b.kind === 'normal').map((b) => b.hpBefore - b.hpAfter)),
     evolvedBattleRatio: ratio(battles.filter((b) => b.evolveCount > 0).length, battles.length),
     overdrawTurnRatio: ratio(
-      records.reduce((s, r) => s + r.overdrawTurns, 0),
-      records.reduce((s, r) => s + r.turnsEnded, 0),
+      records.reduce((s, r) => s + (turns(r)[1] ?? 0), 0),
+      records.reduce((s, r) => s + (turns(r)[0] ?? 0), 0),
     ),
+    battlesPerWonRun: mean(records.filter((r) => r.won).map((r) => r.battles.length)),
+    bossTurnsByAct,
   };
 }
 
@@ -105,6 +126,71 @@ export function m0Metrics(m: M0Inputs): Metric[] {
       min: -10,
       max: 10,
       unit: '%p',
+    },
+  ];
+}
+
+// ── 02 12.12 지표 (2단계, 테이머마다) ──
+
+export function m2Metrics(m: M0Inputs): Metric[] {
+  const pct = (v: number | null) => (v === null ? null : v * 100);
+  const lateBoss = [m.greedy.bossTurnsByAct[2], m.greedy.bossTurnsByAct[3]].filter(
+    (v): v is number => v !== null && v !== undefined,
+  );
+  return [
+    { name: 'greedy 봇 승률 (3막)', value: pct(m.greedy.winRate), min: 40, max: 60, unit: '%' },
+    { name: 'random 봇 승률', value: pct(m.random.winRate), min: null, max: 5, unit: '%' },
+    { name: '일반 전투 평균 턴 수', value: m.greedy.avgTurns.normal, min: 3, max: 5, unit: '' },
+    { name: '강적 전투 평균 턴 수', value: m.greedy.avgTurns.elite, min: 4.5, max: 7, unit: '' },
+    {
+      name: '1막 보스 평균 턴 수',
+      value: m.greedy.bossTurnsByAct[1] ?? null,
+      min: 6,
+      max: 10,
+      unit: '',
+    },
+    {
+      name: '2·3막 보스 평균 턴 수',
+      value: lateBoss.length > 0 ? lateBoss.reduce((a, b) => a + b, 0) / lateBoss.length : null,
+      min: 7,
+      max: 12,
+      unit: '',
+    },
+    { name: '일반 전투 HP 손실 평균', value: m.greedy.normalHpLoss, min: 5, max: 12, unit: '' },
+    {
+      name: '진화한 전투의 비율',
+      value: pct(m.greedy.evolvedBattleRatio),
+      min: 80,
+      max: null,
+      unit: '%',
+    },
+    {
+      name: '당겨쓴 턴의 비율',
+      value: pct(m.greedy.overdrawTurnRatio),
+      min: 3,
+      max: 40,
+      unit: '%',
+    },
+    {
+      name: '진화의 보람 (asap - never)',
+      value: (m.greedy.winRate - m.greedyNever.winRate) * 100,
+      min: 10,
+      max: 30,
+      unit: '%p',
+    },
+    {
+      name: '진화 시점의 선택 (asap - turn2)',
+      value: (m.greedy.winRate - m.greedyTurn2.winRate) * 100,
+      min: -10,
+      max: 10,
+      unit: '%p',
+    },
+    {
+      name: '이긴 판의 평균 전투 수',
+      value: m.greedy.battlesPerWonRun,
+      min: 12,
+      max: 16,
+      unit: '',
     },
   ];
 }

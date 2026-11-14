@@ -3,6 +3,7 @@
 //   npm run sim -- --policy greedy --evolve turn2 --runs 1000
 //   npm run sim -- --report m0 [--runs 1000] [--json]
 import type { TamerId } from '../core/index';
+import { getTamer, getTamers } from '../data/index';
 import type { EvolveMode } from './policies/types';
 import {
   encounterTable,
@@ -11,6 +12,8 @@ import {
   formatPicks,
   formatSummary,
   m0Metrics,
+  m2Metrics,
+  type Metric,
   metricPasses,
   pickCounts,
   summarize,
@@ -23,7 +26,7 @@ interface Args {
   runs: number;
   seedStart: number;
   evolve: EvolveMode;
-  report: 'm0' | null;
+  report: 'm0' | 'm2' | null;
   json: boolean;
 }
 
@@ -69,7 +72,7 @@ function parseArgs(argv: string[]): Args {
       }
       case '--report': {
         const v = take();
-        if (v !== 'm0') throw new Error(`없는 보고서: ${v}`);
+        if (v !== 'm0' && v !== 'm2') throw new Error(`없는 보고서: ${v}`);
         args.report = v;
         break;
       }
@@ -109,11 +112,12 @@ function reportM0(args: Args): void {
   const run = (policy: PolicyName, evolve: EvolveMode) =>
     runMany({ ...base, policy, evolve }, args.runs, args.seedStart);
   const greedyRecords = run('greedy', 'asap');
+  // M0는 0단계 기준이라 1막만 잽니다 (02 10절)
   const inputs = {
-    greedy: summarize(greedyRecords),
-    greedyTurn2: summarize(run('greedy', 'turn2')),
-    greedyNever: summarize(run('greedy', 'never')),
-    random: summarize(run('random', 'asap')),
+    greedy: summarize(greedyRecords, 1),
+    greedyTurn2: summarize(run('greedy', 'turn2'), 1),
+    greedyNever: summarize(run('greedy', 'never'), 1),
+    random: summarize(run('random', 'asap'), 1),
   };
   const metrics = m0Metrics(inputs);
   const encounters = encounterTable(greedyRecords);
@@ -138,8 +142,52 @@ function reportM0(args: Args): void {
   console.log(formatPicks(picks));
 }
 
+/** 02 12.12: 테이머 3명 × 3막, 테이머마다 지표와 테이머끼리 승률 차이 */
+function reportM2(args: Args): void {
+  const tamers = getTamers().map((t) => t.id);
+  const results = tamers.map((tamerId) => {
+    const run = (policy: PolicyName, evolve: EvolveMode) =>
+      runMany({ tamerId, policy, evolve }, args.runs, args.seedStart);
+    const inputs = {
+      greedy: summarize(run('greedy', 'asap')),
+      greedyTurn2: summarize(run('greedy', 'turn2')),
+      greedyNever: summarize(run('greedy', 'never')),
+      random: summarize(run('random', 'asap')),
+    };
+    return { tamerId, inputs, metrics: m2Metrics(inputs) };
+  });
+  const winRates = results.map((r) => r.inputs.greedy.winRate * 100);
+  const spread = Math.max(...winRates) - Math.min(...winRates);
+  const spreadMetric: Metric = {
+    name: '테이머끼리 greedy 승률 차이',
+    value: spread,
+    min: null,
+    max: 10,
+    unit: '%p',
+  };
+  if (args.json) {
+    console.log(JSON.stringify({ results, spread: spreadMetric }, null, 2));
+    return;
+  }
+  console.log(
+    `# M2 측정 (테이머 ${tamers.length}명 × 3막, 시드 ${args.seedStart}~${args.seedStart + args.runs - 1})\n`,
+  );
+  let passed = metricPasses(spreadMetric) ? 1 : 0;
+  let total = 1;
+  for (const r of results) {
+    console.log(`## ${getTamer(r.tamerId).name} (${r.tamerId})\n`);
+    console.log(formatMetrics(r.metrics));
+    console.log('');
+    passed += r.metrics.filter(metricPasses).length;
+    total += r.metrics.length;
+  }
+  console.log(formatMetrics([spreadMetric]));
+  console.log(`\n통과 ${passed} / ${total}`);
+}
+
 const args = parseArgs(process.argv.slice(2));
 const started = Date.now();
 if (args.report === 'm0') reportM0(args);
+else if (args.report === 'm2') reportM2(args);
 else single(args);
 if (!args.json) console.log(`\n(걸린 시간 ${((Date.now() - started) / 1000).toFixed(1)}초)`);

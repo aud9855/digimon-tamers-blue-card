@@ -238,10 +238,11 @@ describe('7.3 휴식', () => {
 
   it('restHeal: floor(maxHp × 0.3) 회복 (최대 HP까지), 그 뒤 map', () => {
     const healed = applyAction(restState(30), { type: 'restHeal' }).state;
-    expect(healed.run?.hp).toBe(30 + Math.floor(75 * 0.3));
+    const maxHp = healed.run?.maxHp ?? 0;
+    expect(healed.run?.hp).toBe(30 + Math.floor(maxHp * 0.3));
     expect(healed.phase).toBe('map');
-    const capped = applyAction(restState(70), { type: 'restHeal' }).state;
-    expect(capped.run?.hp).toBe(75);
+    const capped = applyAction(restState(maxHp - 5), { type: 'restHeal' }).state;
+    expect(capped.run?.hp).toBe(maxHp);
   });
 
   it('restUpgrade: 강화할 수 있는 카드 1장을 강화', () => {
@@ -327,7 +328,7 @@ describe('7.5 이벤트와 런 효과', () => {
     enterEvent(state, [], 'card_pile');
     const next = applyAction(state, { type: 'eventChoose', index: 0 }).state;
     expect(next.phase).toBe('reward');
-    expect(next.run?.hp).toBe(70);
+    expect(next.run?.hp).toBe((next.run?.maxHp ?? 0) - 5);
     expect(rewardOf(next).offers[0]?.cards).toHaveLength(3);
     expect(applyAction(next, { type: 'skipCards' }).state.phase).toBe('map');
   });
@@ -357,7 +358,7 @@ describe('7.5 이벤트와 런 효과', () => {
     enterEvent(state, [], 'card_pile');
     const next = applyAction(state, { type: 'eventChoose', index: 1 }).state;
     expect(next.phase).toBe('map');
-    expect(next.run?.hp).toBe(75);
+    expect(next.run?.hp).toBe(next.run?.maxHp);
   });
 });
 

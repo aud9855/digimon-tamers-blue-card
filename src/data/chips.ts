@@ -65,7 +65,7 @@ export const chips = [
     name: '침착함',
     hidden: true,
     trigger: 'onTurnStart',
-    effects: [{ op: 'shield', amount: 3 }],
+    effects: [{ op: 'shield', amount: 2 }],
   },
   {
     id: 'bit_pouch',

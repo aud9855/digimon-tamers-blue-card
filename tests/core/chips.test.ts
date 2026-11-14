@@ -6,7 +6,7 @@ import { previewEvolveCost } from '../../src/core/describe';
 import { createInitialState } from '../../src/core/state';
 import { gainChip } from '../../src/core/chips';
 import type { GameEvent, GameState } from '../../src/core/types';
-import { constants, getChips, overrideRegistry } from '../../src/data/index';
+import { constants, getChips, getTamer, overrideRegistry } from '../../src/data/index';
 import { act, battleOf, eventsOf, makeBattle, play } from '../helpers/battle';
 import { baseFixtures, testChips } from '../helpers/fixtures';
 
@@ -148,13 +148,13 @@ describe('0단계 칩 6개가 실제 전투에서 동작', () => {
 });
 
 describe('곽소룡 특성 침착함 (02 12.3)', () => {
-  it('매 턴 시작에 실드 +3 (실드를 지운 뒤)', () => {
+  it('매 턴 시작에 실드 +2 (실드를 지운 뒤)', () => {
     const state = makeBattle({ deck: DECK, chips: ['trait_calm'] });
     state.battle = null;
     startBattle(state, [], 'test_dummy_one', 'normal');
-    expect(battleOf(state).shield).toBe(3);
+    expect(battleOf(state).shield).toBe(2);
     const next = act(state, { type: 'endTurn' }).state;
-    expect(battleOf(next).shield).toBe(3);
+    expect(battleOf(next).shield).toBe(2);
   });
 });
 
@@ -248,7 +248,7 @@ describe('시작 디아크 (02 12.7)', () => {
     );
     const s1 = applyAction(s0, { type: 'chooseStartChip', index: 2 }).state;
     expect(s1.run?.chips).toContain('bit_scanner');
-    expect(s1.run?.maxHp).toBe(75 + 5);
+    expect(s1.run?.maxHp).toBe(getTamer('takato').maxHp + 5);
     expect(s1.phase).toBe('reward');
   });
 

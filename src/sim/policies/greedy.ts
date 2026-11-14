@@ -12,7 +12,7 @@ import {
   type Effect,
   type GameState,
 } from '../../core/index';
-import { getCard, getEvent } from '../../data/index';
+import { constants, getCard, getEvent } from '../../data/index';
 import type { Policy, PolicyContext } from './types';
 
 // ── 카드 점수표 (봇 전용, 게임 데이터에 넣지 않음) ──
@@ -36,8 +36,43 @@ const CARD_SCORES: Record<string, number> = {
   sweep: 6,
   counter_stance: 5,
   blue_card: 8,
-  digital_hazard: 8,
+  digital_hazard: 4,
   evo_resonance: 7,
+  // 은세나
+  diamond_storm: 3,
+  card_slash: 5,
+  quick_draw: 5,
+  roundhouse: 5,
+  fox_leaf: 5,
+  feint: 4,
+  triple_thrust: 4,
+  combo_charge: 6,
+  fox_fire: 6,
+  focus: 6,
+  mirror_guard: 5,
+  card_storm: 7,
+  perfect_hand: 7,
+  queens_pride: 7,
+  // 곽소룡
+  bunny_blast: 3,
+  terrier_tornado: 5,
+  calm_guard: 5,
+  analyze: 5,
+  burst_fire: 4,
+  shield_rush: 5,
+  kung_fu: 5,
+  gatling: 6,
+  fortify: 5,
+  counter_fire: 6,
+  data_scan: 5,
+  miracle_missile: 7,
+  unshaken: 7,
+  partner_bond: 7,
+  // 동료
+  juri: 6,
+  kazu: 6,
+  kenta: 6,
+  calumon: 7,
   bug_data: -10,
 };
 const UPGRADE_BONUS = 1;
@@ -259,12 +294,13 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
     if (best) return chooseTarget(state, best.card, best.options);
   }
 
-  // 4. 준비 카드: 비용 0, 뽑기, 힘 (당겨쓰지 않고)
+  // 4. 준비 카드: 비용 0, 뽑기, 힘, 동료 (당겨쓰지 않고)
   for (const [uid, options] of byCard) {
     const card = cardOf(state, uid);
     if (!card || !affordable(card)) continue;
     const effects = effectsOf(state, card);
     const isPrep =
+      getCard(card.defId).type === 'companion' ||
       costOf(state, card) === 0 ||
       effects.some((e) => e.op === 'draw' || (e.op === 'applyStatus' && e.status === 'strength'));
     if (isPrep) return chooseTarget(state, card, options);
@@ -425,6 +461,15 @@ export const greedyPolicy: Policy = (state, legal, ctx) => {
       return restAction(state, legal);
     case 'event':
       return eventAction(state, legal);
+    case 'startChip':
+      // 시작 칩: 카드 리더(첫 턴 2장 뽑기)를 고름 (03 7.1)
+      return { type: 'chooseStartChip', index: 0 };
+    case 'actClear': {
+      // 형태 특성: 날카로운 이빨(공격력 +1)을 먼저 고름 (03 7.1)
+      const sharp = constants.FORM_TRAITS.indexOf('sharp');
+      const choose = legal.find((a) => a.type === 'chooseFormTrait' && a.index === sharp);
+      return choose ?? legal[0] ?? { type: 'proceed' };
+    }
     default: {
       const first = legal[0];
       if (!first) throw new Error(`'${state.phase}'에서 할 수 있는 행동이 없습니다`);
