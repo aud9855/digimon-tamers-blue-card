@@ -2,6 +2,7 @@
 import { useState, type ReactNode } from 'react';
 import type { PlaybackSpeed } from '../playback';
 import { useGame, type Panel } from '../store';
+import { CodexContent } from './Codex';
 import { GuideContent } from './Guide';
 import { InfoContent } from './Info';
 
@@ -147,7 +148,12 @@ function SettingsContent({ open }: { open: (panel: Panel) => void }) {
   );
 }
 
-const TITLES: Record<Panel, string> = { settings: '설정', guide: '하는 법', info: '정보' };
+const TITLES: Record<Panel, string> = {
+  settings: '설정',
+  guide: '하는 법',
+  info: '정보',
+  codex: '도감',
+};
 
 export function PanelHost() {
   const panel = useGame((s) => s.panel);
@@ -159,6 +165,7 @@ export function PanelHost() {
       {panel === 'settings' && <SettingsContent open={setPanel} />}
       {panel === 'guide' && <GuideContent />}
       {panel === 'info' && <InfoContent />}
+      {panel === 'codex' && <CodexContent />}
     </Modal>
   );
 }

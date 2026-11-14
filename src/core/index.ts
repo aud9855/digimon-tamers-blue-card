@@ -16,6 +16,8 @@ export {
   describeChip,
   describeEventChoice,
   describeIntent,
+  describeHazard,
+  describeHazardRule,
   describeTamer,
   previewCardCost,
   previewEvolveCost,

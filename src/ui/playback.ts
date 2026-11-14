@@ -21,6 +21,7 @@ const DURATION: Partial<Record<GameEvent['type'], number>> = {
   chipTriggered: 300,
   companionTriggered: 300,
   accelChanged: 200,
+  handGroupsDrawn: 600,
 };
 
 const SPEED_FACTOR: Record<PlaybackSpeed, number> = { normal: 1, fast: 0.4, off: 0 };

@@ -162,17 +162,38 @@ function Effect({ item, view, ms }: { item: PlaybackItem; view: GameState; ms: n
       const line = getTamer(run.tamerId).line;
       const from = getForm(line, e.from);
       const to = getFormById(e.formId);
+      // 폭주(02 13.2)와 매트릭스 에볼루션(13.1)은 띠 색과 글을 다르게
+      const kind = to.rampage ? 'rampage' : e.to === 'mega' ? 'matrix' : 'normal';
+      const band =
+        kind === 'rampage'
+          ? 'bg-gradient-to-r from-black via-rose-800 to-black'
+          : kind === 'matrix'
+            ? 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-slate-900'
+            : ATTRIBUTE_BG[to.attribute];
+      const label =
+        kind === 'rampage' ? 'RAMPAGE' : kind === 'matrix' ? 'MATRIX EVOLUTION' : 'DIGIVOLUTION';
       return (
-        <div key={item.seq} className="pointer-events-none fixed inset-x-0 top-1/3 overflow-hidden">
+        <div
+          key={item.seq}
+          className={`pointer-events-none fixed inset-x-0 top-1/3 overflow-hidden ${kind === 'rampage' ? 'fx-shake' : ''}`}
+          data-evolve-kind={kind}
+        >
+          {kind === 'rampage' && <div className="fixed inset-0 bg-rose-900/40" />}
           <div
-            className={`fx-cutin ${ATTRIBUTE_BG[to.attribute]} py-5 text-center text-white shadow-2xl`}
+            className={`fx-cutin ${band} py-5 text-center text-white shadow-2xl`}
             style={{ '--fx-ms': `${ms}ms` } as CSSProperties}
           >
-            <div className="text-xs tracking-[0.4em] opacity-80">DIGIVOLUTION</div>
-            <div className="mt-1 text-2xl font-black">
-              {from.name} 진화! {to.name}
+            <div className="text-xs tracking-[0.4em] opacity-80">{label}</div>
+            <div
+              className={`mt-1 text-2xl font-black ${kind === 'matrix' ? 'text-slate-900' : ''}`}
+            >
+              {kind === 'rampage'
+                ? `${from.name} 폭주! ${to.name}`
+                : `${from.name} 진화! ${to.name}`}
             </div>
-            <div className="text-xs opacity-80">{STAGE_LABEL[e.to]}</div>
+            <div className={`text-xs opacity-80 ${kind === 'matrix' ? 'text-slate-900' : ''}`}>
+              {kind === 'rampage' ? '폭주 진화' : STAGE_LABEL[e.to]}
+            </div>
           </div>
         </div>
       );
@@ -190,6 +211,15 @@ function Effect({ item, view, ms }: { item: PlaybackItem; view: GameState; ms: n
         />
       );
     }
+    case 'handGroupsDrawn':
+      return (
+        <Center item={item} ms={ms}>
+          <div className="rounded-xl bg-violet-900/90 px-6 py-3 text-center text-xl font-black">
+            두 사람의 카드
+            <div className="text-xs font-normal text-violet-200">한 묶음을 고르세요</div>
+          </div>
+        </Center>
+      );
     case 'turnStarted':
       return (
         <Center item={item} ms={ms}>

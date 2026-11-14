@@ -286,6 +286,42 @@ function describeRunEffect(effect: RunEffect): string {
   }
 }
 
+/** 디지털 해저드 단계 하나의 규칙 글 (02 13.6) */
+export function describeHazardRule(level: number): string {
+  const c = constants;
+  const L = c.HAZARD_LEVEL;
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  switch (level) {
+    case L.enemyHp:
+      return `모든 적의 최대 HP +${c.HAZARD_ENEMY_HP_PCT - 100}%`;
+    case L.restHeal:
+      return `휴식의 회복이 최대 HP의 ${pct(c.HAZARD_REST_HEAL_PCT)}`;
+    case L.mapRows:
+      return `지도 ${c.HAZARD_MAP_ROWS.map((r) => r + 1).join('·')}행에 강적이 더 자주 나옴`;
+    case L.maxHp:
+      return `최대 HP -${100 - c.HAZARD_MAX_HP_PCT}%`;
+    case L.startCurse:
+      return `시작 덱에 ${getCard(c.HAZARD_START_CURSE).name} 1장`;
+    case L.enemyDamage:
+      return `적의 공격 피해 +${Math.round((c.HAZARD_ENEMY_DAMAGE_MULT - 1) * 100)}%`;
+    case L.actClearHeal:
+      return `막 클리어 회복이 최대 HP의 ${pct(c.HAZARD_ACT_CLEAR_HEAL_PCT)}`;
+    case L.shopPrice:
+      return `상점 가격 +${c.HAZARD_SHOP_PRICE_PCT - 100}%`;
+    case L.bossHp:
+      return `보스의 최대 HP +${c.HAZARD_BOSS_HP_PCT - 100}% 더`;
+    case L.rewardOffer:
+      return `전투 보상 카드 고르기가 ${c.HAZARD_REWARD_OFFER_SIZE}장`;
+    default:
+      return '';
+  }
+}
+
+/** 단계 N이면 1~N의 규칙 글 (02 13.6: 모두 적용) */
+export function describeHazard(level: number): string[] {
+  return Array.from({ length: level }, (_, i) => describeHazardRule(i + 1));
+}
+
 /** 테이머 특성 설명 (숨은 칩과 판 시작 런 효과, 02 8절, 12.3) */
 export function describeTamer(tamerId: TamerId): string {
   const tamer = getTamer(tamerId);

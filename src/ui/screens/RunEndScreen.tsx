@@ -7,6 +7,7 @@ import { useDisplayState, useGame } from '../store';
 export function RunEndScreen() {
   const state = useDisplayState();
   const newGame = useGame((s) => s.newGame);
+  const notice = useGame((s) => s.unlockNotice);
   const run = state.run;
   const won = state.phase === 'runWon';
   return (
@@ -31,6 +32,17 @@ export function RunEndScreen() {
               <p>칩: {run.chips.map((id) => getChip(id).name).join(', ')}</p>
             )}
             <p className="mt-2 text-xs text-slate-500">시드 {state.seed}</p>
+          </div>
+        )}
+        {notice.length > 0 && (
+          <div
+            className="w-full max-w-xs rounded-xl border border-amber-400 bg-amber-950/60 p-4 text-left text-sm"
+            data-testid="unlock-notice"
+          >
+            <p className="mb-1 font-bold text-amber-300">새로 열렸습니다</p>
+            {notice.map((n) => (
+              <p key={n}>{n}</p>
+            ))}
           </div>
         )}
         <div className="w-full max-w-xs">

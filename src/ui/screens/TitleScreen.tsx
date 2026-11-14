@@ -1,4 +1,5 @@
-import { describeTamer, getLegalActions } from '../../core/index';
+import { useState } from 'react';
+import { describeHazard, describeTamer, getLegalActions } from '../../core/index';
 import { getForm, getTamers } from '../../data/index';
 import { ATTRIBUTE_BG } from '../components/labels';
 import { Screen } from '../components/Screen';
@@ -9,9 +10,12 @@ export function TitleScreen() {
   const dispatch = useGame((s) => s.dispatch);
   const setPanel = useGame((s) => s.setPanel);
   const state = useDisplayState();
-  const open = new Set(
-    getLegalActions(state).flatMap((a) => (a.type === 'startRun' ? [a.tamerId] : [])),
-  );
+  const starts = getLegalActions(state).flatMap((a) => (a.type === 'startRun' ? [a] : []));
+  const open = new Set(starts.map((a) => a.tamerId));
+  // 고를 수 있는 해저드 단계 (02 13.6): 할 수 있는 행동에서 읽음
+  const maxHazard = Math.max(0, ...starts.map((a) => a.hazard ?? 0));
+  const [hazard, setHazard] = useState(0);
+  const chosen = Math.min(hazard, maxHazard);
   return (
     <Screen>
       <div className="flex justify-end px-4 pt-3">
@@ -24,6 +28,33 @@ export function TitleScreen() {
           <p className="mt-3 text-xs text-slate-400">비공식 팬 게임</p>
         </div>
         <div className="flex w-full max-w-sm flex-col gap-3">
+          {maxHazard > 0 && (
+            <div className="rounded-xl bg-slate-900 p-3 text-left" data-testid="hazard-picker">
+              <p className="mb-2 text-sm text-slate-400">디지털 해저드</p>
+              <div className="flex flex-wrap gap-1">
+                {Array.from({ length: maxHazard + 1 }, (_, n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    data-hazard={n}
+                    onClick={() => setHazard(n)}
+                    className={`min-h-11 min-w-11 rounded-lg text-sm font-bold ${
+                      chosen === n ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-300'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              {chosen > 0 && (
+                <ul className="mt-2 list-disc pl-5 text-xs text-rose-200">
+                  {describeHazard(chosen).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           <p className="text-left text-sm text-slate-400">테이머를 고르세요</p>
           {getTamers().map((t) => {
             const partner = getForm(t.line, 'rookie');
@@ -35,7 +66,13 @@ export function TitleScreen() {
                 data-tamer={t.id}
                 disabled={locked}
                 className="flex min-h-16 items-center gap-3 rounded-xl bg-slate-800 p-3 text-left active:bg-slate-700 disabled:opacity-40"
-                onClick={() => dispatch({ type: 'startRun', tamerId: t.id })}
+                onClick={() =>
+                  dispatch(
+                    chosen > 0
+                      ? { type: 'startRun', tamerId: t.id, hazard: chosen }
+                      : { type: 'startRun', tamerId: t.id },
+                  )
+                }
               >
                 <span
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${ATTRIBUTE_BG[partner.attribute]} text-xs font-bold`}
@@ -57,7 +94,15 @@ export function TitleScreen() {
               </button>
             );
           })}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              data-testid="title-codex"
+              onClick={() => setPanel('codex')}
+              className="min-h-11 rounded-xl bg-slate-800 text-sm font-bold active:bg-slate-700"
+            >
+              도감
+            </button>
             <button
               type="button"
               data-testid="title-guide"

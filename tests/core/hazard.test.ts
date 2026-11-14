@@ -8,6 +8,7 @@ import {
   createInitialState,
   createProfile,
   defaultUnlocks,
+  describeHazard,
   fullUnlocks,
   getLegalActions,
   type GameEvent,
@@ -203,3 +204,14 @@ function bonusOf(state: GameState): number {
   const chips = state.run?.chips ?? [];
   return (chips.includes('bit_scanner') ? 5 : 0) + (chips.includes('heal_chip') ? 10 : 0);
 }
+
+describe('해저드 설명 글 (화면용, 02 13.6)', () => {
+  it('단계 N이면 N줄, 각 줄은 비어 있지 않음', () => {
+    expect(describeHazard(0)).toEqual([]);
+    const all = describeHazard(10);
+    expect(all).toHaveLength(10);
+    for (const line of all) expect(line.length).toBeGreaterThan(0);
+    expect(all[0]).toContain('10%');
+    expect(all[4]).toContain('버그');
+  });
+});

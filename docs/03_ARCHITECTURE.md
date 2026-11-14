@@ -431,7 +431,7 @@ src/ui/
 ├─ store.ts                   GameState 보관, dispatch(action), 일어난 일 재생 줄
 ├─ playback.ts                GameEvent를 차례로 재생 (종류마다 걸리는 시간)
 ├─ screens/                   Title, Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
-├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton…
+├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton, Codex(도감)…
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
 ├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
