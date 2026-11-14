@@ -23,6 +23,7 @@ const devOverride = import.meta.env.DEV && (params.has('debug') || params.has('s
 // 저장 불러오기 (03 9.1): 진행 중인 판이 있으면 그 자리에서 이어 함
 const settings = await loadSettings();
 useGame.setState({ speed: settings.speed, seenGuide: settings.seenGuide });
+useGame.getState().setSound(settings.sound);
 // 프로필(해금·도감)을 먼저 불러와 제목 화면의 판이 해금 정보를 갖게 함 (02 13.5)
 useGame.setState({ profile: await loadProfile() });
 useGame.getState().newGame();
@@ -59,8 +60,8 @@ if (import.meta.env.DEV) {
 useGame.subscribe((s, prev) => {
   if (s.state !== prev.state) void saveGame(s.state);
   if (s.profile !== prev.profile) void saveProfile(s.profile);
-  if (s.speed !== prev.speed || s.seenGuide !== prev.seenGuide) {
-    void saveSettings({ speed: s.speed, seenGuide: s.seenGuide });
+  if (s.speed !== prev.speed || s.seenGuide !== prev.seenGuide || s.sound !== prev.sound) {
+    void saveSettings({ speed: s.speed, seenGuide: s.seenGuide, sound: s.sound });
   }
   // 처음 전투에 들어가면 하는 법을 한 번 보여 줌
   if (s.state.phase === 'battle' && prev.state.phase !== 'battle' && !s.seenGuide && !devOverride) {

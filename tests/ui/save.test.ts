@@ -31,12 +31,18 @@ describe('저장 형식 (04 T1-7)', () => {
   });
 
   it('설정: 모르는 값은 기본값', () => {
-    expect(parseSettings({ speed: 'fast', seenGuide: true })).toEqual({
+    expect(parseSettings({ speed: 'fast', seenGuide: true, sound: false })).toEqual({
       speed: 'fast',
       seenGuide: true,
+      sound: false,
     });
-    expect(parseSettings({ speed: 'warp' })).toEqual({ speed: 'normal', seenGuide: false });
-    expect(parseSettings(undefined)).toEqual({ speed: 'normal', seenGuide: false });
+    // 효과음은 처음에 켜져 있음 (예전 설정에는 sound가 없음)
+    expect(parseSettings({ speed: 'warp' })).toEqual({
+      speed: 'normal',
+      seenGuide: false,
+      sound: true,
+    });
+    expect(parseSettings(undefined)).toEqual({ speed: 'normal', seenGuide: false, sound: true });
   });
 });
 

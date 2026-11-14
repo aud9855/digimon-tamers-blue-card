@@ -434,6 +434,7 @@ src/ui/
 ├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton…
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
+├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
 ├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
 └─ assets/                    직접 만든 그림만
 public/                       아이콘(직접 그린 SVG와 PNG), manifest.webmanifest

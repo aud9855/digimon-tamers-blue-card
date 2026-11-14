@@ -18,6 +18,8 @@ const PROFILE_KEY = 'profile';
 export interface Settings {
   speed: PlaybackSpeed;
   seenGuide: boolean;
+  /** 효과음 (02 13.7) */
+  sound: boolean;
 }
 
 const SPEEDS: PlaybackSpeed[] = ['normal', 'fast', 'off'];
@@ -83,6 +85,7 @@ export function parseSettings(raw: unknown): Settings {
       ? (value.speed as PlaybackSpeed)
       : 'normal',
     seenGuide: value.seenGuide === true,
+    sound: value.sound !== false,
   };
 }
 

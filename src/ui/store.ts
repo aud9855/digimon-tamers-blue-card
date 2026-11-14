@@ -13,6 +13,7 @@ import {
   type Profile,
 } from '../core/index';
 import { applyEventToView, eventDuration, shouldPlay, type PlaybackSpeed } from './playback';
+import { playSound, setSoundEnabled, soundFor, soundsForBatch } from './sound';
 
 export type Panel = 'settings' | 'guide' | 'info';
 
@@ -47,6 +48,9 @@ export interface GameStore {
   /** 남은 재생을 건너뜀 */
   skipPlayback: () => void;
   setSpeed: (speed: PlaybackSpeed) => void;
+  /** 효과음 켜기·끄기 (02 13.7) */
+  sound: boolean;
+  setSound: (on: boolean) => void;
   /** 새 시드로 처음부터 (프로필의 해금 정보로) */
   newGame: (seed?: number) => void;
 }
@@ -83,6 +87,8 @@ export const useGame = create<GameStore>((set, get) => {
       applyEventToView(next, event);
       const duration = eventDuration(event, speed);
       if (duration > 0) {
+        const kind = soundFor(event);
+        if (kind) playSound(kind);
         set({ view: next, queue: rest, current: { event, card, seq: ++seq } });
         timer = setTimeout(step, duration);
         return;
@@ -124,6 +130,7 @@ export const useGame = create<GameStore>((set, get) => {
         });
         step();
       } else {
+        for (const kind of soundsForBatch(result.events)) playSound(kind);
         set({ state: result.state, lastEvents: result.events });
       }
     },
@@ -132,6 +139,11 @@ export const useGame = create<GameStore>((set, get) => {
       set({ view: null, queue: [], current: null });
     },
     setSpeed: (speed) => set({ speed }),
+    sound: true,
+    setSound: (on) => {
+      setSoundEnabled(on);
+      set({ sound: on });
+    },
     newGame: (seedValue) => {
       clearTimer();
       set({

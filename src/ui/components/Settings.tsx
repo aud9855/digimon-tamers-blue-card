@@ -63,6 +63,8 @@ function Modal({
 function SettingsContent({ open }: { open: (panel: Panel) => void }) {
   const speed = useGame((s) => s.speed);
   const setSpeed = useGame((s) => s.setSpeed);
+  const sound = useGame((s) => s.sound);
+  const setSound = useGame((s) => s.setSound);
   const phase = useGame((s) => s.state.phase);
   const newGame = useGame((s) => s.newGame);
   const [confirmQuit, setConfirmQuit] = useState(false);
@@ -83,6 +85,23 @@ function SettingsContent({ open }: { open: (panel: Panel) => void }) {
             }`}
           >
             {o.label}
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-4 mb-2 text-sm text-slate-400">효과음</p>
+      <div className="grid grid-cols-2 gap-2">
+        {[true, false].map((on) => (
+          <button
+            key={String(on)}
+            type="button"
+            data-sound={on ? 'on' : 'off'}
+            onClick={() => setSound(on)}
+            className={`min-h-11 rounded-lg text-sm font-bold ${
+              sound === on ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            {on ? '켜기' : '끄기'}
           </button>
         ))}
       </div>
