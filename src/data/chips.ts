@@ -61,6 +61,12 @@ export const chips = [
     modifiers: { firstCardCostDelta: -1 },
   },
   {
+    id: 'trait_two_tamers',
+    name: '두 사람의 카드',
+    hidden: true,
+    modifiers: { handGroups: 2 },
+  },
+  {
     id: 'trait_calm',
     name: '침착함',
     hidden: true,

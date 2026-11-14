@@ -3,6 +3,7 @@ import { constants, getEncounter } from '../../data/index';
 import { emptyStatuses, hasKeyword, requireRun } from '../helpers';
 import { triggerChips } from '../chips';
 import { shuffle } from '../rng';
+import { winIfCleared } from './outcome';
 import type { BattleState, GameEvent, GameState } from '../types';
 import { createEnemy } from './enemy';
 import { setPhase } from '../phase';
@@ -46,6 +47,7 @@ export function startBattle(
     freeEvolve: false,
     cardsPlayedThisTurn: 0,
     rampage: false,
+    handChoice: null,
     drawPile,
     hand: [],
     discardPile: [],
@@ -62,6 +64,7 @@ export function startBattle(
 
   // 4.
   triggerChips(state, events, 'onBattleStart');
+  if (winIfCleared(state, events)) return;
   // 5.
   startPlayerTurn(state, events);
 }

@@ -12,6 +12,7 @@ import type {
 } from '../core/types';
 import { acts, type ActDef } from './acts';
 import { cards } from './cards';
+import { aiMakoCards } from './cards-ai-mako';
 import { henryCards } from './cards-henry';
 import { rikaCards } from './cards-rika';
 import { chips } from './chips';
@@ -36,7 +37,7 @@ interface Registry {
 }
 
 const registry: Registry = {
-  cards: [...cards, ...rikaCards, ...henryCards],
+  cards: [...cards, ...rikaCards, ...henryCards, ...aiMakoCards],
   forms: [...forms],
   enemies: [...enemies],
   encounters: [...encounters],
@@ -86,6 +87,11 @@ export function getForm(line: string, stage: Stage): FormDef {
     '형태',
     `${line}/${stage}`,
   );
+}
+
+/** 계열에 그 단계의 (폭주가 아닌) 형태가 있는지 (02 13.3) */
+export function hasForm(line: string, stage: Stage): boolean {
+  return registry.forms.some((f) => f.line === line && f.stage === stage && !f.rampage);
 }
 
 /** 계열의 폭주 형태 (없으면 null, 02 13.2) */

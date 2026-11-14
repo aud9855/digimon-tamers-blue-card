@@ -27,6 +27,8 @@ export const constants = {
   WEAK_MULT: 0.75,
   VULNERABLE_MULT: 1.5,
   EVOLVE_BASE_COST: { champion: 3, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
+  /** 건너뛴 단계마다 진화 비용에 더함 (02 13.3) */
+  SKIP_EVOLVE_COST: 1,
 
   // ── 동료·형태 특성 (02 12.5, 12.6) ──
   COMPANION_SLOTS: 2,

@@ -38,6 +38,17 @@ export function allEnemiesDead(state: GameState): boolean {
 }
 
 /**
+ * 카드 밖(칩, 동료, 진화)에서 마지막 적이 쓰러져도 곧바로 승리합니다 (02 3.7).
+ * 전투가 끝났으면(승리든 패배든) true.
+ */
+export function winIfCleared(state: GameState, events: GameEvent[]): boolean {
+  if (battleStopped(state)) return true;
+  if (!allEnemiesDead(state)) return false;
+  winBattle(state, events);
+  return true;
+}
+
+/**
  * 승리: 전투 상태를 지우고 보상으로 갑니다.
  * stage, tempHp, shield, 상태 효과, 임시 카드는 battle과 함께 사라지고 hp만 런에 남습니다 (02 3.7).
  */

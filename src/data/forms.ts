@@ -131,4 +131,24 @@ export const forms = [
     power: 2,
     signatureCardId: 'mega_barrage',
   },
+  // 임프몬 계열: 성장기와 궁극체만 (02 13.3)
+  {
+    id: 'impmon',
+    name: '임프몬',
+    line: 'impmon',
+    stage: 'rookie',
+    attribute: 'virus',
+    tempHp: 0,
+    power: 0,
+  },
+  {
+    id: 'beelzemon',
+    name: '베르몬',
+    line: 'impmon',
+    stage: 'mega',
+    attribute: 'virus',
+    tempHp: 20,
+    power: 3,
+    signatureCardId: 'death_slinger',
+  },
 ] satisfies FormDef[];

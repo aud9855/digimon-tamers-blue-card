@@ -116,6 +116,8 @@ export interface ChipDef {
     evolveCostDelta?: number;
     /** 그 턴에 처음 내는 카드의 비용에 더함 (02 12.11) */
     firstCardCostDelta?: number;
+    /** 2면 턴 시작에 두 묶음을 뽑아 하나를 고름 (02 13.3) */
+    handGroups?: number;
     battleBitsBonus?: number;
     handSizeBonus?: number;
     maxHpBonus?: number;
@@ -187,6 +189,8 @@ export interface BattleState {
   freeEvolve: boolean;
   /** 폭주 진화 중 (02 13.2) */
   rampage: boolean;
+  /** 두 사람의 카드: 고를 두 묶음 (고르기 전까지, 02 13.3) */
+  handChoice: CardInstance[][] | null;
   /** 이번 턴에 낸 카드 수. 카드를 옮긴 뒤 올림 (02 12.3) */
   cardsPlayedThisTurn: number;
   drawPile: CardInstance[];
@@ -290,7 +294,8 @@ export type Action =
   | { type: 'proceed' }
   | { type: 'chooseStartChip'; index: number }
   | { type: 'chooseFormTrait'; index: number }
-  | { type: 'rampage' };
+  | { type: 'rampage' }
+  | { type: 'chooseHandGroup'; index: number };
 
 // ── 일어난 일 목록 (03 4.1) ──
 export type Who = 'player' | number; // number: 적의 위치(index)
@@ -309,6 +314,8 @@ export type GameEvent =
       to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' | 'companion';
     }
   | { type: 'companionTriggered'; cardUid: number }
+  | { type: 'handGroupsDrawn'; groups: number[][] }
+  | { type: 'handGroupChosen'; index: number }
   | { type: 'formTraitChosen'; stage: Stage; traitId: FormTraitId }
   | { type: 'cardCreated'; cardUid: number; defId: string; to: 'hand' | 'draw' | 'discard' }
   | { type: 'memoryChanged'; memory: number }

@@ -1,7 +1,8 @@
 // 02 3.7 진화
-import { constants, getForm, getTamer } from '../../data/index';
+import { constants, getForm, getTamer, hasForm } from '../../data/index';
 import { formTempHp, nextStage, requireBattle, requireRun, stageIndex } from '../helpers';
 import { evolveCostDelta, triggerChips } from '../chips';
+import { winIfCleared } from './outcome';
 import type { GameEvent, GameState, Stage } from '../types';
 import { createTempCards } from './piles';
 
@@ -16,14 +17,32 @@ export function baseEvolveCost(next: Stage, maxStage: Stage): number {
 }
 
 /** 지금 진화 비용. 진화할 다음 단계가 열려 있지 않으면 null */
+/**
+ * 다음에 진화할 단계: 그 계열에 형태가 있는 다음 단계 (02 13.3).
+ * 열린 최고 단계를 넘거나 폭주 중이면 null.
+ */
+export function nextEvolveStage(state: GameState): Stage | null {
+  const battle = state.battle;
+  if (!battle || battle.rampage) return null;
+  const run = requireRun(state);
+  const line = getTamer(run.tamerId).line;
+  let next = nextStage(battle.stage);
+  while (next && !hasForm(line, next)) next = nextStage(next);
+  if (!next || stageIndex(next) > stageIndex(run.maxStage)) return null;
+  return next;
+}
+
 export function evolveCost(state: GameState): number | null {
   if (state.phase !== 'battle' || !state.battle) return null;
   const run = requireRun(state);
   const battle = state.battle;
-  const next = nextStage(battle.stage);
-  if (!next || stageIndex(battle.stage) >= stageIndex(run.maxStage)) return null;
+  const next = nextEvolveStage(state);
+  if (!next) return null;
   if (battle.freeEvolve) return 0;
-  return Math.max(0, baseEvolveCost(next, run.maxStage) + evolveCostDelta(state));
+  // 건너뛴 단계마다 +1 (02 13.3)
+  const skipped = stageIndex(next) - stageIndex(battle.stage) - 1;
+  const skip = skipped * constants.SKIP_EVOLVE_COST;
+  return Math.max(0, baseEvolveCost(next, run.maxStage) + skip + evolveCostDelta(state));
 }
 
 /** 조건: 국면 battle, stage < maxStage, 비용을 낼 수 있음 */
@@ -38,7 +57,7 @@ export function evolve(state: GameState, events: GameEvent[]): void {
   const battle = requireBattle(state);
   const run = requireRun(state);
   const cost = evolveCost(state);
-  const next = nextStage(battle.stage);
+  const next = nextEvolveStage(state);
   if (cost === null || !next) throw new Error('진화할 수 없습니다');
   const from = battle.stage;
 
@@ -60,4 +79,5 @@ export function evolve(state: GameState, events: GameEvent[]): void {
   battle.evolveCount += 1;
   // 6.
   triggerChips(state, events, 'onEvolve');
+  winIfCleared(state, events);
 }

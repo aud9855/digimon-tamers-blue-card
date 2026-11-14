@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { getLegalActions } from '../../src/core/engine';
+import { applyAction, getLegalActions } from '../../src/core/engine';
 import { baseEvolveCost, evolveCost } from '../../src/core/battle/evolve';
 import { previewEvolveCost } from '../../src/core/describe';
 import { overrideRegistry } from '../../src/data/index';
+import { createInitialState } from '../../src/core/state';
 import { act, battleOf, eventsOf, makeBattle, play } from '../helpers/battle';
 import { baseFixtures } from '../helpers/fixtures';
 
@@ -226,5 +227,81 @@ describe('폭주 진화 (02 13.2)', () => {
     const state = lowHp();
     if (state.run) state.run.tamerId = 'rika';
     expect(getLegalActions(state)).not.toContainEqual({ type: 'rampage' });
+  });
+});
+
+describe('다영·진 (02 13.3)', () => {
+  const DRAW = Array.from({ length: 30 }, () => 'guard');
+  const aiMako = (opts = {}) => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      drawPile: DRAW,
+      chips: ['trait_two_tamers'],
+      ...opts,
+    });
+    if (state.run) state.run.tamerId = 'ai_mako';
+    return state;
+  };
+
+  it('임프몬은 성장기에서 곧바로 베르몬(궁극체)으로, 건너뛴 단계마다 비용 +1', () => {
+    const state = aiMako({ memory: 3 });
+    expect(previewEvolveCost(state)).toBe(4 + 2);
+    const next = act(state, { type: 'evolve' }).state;
+    expect(battleOf(next).stage).toBe('mega');
+    expect(battleOf(next).memory).toBe(3 - 6);
+    expect(battleOf(next).hand.some((c) => c.defId === 'death_slinger')).toBe(true);
+  });
+
+  it('두 사람의 카드: 턴 시작에 두 묶음, 고르기 전에는 고르기만', () => {
+    const state = aiMako({ hand: ['strike'] });
+    const { state: next, events } = act(state, { type: 'endTurn' });
+    const battle = battleOf(next);
+    expect(battle.handChoice).toHaveLength(2);
+    expect(battle.handChoice?.[0]).toHaveLength(5);
+    expect(battle.handChoice?.[1]).toHaveLength(5);
+    expect(getLegalActions(next)).toEqual([
+      { type: 'chooseHandGroup', index: 0 },
+      { type: 'chooseHandGroup', index: 1 },
+    ]);
+    expect(eventsOf(events, 'handGroupsDrawn')).toHaveLength(1);
+
+    const chosen = act(next, { type: 'chooseHandGroup', index: 1 }).state;
+    const b2 = battleOf(chosen);
+    expect(b2.handChoice).toBeNull();
+    expect(b2.hand.map((c) => c.uid).sort()).toEqual(
+      battle.handChoice?.[1]?.map((c) => c.uid).sort(),
+    );
+    for (const c of battle.handChoice?.[0] ?? [])
+      expect(b2.discardPile.some((d) => d.uid === c.uid)).toBe(true);
+  });
+
+  it('턴 시작 칩은 고른 뒤에 발동', () => {
+    const state = aiMako({ chips: ['trait_two_tamers', 'cube_shield'] });
+    const restore = overrideRegistry({
+      chips: [
+        {
+          id: 'test_ts',
+          name: '시험',
+          trigger: 'onTurnStart',
+          effects: [{ op: 'shield', amount: 1 }],
+        },
+      ],
+    });
+    try {
+      if (state.run) state.run.chips.push('test_ts');
+      const next = act(state, { type: 'endTurn' }).state;
+      expect(battleOf(next).shield).toBe(0);
+      const chosen = act(next, { type: 'chooseHandGroup', index: 0 }).state;
+      expect(battleOf(chosen).shield).toBe(1);
+    } finally {
+      restore();
+    }
+  });
+
+  it('형태 특성은 고르지 않음 (처음부터 궁극체까지 열림)', () => {
+    const s0 = applyAction(createInitialState(1), { type: 'startRun', tamerId: 'ai_mako' }).state;
+    const s1 = applyAction(s0, { type: 'chooseStartChip', index: 0 }).state;
+    expect(s1.run?.maxStage).toBe('mega');
+    expect(s1.run?.chips).toContain('trait_two_tamers');
   });
 });

@@ -45,6 +45,8 @@ export const evolveCostDelta = (state: GameState) =>
 export const battleBitsBonus = (state: GameState) => sumModifier(state, 'battleBitsBonus');
 export const handSizeBonus = (state: GameState) => sumModifier(state, 'handSizeBonus');
 export const firstCardCostDelta = (state: GameState) => sumModifier(state, 'firstCardCostDelta');
+/** 턴 시작에 뽑는 묶음 수 (기본 1, 02 13.3) */
+export const handGroups = (state: GameState) => Math.max(1, sumModifier(state, 'handGroups'));
 
 /** 보상·상점·보물·이벤트로 얻을 수 있는 칩인지 (숨은 칩·시작 칩 제외, 02 12.3, 12.7) */
 export function isRandomChip(chip: ChipDef): boolean {

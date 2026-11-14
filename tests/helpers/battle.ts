@@ -99,6 +99,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     freeEvolve: false,
     cardsPlayedThisTurn: opts.cardsPlayedThisTurn ?? 0,
     rampage: false,
+    handChoice: null,
     drawPile: makeCards(state, opts.drawPile ?? []),
     hand: makeCards(state, opts.hand ?? []),
     discardPile: makeCards(state, opts.discardPile ?? []),

@@ -73,6 +73,21 @@ const CARD_SCORES: Record<string, number> = {
   kazu: 6,
   kenta: 6,
   calumon: 7,
+  // 다영·진
+  bada_boom: 3,
+  night_of_fire: 5,
+  two_hands: 5,
+  prank: 4,
+  street_fight: 5,
+  hide: 4,
+  team_up: 5,
+  darkness_claw: 6,
+  reckless: 5,
+  store_power: 6,
+  shared_dream: 6,
+  double_impact: 7,
+  fallen_wings: 8,
+  promise: 7,
   bug_data: -10,
 };
 const UPGRADE_BONUS = 1;
@@ -261,6 +276,15 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
   if (!battle) throw new Error('전투가 없습니다');
   const run = state.run;
   if (!run) throw new Error('런이 없습니다');
+
+  // 0. 두 사람의 카드: 카드 점수 합이 큰 묶음 (03 7.1)
+  if (battle.handChoice) {
+    const scores = battle.handChoice.map((g) =>
+      g.reduce((s, c) => s + cardScore(c.defId, c.upgraded), 0),
+    );
+    const best = scores.indexOf(Math.max(...scores));
+    return { type: 'chooseHandGroup', index: best };
+  }
 
   // 1. 끝낼 수 있으면 끝냄
   const lethal = findLethal(state, legal);

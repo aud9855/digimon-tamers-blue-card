@@ -2,6 +2,7 @@
 import { constants, getRampageForm, getTamer } from '../../data/index';
 import { triggerChips } from '../chips';
 import { formTempHp, requireBattle, requireRun } from '../helpers';
+import { winIfCleared } from './outcome';
 import type { GameEvent, GameState } from '../types';
 import { createTempCards } from './piles';
 
@@ -44,4 +45,5 @@ export function rampage(state: GameState, events: GameEvent[]): void {
   battle.evolvedThisTurn = true;
   battle.evolveCount += 1;
   triggerChips(state, events, 'onEvolve');
+  winIfCleared(state, events);
 }

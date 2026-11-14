@@ -2,7 +2,7 @@ import { constants, getEvent, getTamers } from '../data/index';
 import { canEvolve, evolve } from './battle/evolve';
 import { canRampage, rampage } from './battle/rampage';
 import { cardNeedsTarget, isCardPlayable, playCard } from './battle/cards';
-import { endTurn } from './battle/turn';
+import { chooseHandGroup, endTurn } from './battle/turn';
 import { isUpgradable, livingEnemyIndexes } from './helpers';
 import { chooseFormTrait, startNextAct } from './run/act';
 import { reachableNodeIds } from './run/map';
@@ -42,6 +42,10 @@ export function getLegalActions(state: GameState): Action[] {
     case 'battle': {
       const battle = state.battle;
       if (!battle) return [];
+      // 두 사람의 카드: 묶음을 고르기 전에는 고르기만 (02 13.3)
+      if (battle.handChoice) {
+        return battle.handChoice.map((_, index) => ({ type: 'chooseHandGroup', index }));
+      }
       const actions: Action[] = [];
       for (const card of battle.hand) {
         if (!isCardPlayable(state, card)) continue;
@@ -150,6 +154,8 @@ function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
       return evolve(draft, events);
     case 'rampage':
       return rampage(draft, events);
+    case 'chooseHandGroup':
+      return chooseHandGroup(draft, events, action.index);
     case 'endTurn':
       return endTurn(draft, events);
     case 'pickCard':

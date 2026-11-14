@@ -6,20 +6,37 @@ import type { CardInstance, GameEvent, GameState } from '../types';
 import { handSizeBonus } from '../chips';
 
 /** 02 3.4 뽑기: 한 장씩. 뽑을 더미가 비면 버림 더미를 섞어 채움. 손패가 가득이면 바로 버림 */
-export function drawCards(state: GameState, events: GameEvent[], count: number): void {
+/** 한 장 뽑기: 뽑을 더미가 비면 버림 더미를 섞어 채움. 둘 다 비면 null */
+function drawOne(state: GameState, events: GameEvent[]): CardInstance | null {
   const battle = requireBattle(state);
+  if (battle.drawPile.length === 0) {
+    if (battle.discardPile.length === 0) return null;
+    battle.drawPile = shuffle(state, 'battle', battle.discardPile);
+    battle.discardPile = [];
+    events.push({ type: 'deckShuffled' });
+  }
+  const card = battle.drawPile.pop() ?? null;
+  if (card) events.push({ type: 'cardDrawn', cardUid: card.uid });
+  return card;
+}
+
+export function drawCards(state: GameState, events: GameEvent[], count: number): void {
   for (let i = 0; i < count; i++) {
-    if (battle.drawPile.length === 0) {
-      if (battle.discardPile.length === 0) return;
-      battle.drawPile = shuffle(state, 'battle', battle.discardPile);
-      battle.discardPile = [];
-      events.push({ type: 'deckShuffled' });
-    }
-    const card = battle.drawPile.pop();
+    const card = drawOne(state, events);
     if (!card) return;
-    events.push({ type: 'cardDrawn', cardUid: card.uid });
     putInHandOrDiscard(state, events, card);
   }
+}
+
+/** 손패가 아닌 묶음으로 뽑기 (두 사람의 카드, 02 13.3) */
+export function drawGroup(state: GameState, events: GameEvent[], count: number): CardInstance[] {
+  const group: CardInstance[] = [];
+  for (let i = 0; i < count; i++) {
+    const card = drawOne(state, events);
+    if (!card) break;
+    group.push(card);
+  }
+  return group;
 }
 
 /** 손패가 HAND_LIMIT장이면 버림 더미로 */

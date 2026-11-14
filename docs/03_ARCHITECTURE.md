@@ -71,7 +71,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
-│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  enemies.ts  encounters.ts
+│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  enemies.ts  encounters.ts
 │  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
@@ -364,6 +364,7 @@ interface IntentView {
 - 휴식: HP 60% 미만이면 회복, 아니면 점수가 가장 높은 카드 강화.
 - 이벤트: HP 30% 미만이면 HP를 잃지 않는 선택지, 아니면 첫 선택지.
 - 시작 칩: 첫 번째(카드 리더). 형태 특성: 날카로운 이빨(공격력 +1). (T2-7에서 추가)
+- 두 사람의 카드(다영·진): 카드 점수 합이 큰 묶음. (T3-4에서 추가)
 - 카드 비용은 core의 `previewCardCost`로 셉니다 (처음 내는 카드 할인 포함).
 
 카드 점수표는 봇 파일 안에 두고, 게임 데이터에는 넣지 않습니다.

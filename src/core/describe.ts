@@ -175,6 +175,9 @@ function describeModifiers(modifiers: NonNullable<ChipDef['modifiers']>): string
     parts.push(`턴 시작에 뽑는 카드 ${signed(modifiers.handSizeBonus)}장`);
   }
   if (modifiers.maxHpBonus) parts.push(`최대 HP ${signed(modifiers.maxHpBonus)}`);
+  if (modifiers.handGroups && modifiers.handGroups >= 2) {
+    parts.push(`매 턴 카드를 두 묶음으로 뽑아 하나를 고름`);
+  }
   if (modifiers.firstCardCostDelta) {
     parts.push(`매 턴 처음 내는 카드의 비용 ${signed(modifiers.firstCardCostDelta)}`);
   }
