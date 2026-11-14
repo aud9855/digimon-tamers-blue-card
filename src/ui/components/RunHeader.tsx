@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { describeChip, describeTamer, type GameState } from '../../core/index';
 import { getChip, getTamer } from '../../data/index';
 import { SettingsButton } from './Settings';
+import { ChipIcon } from './Sprites';
 
 export function RunHeader({ state }: { state: GameState }) {
   const run = state.run;
@@ -34,7 +35,8 @@ export function RunHeader({ state }: { state: GameState }) {
           className="mt-1 flex min-h-8 w-full flex-wrap items-center gap-1 text-left text-xs text-sky-200"
         >
           {chips.map((id) => (
-            <span key={id} className="rounded bg-sky-900/70 px-1.5 py-0.5">
+            <span key={id} className="flex items-center gap-1 rounded bg-sky-900/70 px-1.5 py-0.5">
+              <ChipIcon chipId={id} />
               {getChip(id).name}
             </span>
           ))}

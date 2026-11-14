@@ -434,6 +434,7 @@ src/ui/
 ├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton, Codex(도감)…
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
+├─ art/                       도트 그림 (글자 격자, 04 7절). PixelArt 부품이 SVG로 그림
 ├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
 ├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
 └─ assets/                    직접 만든 그림만

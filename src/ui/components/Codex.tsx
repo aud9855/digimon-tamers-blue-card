@@ -1,7 +1,8 @@
 // 도감 (02 13.5): 진화해 본 형태, 만난 적, 테이머별 기록. 프로필만 읽습니다.
 import { getEnemies, getForms, getTamers } from '../../data/index';
 import { useGame } from '../store';
-import { ATTRIBUTE_BG, STAGE_LABEL } from './labels';
+import { STAGE_LABEL } from './labels';
+import { EnemySprite, FormSprite } from './Sprites';
 
 export function CodexContent() {
   const profile = useGame((s) => s.profile);
@@ -37,10 +38,15 @@ export function CodexContent() {
             <div
               key={f.id}
               data-codex-form={f.id}
-              className={`flex min-h-14 flex-col items-center justify-center rounded-lg p-1 text-center text-xs ${
-                seen ? `${ATTRIBUTE_BG[f.attribute]} text-white` : 'bg-slate-800 text-slate-500'
+              className={`flex min-h-14 flex-col items-center justify-center rounded-lg bg-slate-800 p-1 text-center text-xs ${
+                seen ? 'text-white' : 'text-slate-500'
               }`}
             >
+              {seen ? (
+                <FormSprite formId={f.id} className="h-12 w-12" />
+              ) : (
+                <FormSprite formId={f.id} className="h-12 w-12 opacity-20 brightness-0" />
+              )}
               <b>{seen ? f.name : '???'}</b>
               <span className="opacity-80">{f.rampage ? '폭주' : STAGE_LABEL[f.stage]}</span>
             </div>
@@ -61,6 +67,10 @@ export function CodexContent() {
                 seen ? 'bg-slate-700 text-white' : 'bg-slate-800 text-slate-500'
               }`}
             >
+              <EnemySprite
+                enemyId={e.id}
+                className={`mx-auto h-10 w-10 ${seen ? '' : 'opacity-20 brightness-0'}`}
+              />
               {seen ? e.name : '???'}
             </div>
           );

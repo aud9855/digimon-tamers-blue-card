@@ -5,6 +5,7 @@ import { getCard, getChip, getEnemy, getForm, getFormById, getTamer } from '../.
 import { eventDuration } from '../playback';
 import { useGame, type PlaybackItem } from '../store';
 import { CardView } from './CardView';
+import { FormSprite } from './Sprites';
 import { ATTRIBUTE_BG, STAGE_LABEL, STATUS_LABEL } from './labels';
 
 function targetSelector(who: Who): string {
@@ -184,6 +185,11 @@ function Effect({ item, view, ms }: { item: PlaybackItem; view: GameState; ms: n
             style={{ '--fx-ms': `${ms}ms` } as CSSProperties}
           >
             <div className="text-xs tracking-[0.4em] opacity-80">{label}</div>
+            <div className="mt-1 flex items-center justify-center gap-3">
+              <FormSprite formId={from.id} className="h-12 w-12 opacity-70" />
+              <span className="text-xl">▶</span>
+              <FormSprite formId={to.id} className="h-16 w-16" />
+            </div>
             <div
               className={`mt-1 text-2xl font-black ${kind === 'matrix' ? 'text-slate-900' : ''}`}
             >

@@ -7,6 +7,7 @@ import { DeckPicker, PrimaryButton } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
+import { ChipIcon } from '../components/Sprites';
 
 export function ShopScreen() {
   const state = useDisplayState();
@@ -67,7 +68,10 @@ export function ShopScreen() {
                   className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-slate-800 px-3 py-2 text-left disabled:opacity-40"
                 >
                   <span className="min-w-0">
-                    <b className="text-sky-200">{getChip(item.chipId).name}</b>
+                    <b className="flex items-center gap-1 text-sky-200">
+                      <ChipIcon chipId={item.chipId} className="h-5 w-5" />
+                      {getChip(item.chipId).name}
+                    </b>
                     <span className="block text-xs text-slate-300">
                       {item.sold ? '판매됨' : describeChip(item.chipId)}
                     </span>

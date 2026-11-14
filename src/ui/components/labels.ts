@@ -23,6 +23,14 @@ export const ATTRIBUTE_BG: Record<Attribute, string> = {
   none: 'bg-none',
 };
 
+/** 속성 색 테두리 (도트 그림 둘레) */
+export const ATTRIBUTE_RING: Record<Attribute, string> = {
+  vaccine: 'ring-vaccine',
+  data: 'ring-data',
+  virus: 'ring-virus',
+  none: 'ring-slate-500',
+};
+
 export const STATUS_LABEL: Record<StatusId, string> = {
   strength: '힘',
   weak: '약화',

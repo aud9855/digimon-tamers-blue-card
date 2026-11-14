@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { describeHazard, describeTamer, getLegalActions } from '../../core/index';
 import { getForm, getTamers } from '../../data/index';
-import { ATTRIBUTE_BG } from '../components/labels';
+import { FormSprite, TamerFace } from '../components/Sprites';
 import { Screen } from '../components/Screen';
 import { SettingsButton } from '../components/Settings';
 import { useDisplayState, useGame } from '../store';
@@ -74,10 +74,12 @@ export function TitleScreen() {
                   )
                 }
               >
-                <span
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${ATTRIBUTE_BG[partner.attribute]} text-xs font-bold`}
-                >
-                  {partner.name}
+                <span className="relative h-14 w-14 shrink-0">
+                  <FormSprite formId={partner.id} className="h-14 w-14" />
+                  <TamerFace
+                    tamerId={t.id}
+                    className="absolute -right-1 -bottom-1 h-6 w-6 rounded bg-slate-900"
+                  />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline justify-between gap-2">
