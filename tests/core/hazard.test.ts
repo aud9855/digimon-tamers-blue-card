@@ -76,7 +76,7 @@ describe('해저드 고르기 (02 13.6)', () => {
 });
 
 describe('해저드 규칙 하나하나 (02 13.6)', () => {
-  it('1: 적의 최대 HP +10% (내림), 9: 보스는 ×1.15를 더 곱함', () => {
+  it('1: 적의 최대 HP +10% (내림), 9: 보스는 HAZARD_BOSS_HP_PCT를 더 곱함', () => {
     const base = run(0);
     const battle = (hazard: number, encounterId: string, kind: 'normal' | 'boss') => {
       const s = withHazard(base, hazard);
@@ -92,7 +92,7 @@ describe('해저드 규칙 하나하나 (02 13.6)', () => {
     });
     expect(battle(8, 'a1_boss_mihiramon', 'boss')?.maxHp).toBe(Math.floor((boss * 110) / 100));
     expect(battle(9, 'a1_boss_mihiramon', 'boss')?.maxHp).toBe(
-      Math.floor((boss * 110 * 115) / 10000),
+      Math.floor((boss * constants.HAZARD_ENEMY_HP_PCT * constants.HAZARD_BOSS_HP_PCT) / 10000),
     );
     expect(battle(9, 'a1_easy_goblimon', 'normal')?.maxHp).toBe(Math.floor((goblin * 110) / 100));
   });
@@ -146,11 +146,11 @@ describe('해저드 규칙 하나하나 (02 13.6)', () => {
     expect(s5.run?.deck).toHaveLength(tamer.startDeck.length + 1);
   });
 
-  it('6: 적의 공격 피해 ×1.1', () => {
+  it('6: 적의 공격 피해 × HAZARD_ENEMY_DAMAGE_MULT', () => {
     const at = (hazard: number) =>
       enemyHitDamage(makeBattle({ hazard, enemies: ['goblimon'] }), 20, 0).damage;
     const base = at(5);
-    expect(at(6)).toBe(Math.floor(base * 1.1));
+    expect(at(6)).toBe(Math.floor(base * constants.HAZARD_ENEMY_DAMAGE_MULT));
   });
 
   it('7: 막 클리어 회복이 최대 HP의 30%', () => {

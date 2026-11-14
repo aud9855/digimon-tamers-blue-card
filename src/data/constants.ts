@@ -28,7 +28,7 @@ export const constants = {
   VULNERABLE_MULT: 1.5,
   EVOLVE_BASE_COST: { champion: 3, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
   /** 건너뛴 단계마다 진화 비용에 더함 (02 13.3) */
-  SKIP_EVOLVE_COST: 1,
+  SKIP_EVOLVE_COST: 0,
 
   // ── 동료·형태 특성 (02 12.5, 12.6) ──
   COMPANION_SLOTS: 2,
@@ -44,7 +44,7 @@ export const constants = {
   /** 시작 칩 후보 수 (02 12.7, 13.5) */
   START_CHIP_CHOICES: 3,
   RAMPAGE_HP_PCT: 0.25,
-  RAMPAGE_HP_LOSS: 3,
+  RAMPAGE_HP_LOSS: 4,
   RAMPAGE_CURSE_ID: 'rampage_scar',
 
   // ── 막 (02 2절, 7.6) ──
@@ -112,7 +112,7 @@ export const constants = {
   },
   /** 퍼센트 정수로 계산 (부동소수 오차를 피함) */
   HAZARD_ENEMY_HP_PCT: 110,
-  HAZARD_BOSS_HP_PCT: 115,
+  HAZARD_BOSS_HP_PCT: 110,
   HAZARD_REST_HEAL_PCT: 0.2,
   /** 지도 행(0부터)과 가중치 변화 */
   HAZARD_MAP_ROWS: [2, 4],
@@ -120,7 +120,7 @@ export const constants = {
   HAZARD_MAP_BATTLE_DELTA: -15,
   HAZARD_MAX_HP_PCT: 90,
   HAZARD_START_CURSE: 'bug_data',
-  HAZARD_ENEMY_DAMAGE_MULT: 1.1,
+  HAZARD_ENEMY_DAMAGE_MULT: 1.05,
   HAZARD_ACT_CLEAR_HEAL_PCT: 0.3,
   HAZARD_SHOP_PRICE_PCT: 120,
   HAZARD_REWARD_OFFER_SIZE: 2,

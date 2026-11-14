@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { applyAction, getLegalActions } from '../../src/core/engine';
 import { baseEvolveCost, evolveCost } from '../../src/core/battle/evolve';
 import { previewEvolveCost } from '../../src/core/describe';
-import { overrideRegistry } from '../../src/data/index';
+import { constants, getRampageForm, overrideRegistry } from '../../src/data/index';
 import { fullUnlocks } from '../../src/core/meta';
 import { createInitialState } from '../../src/core/state';
 import { act, battleOf, eventsOf, makeBattle, play } from '../helpers/battle';
@@ -199,22 +199,22 @@ describe('폭주 진화 (02 13.2)', () => {
     expect(battle.memory).toBe(0);
     expect(battle.stage).toBe('mega');
     expect(battle.rampage).toBe(true);
-    expect(battle.tempHp).toBe(25);
+    expect(battle.tempHp).toBe(MEGIDRAMON.tempHp);
     expect(battle.hand.some((c) => c.defId === 'megido_flame')).toBe(true);
     expect(eventsOf(events, 'evolved')[0]?.formId).toBe('megidramon');
     expect(getLegalActions(next)).not.toContainEqual({ type: 'rampage' });
     expect(getLegalActions(next)).not.toContainEqual({ type: 'evolve' });
-    // 형태 공격력 6
+    // 형태 공격력
     const strikeState = lowHp({ hand: ['strike'] });
     const raged = act(strikeState, { type: 'rampage' }).state;
     const hit = play(raged, 'strike', 0).state;
-    expect(battleOf(hit).enemies[0]?.hp).toBe(100 - (6 + 6));
+    expect(battleOf(hit).enemies[0]?.hp).toBe(100 - (6 + MEGIDRAMON.power));
   });
 
-  it('다음 턴부터 턴 시작마다 HP 3 잃음 (실드·임시 HP 무시)', () => {
+  it('다음 턴부터 턴 시작마다 HP RAMPAGE_HP_LOSS만큼 잃음 (실드·임시 HP 무시)', () => {
     const raged = act(lowHp(), { type: 'rampage' }).state;
     const next = act(raged, { type: 'endTurn' }).state;
-    expect(next.run?.hp).toBe(25 - 3);
+    expect(next.run?.hp).toBe(25 - constants.RAMPAGE_HP_LOSS);
   });
 
   it('이기면 폭주의 흔적이 덱에', () => {
@@ -231,6 +231,12 @@ describe('폭주 진화 (02 13.2)', () => {
   });
 });
 
+const MEGIDRAMON = (() => {
+  const form = getRampageForm('guilmon');
+  if (!form) throw new Error('메기드라몬 없음');
+  return form;
+})();
+
 describe('다영·진 (02 13.3)', () => {
   const DRAW = Array.from({ length: 30 }, () => 'guard');
   const aiMako = (opts = {}) => {
@@ -244,12 +250,25 @@ describe('다영·진 (02 13.3)', () => {
     return state;
   };
 
-  it('임프몬은 성장기에서 곧바로 베르몬(궁극체)으로, 건너뛴 단계마다 비용 +1', () => {
+  it('건너뛴 단계 수만큼 SKIP_EVOLVE_COST가 붙음 (값을 바꿔 확인)', () => {
+    const before = constants.SKIP_EVOLVE_COST;
+    constants.SKIP_EVOLVE_COST = 1;
+    try {
+      expect(previewEvolveCost(aiMako({ memory: 3 }))).toBe(
+        (constants.EVOLVE_BASE_COST.mega ?? 0) + 2,
+      );
+    } finally {
+      constants.SKIP_EVOLVE_COST = before;
+    }
+  });
+
+  it('임프몬은 성장기에서 곧바로 베르몬(궁극체)으로, 건너뛴 단계마다 비용 SKIP_EVOLVE_COST', () => {
     const state = aiMako({ memory: 3 });
-    expect(previewEvolveCost(state)).toBe(4 + 2);
+    const cost = (constants.EVOLVE_BASE_COST.mega ?? 0) + 2 * constants.SKIP_EVOLVE_COST;
+    expect(previewEvolveCost(state)).toBe(cost);
     const next = act(state, { type: 'evolve' }).state;
     expect(battleOf(next).stage).toBe('mega');
-    expect(battleOf(next).memory).toBe(3 - 6);
+    expect(battleOf(next).memory).toBe(3 - cost);
     expect(battleOf(next).hand.some((c) => c.defId === 'death_slinger')).toBe(true);
   });
 

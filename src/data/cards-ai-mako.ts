@@ -230,12 +230,12 @@ export const aiMakoCards = [
     pool: 'none',
     base: {
       cost: 2,
-      effects: [{ op: 'damage', amount: 14, target: 'allEnemies' }],
+      effects: [{ op: 'damage', amount: 10, target: 'allEnemies' }],
       keywords: ['retain'],
     },
     upgraded: {
       cost: 2,
-      effects: [{ op: 'damage', amount: 14, target: 'allEnemies' }],
+      effects: [{ op: 'damage', amount: 10, target: 'allEnemies' }],
       keywords: ['retain'],
     },
   },
