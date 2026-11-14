@@ -3,6 +3,7 @@ import { describeChip } from '../../core/index';
 import { getChip, getTamer } from '../../data/index';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
+import { ChipIcon } from '../components/Sprites';
 
 export function StartChipScreen() {
   const state = useDisplayState();
@@ -25,7 +26,10 @@ export function StartChipScreen() {
               onClick={() => dispatch({ type: 'chooseStartChip', index })}
               className="min-h-16 rounded-xl bg-sky-950 px-4 py-3 text-left active:bg-sky-900"
             >
-              <b className="text-sky-200">{getChip(id).name}</b>
+              <b className="flex items-center gap-2 text-sky-200">
+                <ChipIcon chipId={id} className="h-6 w-6" />
+                {getChip(id).name}
+              </b>
               <span className="block text-sm text-slate-300">{describeChip(id)}</span>
             </button>
           ))}

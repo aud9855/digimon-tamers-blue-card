@@ -5,6 +5,7 @@ import { constants, getAct } from '../../data/index';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
+import { NodeIcon } from '../components/Sprites';
 
 export const NODE_LABEL: Record<NodeType, { icon: string; name: string; color: string }> = {
   battle: { icon: '⚔', name: '전투', color: 'bg-slate-600' },
@@ -132,7 +133,7 @@ export function MapScreen() {
                   marginTop: node.type === 'boss' ? -6 : 0,
                 }}
               >
-                <span className="text-lg leading-none">{label.icon}</span>
+                <NodeIcon type={node.type} className="h-6 w-6" />
                 <span className="text-[12px] leading-tight">{label.name}</span>
               </button>
             );

@@ -5,6 +5,7 @@ import { PrimaryButton } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
+import { ChipIcon, NodeIcon } from '../components/Sprites';
 
 export function TreasureScreen() {
   const state = useDisplayState();
@@ -16,11 +17,14 @@ export function TreasureScreen() {
     <Screen>
       <RunHeader state={state} />
       <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
-        <div className="text-5xl">◆</div>
+        <NodeIcon type="treasure" className="h-16 w-16" />
         <h1 className="text-xl font-black">보물</h1>
         {pending.chipId ? (
           <div className="rounded-xl bg-sky-950 px-4 py-3">
-            <p className="font-bold text-sky-200">{getChip(pending.chipId).name}</p>
+            <p className="flex items-center justify-center gap-2 font-bold text-sky-200">
+              <ChipIcon chipId={pending.chipId} className="h-6 w-6" />
+              {getChip(pending.chipId).name}
+            </p>
             <p className="mt-1 text-sm text-slate-300">{describeChip(pending.chipId)}</p>
           </div>
         ) : (

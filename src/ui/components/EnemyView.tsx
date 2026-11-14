@@ -1,7 +1,8 @@
 import { describeIntent, type GameState, type IntentView } from '../../core/index';
 import { getEnemy } from '../../data/index';
 import { HpBar, StatusRow } from './Bars';
-import { ATTRIBUTE_BG, ATTRIBUTE_LABEL } from './labels';
+import { ATTRIBUTE_LABEL, ATTRIBUTE_RING } from './labels';
+import { EnemySprite } from './Sprites';
 
 const INTENT_ICON: Record<IntentView['kind'], string> = {
   attack: '⚔',
@@ -63,11 +64,13 @@ export function EnemyView({
     >
       <IntentBadge intent={intent} />
       <div
-        className={`flex aspect-square w-full max-w-20 items-center justify-center rounded-xl ${ATTRIBUTE_BG[def.attribute]} p-1 text-center text-xs font-bold text-white`}
+        className={`flex aspect-square w-full max-w-20 items-center justify-center rounded-xl bg-slate-800/70 ring-2 ${ATTRIBUTE_RING[def.attribute]}`}
       >
-        {def.name}
+        <EnemySprite enemyId={def.id} className="h-full w-full" />
       </div>
-      <div className="text-xs text-slate-400">{ATTRIBUTE_LABEL[def.attribute]}</div>
+      <div className="max-w-full truncate text-xs text-slate-300">
+        {def.name} <span className="text-slate-500">{ATTRIBUTE_LABEL[def.attribute]}</span>
+      </div>
       <HpBar hp={enemy.hp} maxHp={enemy.maxHp} shield={enemy.shield} />
       <StatusRow statuses={enemy.statuses} accel={enemy.accel} />
     </button>
