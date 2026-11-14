@@ -34,6 +34,10 @@ export const constants = {
   FORM_TRAIT_TEMP_HP: 6,
   FORM_TRAIT_POWER: 1,
 
+  // ── 매트릭스 에볼루션 (02 13.1) ──
+  MATRIX_HAND_BONUS: 2,
+  MATRIX_MEMORY_BONUS: 1,
+
   // ── 막 (02 2절, 7.6) ──
   ACT_COUNT: 3,
   ACT_CLEAR_HEAL_PCT: 0.5,

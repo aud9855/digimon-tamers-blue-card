@@ -1,6 +1,12 @@
 // 02 5절 디아크 칩
 import { getChip } from '../data/index';
-import { cardFace, requireRun } from './helpers';
+import { cardFace, isMatrix, requireRun } from './helpers';
+import type { CardInstance } from './types';
+
+/** 효과가 살아 있는 동료 (매트릭스 에볼루션 중에는 없음, 02 13.1) */
+function activeCompanions(state: GameState): CardInstance[] {
+  return isMatrix(state) ? [] : (state.battle?.companions ?? []);
+}
 import type { ChipDef, ChipTrigger, GameEvent, GameState } from './types';
 import { runEffects } from './battle/effects';
 
@@ -14,8 +20,8 @@ export function triggerChips(state: GameState, events: GameEvent[], trigger: Chi
     events.push({ type: 'chipTriggered', chipId });
     runEffects(state, events, chip.effects, {});
   }
-  // 동료: 칩 다음, 자리 순서대로 (02 12.6)
-  for (const card of state.battle?.companions ?? []) {
+  // 동료: 칩 다음, 자리 순서대로 (02 12.6). 매트릭스 에볼루션 중에는 꺼짐 (02 13.1)
+  for (const card of activeCompanions(state)) {
     const companion = cardFace(card).companion;
     if (companion?.trigger !== trigger || !companion.effects) continue;
     if (state.phase !== 'battle') return;
@@ -32,7 +38,7 @@ function sumModifier(state: GameState, key: keyof NonNullable<ChipDef['modifiers
 /** 칩과 동료의 진화 비용 보정 합 */
 export const evolveCostDelta = (state: GameState) =>
   sumModifier(state, 'evolveCostDelta') +
-  (state.battle?.companions ?? []).reduce(
+  activeCompanions(state).reduce(
     (sum, card) => sum + (cardFace(card).companion?.modifiers?.evolveCostDelta ?? 0),
     0,
   );

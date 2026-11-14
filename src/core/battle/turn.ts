@@ -1,5 +1,6 @@
 // 02 3.3 플레이어 턴 시작, 3.10 턴 끝과 적 턴
-import { requireBattle, requireRun } from '../helpers';
+import { constants } from '../../data/index';
+import { isMatrix, requireBattle, requireRun } from '../helpers';
 import { triggerChips } from '../chips';
 import type { GameEvent, GameState } from '../types';
 import { enemyTakeTurn } from './enemy';
@@ -18,7 +19,8 @@ export function startPlayerTurn(state: GameState, events: GameEvent[]): void {
   // 2. 첫 턴에는 실드를 지우지 않음 (전투 시작 칩이 준 실드를 살림)
   if (battle.turn >= 2) battle.shield = 0;
   // 3.
-  battle.memory = run.maxMemory;
+  // 매트릭스 에볼루션 중이면 메모리 +1 (02 13.1)
+  battle.memory = run.maxMemory + (isMatrix(state) ? constants.MATRIX_MEMORY_BONUS : 0);
   events.push({ type: 'memoryChanged', memory: battle.memory });
   // 4.
   battle.evolvedThisTurn = false;

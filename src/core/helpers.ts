@@ -43,6 +43,12 @@ export function currentForm(state: GameState): FormDef {
   return getForm(getTamer(run.tamerId).line, stage);
 }
 
+/** 매트릭스 에볼루션 중인지: 폭주가 아닌 궁극체 (02 13.1) */
+export function isMatrix(state: GameState): boolean {
+  const battle = state.battle;
+  return battle !== null && battle.stage === 'mega' && !battle.rampage;
+}
+
 /** 지금 형태의 공격력 (형태 특성 sharp 포함, 02 12.5) */
 export function formPower(state: GameState): number {
   const run = requireRun(state);

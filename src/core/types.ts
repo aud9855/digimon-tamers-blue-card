@@ -183,6 +183,8 @@ export interface BattleState {
   statuses: Statuses;
   evolvedThisTurn: boolean;
   freeEvolve: boolean;
+  /** 폭주 진화 중 (02 13.2) */
+  rampage: boolean;
   /** 이번 턴에 낸 카드 수. 카드를 옮긴 뒤 올림 (02 12.3) */
   cardsPlayedThisTurn: number;
   drawPile: CardInstance[];

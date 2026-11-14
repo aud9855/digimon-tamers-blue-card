@@ -131,3 +131,48 @@ describe('진화 처리 (02 3.7)', () => {
     expect(next.run?.hp).toBe(45);
   });
 });
+
+describe('매트릭스 에볼루션 (02 13.1)', () => {
+  const DRAW = Array.from({ length: 20 }, () => 'guard');
+
+  it('궁극체가 되면 다음 턴부터 뽑는 장수 +2, 메모리 +1', () => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      stage: 'ultimate',
+      memory: 4,
+      maxMemory: 5,
+      drawPile: DRAW,
+    });
+    const evolved = act(state, { type: 'evolve' }).state;
+    expect(battleOf(evolved).stage).toBe('mega');
+    const next = act(evolved, { type: 'endTurn' }).state;
+    expect(battleOf(next).hand.filter((c) => c.defId === 'guard')).toHaveLength(5 + 2);
+    expect(battleOf(next).memory).toBe(5 + 1);
+  });
+
+  it('완전체까지는 그대로', () => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      stage: 'champion',
+      memory: 5,
+      maxMemory: 5,
+      drawPile: DRAW,
+    });
+    const evolved = act(state, { type: 'evolve' }).state;
+    const next = act(evolved, { type: 'endTurn' }).state;
+    expect(battleOf(next).hand.filter((c) => c.defId === 'guard')).toHaveLength(5);
+    expect(battleOf(next).memory).toBe(5);
+  });
+
+  it('매트릭스 중에는 동료 효과가 꺼짐', () => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      stage: 'mega',
+      companions: ['kenta', 'calumon'],
+      drawPile: DRAW,
+    });
+    const { state: next, events } = act(state, { type: 'endTurn' });
+    expect(events.some((e) => e.type === 'companionTriggered')).toBe(false);
+    expect(battleOf(next).shield).toBe(0);
+  });
+});

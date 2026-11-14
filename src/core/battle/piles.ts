@@ -1,6 +1,6 @@
 // 카드 더미 다루기. drawPile은 배열의 끝이 "맨 위"입니다.
 import { constants } from '../../data/index';
-import { newCardInstance, requireBattle } from '../helpers';
+import { isMatrix, newCardInstance, requireBattle } from '../helpers';
 import { nextInt, shuffle } from '../rng';
 import type { CardInstance, GameEvent, GameState } from '../types';
 import { handSizeBonus } from '../chips';
@@ -39,8 +39,10 @@ export function putInHandOrDiscard(
 }
 
 /** 턴 시작에 뽑는 장수 */
+/** 턴 시작에 뽑는 장수 (칩 보정, 매트릭스 에볼루션 +2, 02 13.1) */
 export function turnDrawCount(state: GameState): number {
-  return constants.HAND_SIZE + handSizeBonus(state);
+  const matrix = isMatrix(state) ? constants.MATRIX_HAND_BONUS : 0;
+  return constants.HAND_SIZE + handSizeBonus(state) + matrix;
 }
 
 /**
