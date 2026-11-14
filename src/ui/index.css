@@ -33,6 +33,9 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* 한국어는 낱말 중간에서 줄바꿈하지 않음 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 /* ── 연출 (04 T1-4). 길이는 재생 속도에 맞춰 --fx-ms로 정함 ── */

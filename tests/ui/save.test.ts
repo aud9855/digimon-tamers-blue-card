@@ -25,8 +25,11 @@ describe('저장 형식 (04 T1-7)', () => {
   });
 
   it('설정: 모르는 값은 기본값', () => {
-    expect(parseSettings({ speed: 'fast' })).toEqual({ speed: 'fast' });
-    expect(parseSettings({ speed: 'warp' })).toEqual({ speed: 'normal' });
-    expect(parseSettings(undefined)).toEqual({ speed: 'normal' });
+    expect(parseSettings({ speed: 'fast', seenGuide: true })).toEqual({
+      speed: 'fast',
+      seenGuide: true,
+    });
+    expect(parseSettings({ speed: 'warp' })).toEqual({ speed: 'normal', seenGuide: false });
+    expect(parseSettings(undefined)).toEqual({ speed: 'normal', seenGuide: false });
   });
 });

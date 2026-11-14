@@ -12,7 +12,7 @@ const devOverride = import.meta.env.DEV && (params.has('debug') || params.has('s
 
 // 저장 불러오기 (03 9.1): 진행 중인 판이 있으면 그 자리에서 이어 함
 const settings = await loadSettings();
-useGame.setState({ speed: settings.speed });
+useGame.setState({ speed: settings.speed, seenGuide: settings.seenGuide });
 if (!devOverride) {
   const saved = await loadGame();
   if (saved && isResumable(saved)) useGame.setState({ state: saved, lastEvents: [] });
@@ -45,7 +45,13 @@ if (import.meta.env.DEV) {
 // 행동 하나가 끝날 때마다 저장 (재생 중인 화면이 아니라 진짜 상태를 저장)
 useGame.subscribe((s, prev) => {
   if (s.state !== prev.state) void saveGame(s.state);
-  if (s.speed !== prev.speed) void saveSettings({ speed: s.speed });
+  if (s.speed !== prev.speed || s.seenGuide !== prev.seenGuide) {
+    void saveSettings({ speed: s.speed, seenGuide: s.seenGuide });
+  }
+  // 처음 전투에 들어가면 하는 법을 한 번 보여 줌
+  if (s.state.phase === 'battle' && prev.state.phase !== 'battle' && !s.seenGuide && !devOverride) {
+    useGame.setState({ panel: 'guide', seenGuide: true });
+  }
 });
 
 // 오프라인 실행 (04 T1-8): 배포 빌드에서만 서비스 워커 등록

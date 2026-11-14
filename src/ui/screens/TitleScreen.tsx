@@ -5,6 +5,7 @@ import { useGame } from '../store';
 
 export function TitleScreen() {
   const dispatch = useGame((s) => s.dispatch);
+  const setPanel = useGame((s) => s.setPanel);
   return (
     <Screen>
       <div className="flex justify-end px-4 pt-3">
@@ -27,7 +28,28 @@ export function TitleScreen() {
               {t.name}로 시작
             </button>
           ))}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              data-testid="title-guide"
+              onClick={() => setPanel('guide')}
+              className="min-h-11 rounded-xl bg-slate-800 text-sm font-bold active:bg-slate-700"
+            >
+              하는 법
+            </button>
+            <button
+              type="button"
+              data-testid="title-info"
+              onClick={() => setPanel('info')}
+              className="min-h-11 rounded-xl bg-slate-800 text-sm font-bold active:bg-slate-700"
+            >
+              정보·저작권
+            </button>
+          </div>
         </div>
+        <p className="text-xs leading-relaxed text-slate-500">
+          비공식·비영리 팬 게임 · 디지몬 관련 권리는 © BANDAI, © TOEI ANIMATION, © WiZ 등에 있습니다
+        </p>
       </div>
     </Screen>
   );

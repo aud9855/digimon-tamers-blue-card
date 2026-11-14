@@ -10,6 +10,8 @@ import {
 } from '../core/index';
 import { applyEventToView, eventDuration, shouldPlay, type PlaybackSpeed } from './playback';
 
+export type Panel = 'settings' | 'guide' | 'info';
+
 /** 재생 중인 일 하나와, 연출에 필요한 덧붙임 정보 */
 export interface PlaybackItem {
   event: GameEvent;
@@ -29,9 +31,12 @@ export interface GameStore {
   queue: GameEvent[];
   current: PlaybackItem | null;
   speed: PlaybackSpeed;
-  /** 설정 창이 열려 있는지 */
-  settingsOpen: boolean;
-  setSettingsOpen: (open: boolean) => void;
+  /** 열려 있는 창 (설정, 하는 법, 정보) */
+  panel: Panel | null;
+  setPanel: (panel: Panel | null) => void;
+  /** 하는 법을 본 적이 있는지 (처음 전투에서 한 번 자동으로 보여 줌) */
+  seenGuide: boolean;
+  setSeenGuide: (seen: boolean) => void;
   dispatch: (action: Action) => void;
   /** 남은 재생을 건너뜀 */
   skipPlayback: () => void;
@@ -88,8 +93,10 @@ export const useGame = create<GameStore>((set, get) => {
     queue: [],
     current: null,
     speed: 'normal',
-    settingsOpen: false,
-    setSettingsOpen: (open) => set({ settingsOpen: open }),
+    panel: null,
+    setPanel: (panel) => set({ panel }),
+    seenGuide: false,
+    setSeenGuide: (seen) => set({ seenGuide: seen }),
     dispatch: (action) => {
       if (get().view) return; // 재생 중에는 입력을 받지 않음
       const before = get().state;
@@ -120,7 +127,7 @@ export const useGame = create<GameStore>((set, get) => {
         view: null,
         queue: [],
         current: null,
-        settingsOpen: false,
+        panel: null,
       });
     },
   };

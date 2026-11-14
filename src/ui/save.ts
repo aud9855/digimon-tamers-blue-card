@@ -9,6 +9,7 @@ const SETTINGS_KEY = 'settings';
 
 export interface Settings {
   speed: PlaybackSpeed;
+  seenGuide: boolean;
 }
 
 const SPEEDS: PlaybackSpeed[] = ['normal', 'fast', 'off'];
@@ -69,6 +70,7 @@ export function parseSettings(raw: unknown): Settings {
     speed: SPEEDS.includes(value.speed as PlaybackSpeed)
       ? (value.speed as PlaybackSpeed)
       : 'normal',
+    seenGuide: value.seenGuide === true,
   };
 }
 

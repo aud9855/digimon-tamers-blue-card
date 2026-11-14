@@ -12,7 +12,7 @@ import { ShopScreen } from './screens/ShopScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { TreasureScreen } from './screens/TreasureScreen';
 import { PlaybackOverlay } from './components/PlaybackOverlay';
-import { SettingsPanel } from './components/Settings';
+import { PanelHost } from './components/Settings';
 import { useDisplayState } from './store';
 
 const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
@@ -47,7 +47,7 @@ export function App() {
     <>
       <Current />
       <PlaybackOverlay />
-      <SettingsPanel />
+      <PanelHost />
     </>
   );
 }
