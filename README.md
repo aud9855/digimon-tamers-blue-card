@@ -4,7 +4,21 @@
 
 ## 지금 상태
 
-**기획과 설계가 끝났고, 코드는 아직 없습니다.** 다음 작업은 [작업 목록](docs/04_ROADMAP.md)의 T0-1입니다.
+**0단계(규칙 프로토타입, 화면 없음)가 끝났습니다.** 1막의 규칙 엔진이 모두 동작하고, 봇이 1,000판을 돌려 [밸런스 목표](docs/02_RULES_SPEC.md) 10개를 모두 통과합니다 ([측정 기록](docs/balance/M0.md)). 다음 작업은 [작업 목록](docs/04_ROADMAP.md)의 1단계 T1-1(화면 뼈대)입니다.
+
+## 명령
+
+Node.js 22 이상이 필요합니다.
+
+```bash
+npm install
+npm run typecheck   # 타입 검사
+npm run lint        # 규칙 검사 (core에서 Math.random·Date 금지 등)
+npm test            # 테스트 전체
+npm run sim -- --policy greedy --tamer takato --runs 1000   # 봇 1,000판
+npm run sim -- --report m0                                  # 밸런스 지표 10개 표
+npm run card-texts  # 카드·칩 설명 글을 docs/balance/card-texts.md로
+```
 
 ## 문서
 

@@ -1,0 +1,31 @@
+{
+  "name": "digimon-tamers-blue-card",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "디지몬 테이머즈 기반 모바일 덱빌딩 로그라이크 (비공식 팬 게임)",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node scripts/vitest.mjs run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "card-texts": "tsx scripts/card-texts.ts",
+    "sim": "tsx src/sim/cli.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.0"
+  }
+}

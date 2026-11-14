@@ -19,7 +19,7 @@
 | 형태 공격력 | `power` | 지금 형태가 주는 공격 보너스. 힘과 따로 더함 |
 | 약화 | `weak` | 걸린 쪽이 주는 공격 피해 ×0.75 |
 | 취약 | `vulnerable` | 걸린 쪽이 받는 공격 피해 ×1.5 |
-| 가속 | `accel` | 적 전용. 다음 공격 피해 1점당 +25% |
+| 가속 | `accel` | 적 전용. 다음 공격 피해 1점당 +35% (`ACCEL_PER_POINT`) |
 | 비트 | `bits` | 돈 |
 | 디아크 칩 | `chip` | 유물 |
 | 인텐트 | `intent` | 적이 다음에 할 행동 |
@@ -112,13 +112,13 @@ cost = cost + (칩의 evolveCostDelta 합)
 cost = max(0, cost)
 freeEvolve가 true면 cost = 0
 ```
-`EVOLVE_BASE_COST = { champion: 2, ultimate: 3, mega: 4 }`, `index`: rookie 0, champion 1, ultimate 2, mega 3.
+`EVOLVE_BASE_COST = { champion: 3, ultimate: 3, mega: 4 }`, `index`: rookie 0, champion 1, ultimate 2, mega 3.
 
 | 열린 최고 단계 | 성숙기로 | 완전체로 | 궁극체로 |
 | :--- | :---: | :---: | :---: |
-| 성숙기 (1막) | 2 | — | — |
-| 완전체 (2막) | 1 | 3 | — |
-| 궁극체 (3막) | 0 | 2 | 4 |
+| 성숙기 (1막) | 3 | — | — |
+| 완전체 (2막) | 2 | 3 | — |
+| 궁극체 (3막) | 1 | 2 | 4 |
 
 **처리 순서**:
 1. `memory -= cost`. `freeEvolve`가 true였으면 false로.
@@ -142,7 +142,7 @@ freeEvolve가 true면 cost = 0
 
 적 → 플레이어:
   raw  = amount + 적 strength
-  mult = (1 + 0.25 × 적 accel) × attr(적 속성, 형태 속성) × (적 weak > 0 ? 0.75 : 1) × (플레이어 vulnerable > 0 ? 1.5 : 1)
+  mult = (1 + 0.35 × 적 accel) × attr(적 속성, 형태 속성) × (적 weak > 0 ? 0.75 : 1) × (플레이어 vulnerable > 0 ? 1.5 : 1)
 
 damage = max(0, floor(raw × mult))
 ```
@@ -166,7 +166,7 @@ damage = max(0, floor(raw × mult))
 | 길몬이 타격 6으로 하피몬(백신) 공격 | floor(6 × 0.75) | 4 |
 | 그라우몬(power 1), 힘 2, 연속 공격 4의 hit 하나로 하피몬(백신) 공격 | floor((4+1+2) × 0.75) | 5 |
 | 길몬이 약화 상태로 강타 14, 취약 걸린 고부리몬(바이러스) 공격 | floor(14 × 0.75 × 1.5) | 15 |
-| 고릴라몬(데이터) 공격 15, 가속 2, 길몬(바이러스)이 맞음 | floor(15 × 1.5 × 0.75) | 16 |
+| 고릴라몬(데이터) 공격 15, 가속 2, 길몬(바이러스)이 맞음 | floor(15 × 1.7 × 0.75) | 19 |
 | 고부리몬(바이러스) 공격 6, 힘 2, 취약 걸린 길몬이 맞음 | floor((6+2) × 1.5) | 12 |
 
 ### 3.9 상태 효과
@@ -261,7 +261,7 @@ damage = max(0, floor(raw × mult))
 | `loseHp` | `amount` | 플레이어 HP 직접 감소 |
 | `applyStatus` | `status`, `amount`, `target`: `enemy`·`allEnemies`·`self` | 상태 효과 부여 |
 | `freeEvolve` | — | `freeEvolve = true` (이번 턴 다음 진화 비용 0) |
-| `addCard` | `cardId`, `to`: `hand`·`discard`·`draw`, `count` | 임시 카드를 만들어 넣음. `draw`는 무작위 위치 |
+| `addCard` | `cardId`, `to`: `hand`·`discard`·`draw`, `count` | 임시 카드를 만들어 넣음. `draw`는 무작위 위치. `hand`는 손패가 10장이면 `discardPile`로 (3.4, 3.7과 같음) |
 | `ifStage` | `min`, `then`, `else`(선택) | 지금 단계가 `min` 이상이면 `then`, 아니면 `else` 실행 |
 | `ifEvolvedThisTurn` | `then`, `else`(선택) | 이번 턴에 진화했으면 `then`, 아니면 `else` 실행 |
 
@@ -384,7 +384,7 @@ damage = max(0, floor(raw × mult))
 | id | 이름 | 단계 | 속성 | `tempHp` | `power` | 필살기 |
 | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
 | `guilmon` | 길몬 | 성장기 | 바이러스 | 0 | 0 | — |
-| `growlmon` | 그라우몬 | 성숙기 | 바이러스 | 8 | 1 | `exhaust_flame` |
+| `growlmon` | 그라우몬 | 성숙기 | 바이러스 | 5 | 1 | `exhaust_flame` |
 
 2단계 예정값 (0단계에서는 데이터에 넣지 않음): 메가로그라우몬 12 / 2, 듀크몬 18 / 4.
 
@@ -427,15 +427,15 @@ damage = max(0, floor(raw × mult))
 
 | id | 이름 | 구분 | 속성 | HP | 순환 (처음부터 반복) |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| `goblimon` | 고부리몬 | 일반 | 바이러스 | 20 | 공격 6 → 공격 6 → 힘 +2 |
-| `vilemon` | 이빌몬 | 일반 | 바이러스 | 16 | 공격 5 + 버그 데이터 1장을 버림 더미에 → 공격 7 |
-| `allomon` | 알로몬 | 일반 | 데이터 | 28 | 공격 9 → 방어 6 → 공격 9 |
-| `gorillamon` | 고릴라몬 | 일반 | 데이터 | 34 | 방어 8 → 공격 15 → 공격 7 |
-| `harpymon` | 하피몬 | 일반 | 백신 | 18 | 공격 3×3 → 공격 3×3 → 방어 5 |
-| `thunderbirdmon` | 썬더버드몬 | 일반 | 백신 | 24 | 공격 8 → 취약 2 → 공격 8 |
-| `icedevimon` | 아이스데블몬 | 강적 | 바이러스 | 60 | 공격 12 → 약화 2 + 공격 6 → 방어 10 + 힘 +2 |
-| `musyamon` | 무사몬 | 강적 | 데이터 | 55 | 공격 5×3 → 공격 14 → 힘 +3 |
-| `mihiramon` | 미히라몬 | 보스 | 없음 | 120 | 아래 |
+| `goblimon` | 고부리몬 | 일반 | 바이러스 | 35 | 공격 6 → 공격 6 → 힘 +2 |
+| `vilemon` | 이빌몬 | 일반 | 바이러스 | 28 | 공격 5 + 버그 데이터 1장을 버림 더미에 → 공격 7 |
+| `allomon` | 알로몬 | 일반 | 데이터 | 49 | 공격 9 → 방어 6 → 공격 9 |
+| `gorillamon` | 고릴라몬 | 일반 | 데이터 | 60 | 방어 8 → 공격 15 → 공격 7 |
+| `harpymon` | 하피몬 | 일반 | 백신 | 32 | 공격 3×3 → 공격 3×3 → 방어 5 |
+| `thunderbirdmon` | 썬더버드몬 | 일반 | 백신 | 42 | 공격 8 → 취약 2 → 공격 8 |
+| `icedevimon` | 아이스데블몬 | 강적 | 바이러스 | 90 | 공격 12 → 약화 2 + 공격 6 → 방어 10 + 힘 +2 |
+| `musyamon` | 무사몬 | 강적 | 데이터 | 83 | 공격 5×3 → 공격 14 → 힘 +3 |
+| `mihiramon` | 미히라몬 | 보스 | 없음 | 138 | 아래 |
 
 미히라몬:
 - 페이즈 1 (HP 50% 이하가 되면 페이즈 2로): 공격 12 → 공격 4×3 → 방어 12 + 힘 +2

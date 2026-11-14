@@ -48,6 +48,8 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  ├─ engine.ts           applyAction, getLegalActions (행동을 아래 모듈로 넘김)
 │  │  ├─ battle/
 │  │  │  ├─ start.ts         전투 시작 (02 3.2)
+│  │  │  ├─ piles.ts         뽑기·임시 카드 넣기 (02 3.4). drawPile은 배열의 끝이 맨 위
+│  │  │  ├─ outcome.ts       승패 (02 3.11)
 │  │  │  ├─ turn.ts          턴 시작·턴 끝·뽑기 (02 3.3, 3.4, 3.10)
 │  │  │  ├─ cards.ts         카드 내기 (02 3.5)
 │  │  │  ├─ effects.ts       효과 op 실행 (02 4.3)
@@ -63,7 +65,9 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  │  ├─ event.ts         이벤트·보물·런 효과 (02 7.4, 7.5)
 │  │  │  └─ act.ts           막 넘어가기 (02 7.6)
 │  │  ├─ chips.ts            칩 발동 (02 5)
-│  │  └─ describe.ts         카드·칩·인텐트 설명 글 만들기
+│  │  ├─ describe.ts         카드·칩·인텐트 설명 글 만들기
+│  │  ├─ helpers.ts          여러 모듈이 함께 쓰는 작은 도우미 (단계 순서, 지금 형태, 카드 면)
+│  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
 │  │  ├─ forms.ts  cards.ts  enemies.ts  encounters.ts
@@ -80,6 +84,9 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ data/                  데이터 무결성 테스트
 │  ├─ sim/                   봇 스모크·결정성·골든 테스트
 │  └─ helpers/               테스트용 전투 만들기 등
+├─ scripts/
+│  ├─ vitest.mjs             npm test 실행기 (Windows 소문자 드라이브 경로 문제를 피함)
+│  └─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
 └─ .github/workflows/ci.yml
 ```
 
@@ -205,7 +212,7 @@ export type Phase = 'title' | 'map' | 'battle' | 'reward' | 'shop' | 'rest' | 'e
 export interface GameState {
   version: number;                 // 저장 형식 버전
   seed: number;
-  rng: { map: number; battle: number; reward: number; event: number };
+  rng: Record<RngStream, number>;  // RngStream = 'map' | 'battle' | 'reward' | 'event'
   phase: Phase;
   run: RunState | null; battle: BattleState | null; pending: Pending | null;
   nextUid: number;                 // 다음 CardInstance uid
@@ -304,8 +311,9 @@ interface IntentView {
 - 알고리즘: mulberry32 (32비트 정수 상태 하나, 공개 도메인 알고리즘, 직접 구현).
 - 줄기 4개: `map`(지도), `battle`(섞기·무작위 대상), `reward`(보상·상점·보물), `event`(이벤트).
 - 초기값: `k`를 map 1, battle 2, reward 3, event 4로 두고 `(seed + k × 0x9E3779B9) >>> 0`.
+- 줄기를 쓰는 곳: `map`은 지도 생성 전부, `battle`은 섞기·`randomEnemy`·`addCard`의 뽑을 더미 위치, `reward`는 전투 보상·카드 고르기(이벤트의 `offerCards` 포함)·상점 진열·보물, `event`는 이벤트의 `addRandomCard`·`addRandomChip`.
 - 줄기를 나누는 이유: 전투에서 카드를 한 장 더 뽑아도 지도나 보상이 달라지지 않게 하기 위해서입니다.
-- 쓰는 함수: `nextInt(state, 줄기, n)` (0 이상 n 미만 정수), `shuffle`, `weightedPick`. 모두 `state.rng`의 값을 갱신합니다.
+- 쓰는 함수: `nextInt(state, 줄기, n)` (0 이상 n 미만 정수), `shuffle(state, 줄기, items)` (섞은 새 배열), `weightedPick(state, 줄기, [{ item, weight }])` (가중치는 0 이상 정수, 0이면 안 뽑힘). 모두 `state.rng`의 값을 갱신합니다.
 
 ### 5.2 `getLegalActions`가 돌려주는 것
 - `playCard`: 낼 수 있는 카드마다, 대상이 필요하면 살아 있는 적마다 하나씩.
@@ -324,7 +332,8 @@ interface IntentView {
 - JSON이 아니라 **TypeScript 객체**로 씁니다. `satisfies CardDef[]`로 타입 검사를 받아 오타를 컴파일 때 잡습니다.
 - id는 영문 소문자와 밑줄(`rock_breaker`), 이름(`name`)은 한국어.
 - `constants.ts`에 넣는 것: `HAND_SIZE`, `HAND_LIMIT`, `MAX_OVERDRAW`, `ACCEL_PER_POINT`, `ATTR_STRONG`, `ATTR_WEAK`, `WEAK_MULT`, `VULNERABLE_MULT`, `EVOLVE_BASE_COST`, `REST_HEAL_PCT`, `ACT_CLEAR_HEAL_PCT`, `ACT_COUNT`, 보상 가중치, 비트 범위, 상점 가격, 지도 행별 가중치.
-- **찾는 길은 하나**: `core`는 데이터 파일을 직접 import하지 않고 `src/data/index.ts`의 함수(`getCard`, `getForm`, `getEnemy`, `getEncounters(act, tier)`, `getChip`, `getEvent`, `getTamer`, `constants`)로만 읽습니다. 이 함수들은 `registry` 객체 하나를 봅니다. 테스트에서 정의를 더하는 방법은 8.1에 있습니다.
+- **찾는 길은 하나**: `core`는 데이터 파일을 직접 import하지 않고 `src/data/index.ts`의 함수(`getCard`, `getForm(line, stage)`, `getEnemy`, `getEncounter`, `getEncounters(act, tier)`, `getChip`, `getEvent`, `getTamer`, 목록을 돌려주는 `getCards`·`getChips`·`getEvents` 등, `constants`)로만 읽습니다.
+- `constants.ts`에는 위 상수 말고도 단계 순서(`STAGE_ORDER`), 고르기 장수(`CARD_OFFER_SIZE`), 상점 진열 수, 지도 크기와 행 규칙(`MAP_ROW_RULES`), 칩이 없을 때의 비트(`NO_CHIP_BITS`), 막 클리어 메모리 증가량을 둡니다. 이 함수들은 `registry` 객체 하나를 봅니다. 테스트에서 정의를 더하는 방법은 8.1에 있습니다.
 - **무결성 테스트** (`tests/data/integrity.test.ts`): id가 겹치지 않음, 참조하는 id가 모두 있음(조우→적, 형태→필살기, 테이머→시작 덱, 이벤트·적→카드), 적 순환의 행동 id가 있음, 보상에 나오는 희귀도(일반·고급·희귀)마다 카드가 3장 이상, 막마다 일반 적 속성이 2:2:2, 보스는 속성 `none`, 모든 카드에 두 면이 있음, 필살기는 `retain`을 가짐.
 
 ## 7. 봇과 측정 (src/sim)
@@ -340,12 +349,13 @@ interface IntentView {
 3. **막기**: 이번 적 턴에 받을 피해(인텐트 합 - 실드 - 임시 HP)가 0보다 크고, 낼 수 있는 실드 카드가 있으면 실드가 가장 큰 것. 받을 피해가 지금 HP의 30% 이상이면 당겨써서라도 내고, 아니면 당겨쓰지 않는 카드만 냅니다.
 4. **준비 카드**: 비용 0 카드, 뽑기 카드, 힘 카드를 당겨쓰지 않고 낼 수 있으면 냄.
 5. **공격**: 당겨쓰지 않고 낼 수 있는 공격 카드 중 (예상 피해 ÷ max(비용, 1))이 가장 큰 것. 대상은 이번에 죽일 수 있는 적, 없으면 공격 인텐트 피해가 가장 큰 적, 없으면 HP가 가장 적은 적.
-6. 턴 끝.
+6. **마무리** (T0-11에서 추가): 당겨써서라도 낸 공격 카드 하나로 적 하나를 쓰러뜨릴 수 있으면, 그런 카드 중 비용이 가장 적은 것. 쓰러뜨린 적은 가속을 받지 않으므로 사람이라면 할 만한 당겨쓰기입니다.
+7. 턴 끝.
 
 **`greedy`** (전투 밖):
-- 지도: 다음 칸 점수가 가장 높은 것. HP 50% 미만이면 휴식 > 이벤트 > 상점 > 보물 > 전투 > 강적, 아니면 강적(HP 70% 이상일 때) > 보물 > 전투 > 이벤트 > 상점 > 휴식.
+- 지도: 다음 칸 점수가 가장 높은 것. HP 50% 미만이면 휴식 > 이벤트 > 상점 > 보물 > 전투 > 강적, 아니면 강적(HP 70% 이상일 때) > 보물 > 전투 > 이벤트 > 상점 > 휴식. HP 50~70%에서는 강적을 맨 뒤로 둡니다.
 - 카드 보상: `policies/greedy.ts` 안의 카드 점수표에서 가장 높은 카드. 덱이 20장 이상이고 점수가 기준 아래면 건너뜀.
-- 상점: 살 수 있으면 점수가 가장 높은 카드 1장, 남으면 타격 지우기.
+- 상점: 살 수 있으면 점수가 가장 높은 카드 1장(상점 한 곳에서 1장), 남으면 타격 지우기. 칩은 사지 않습니다.
 - 휴식: HP 60% 미만이면 회복, 아니면 점수가 가장 높은 카드 강화.
 - 이벤트: HP 30% 미만이면 HP를 잃지 않는 선택지, 아니면 첫 선택지.
 
@@ -436,6 +446,7 @@ src/ui/
 | `npm run lint` | ESLint |
 | `npm test` | Vitest 전체 |
 | `npm run sim -- …` | 봇 측정 (7.2) |
+| `npm run card-texts` | 카드·칩 설명 글 출력 (`docs/balance/card-texts.md`) |
 | `npm run dev` / `npm run build` | (1단계) 개발 서버 / 빌드 |
 
 - **작업을 끝냈다고 하기 전에** `npm run typecheck`, `npm run lint`, `npm test`가 모두 통과해야 합니다.
