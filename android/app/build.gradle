@@ -8,7 +8,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // 버전: CI가 BLUECARD_VERSION_CODE(빌드 번호)·BLUECARD_VERSION_NAME(package.json)을 넘겨줌
-        versionCode (System.getenv('BLUECARD_VERSION_CODE') ?: '1') as Integer
+        versionCode Integer.parseInt(System.getenv('BLUECARD_VERSION_CODE') ?: '1')
         versionName System.getenv('BLUECARD_VERSION_NAME') ?: '0.0.0'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
