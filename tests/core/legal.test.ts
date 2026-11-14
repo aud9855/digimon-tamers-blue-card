@@ -3,10 +3,12 @@ import {
   applyAction,
   describeCard,
   describeChip,
+  describeEventChoice,
   describeIntent,
   getLegalActions,
   IllegalActionError,
   previewEvolveCost,
+  previewOverdraw,
 } from '../../src/core/index';
 import { enterEvent, enterTreasure } from '../../src/core/run/event';
 import { enterRest } from '../../src/core/run/rest';
@@ -277,5 +279,26 @@ describe('설명 글 (03 5.3)', () => {
     expect(previewEvolveCost(makeBattle({ memory: 3 }))).toBe(3);
     expect(previewEvolveCost(makeBattle({ stage: 'champion' }))).toBeNull();
     expect(previewEvolveCost(createInitialState(1))).toBeNull();
+  });
+});
+
+describe('previewOverdraw (03 9.2 당겨쓰기 경고)', () => {
+  it('메모리를 쓴 뒤 바로 턴을 끝내면 적이 얻을 가속', () => {
+    const state = makeBattle({ hand: ['strike', 'heavy_strike'], memory: 1 });
+    const [strike, heavy] = battleOf(state).hand;
+    expect(previewOverdraw(state, { cardUid: strike?.uid ?? -1 })).toBe(0);
+    expect(previewOverdraw(state, { cardUid: heavy?.uid ?? -1 })).toBe(1);
+    expect(previewOverdraw(state, 'evolve')).toBe(2);
+    const indebted = makeBattle({ hand: ['strike'], memory: -1 });
+    expect(previewOverdraw(indebted, { cardUid: battleOf(indebted).hand[0]?.uid ?? -1 })).toBe(2);
+  });
+});
+
+describe('describeEventChoice', () => {
+  it('이벤트 선택지의 결과를 글로', () => {
+    expect(describeEventChoice('calumon_play', 0)).toBe('HP 10 회복');
+    expect(describeEventChoice('calumon_play', 1)).toBe('무작위 일반 카드 1장');
+    expect(describeEventChoice('card_pile', 0)).toBe('HP 5 잃음, 카드 3장 중 1장 고르기');
+    expect(describeEventChoice('card_pile', 1)).toBe('아무 일도 없음');
   });
 });

@@ -284,8 +284,10 @@ getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 �
 applyAction(state: GameState, action: Action): { state: GameState; events: GameEvent[] }
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
 describeChip(chipId: string): string
+describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
 describeIntent(state: GameState, enemyIndex: number): IntentView   // 화면에 보일 종류·피해량·횟수
 previewEvolveCost(state: GameState): number | null   // 지금 진화 비용 (못 하면 null)
+previewOverdraw(state, { cardUid } | 'evolve'): number   // 그것을 하고 바로 턴을 끝내면 적이 얻을 가속 (당겨쓰기 경고)
 class IllegalActionError extends Error
 
 // 설명 글에 지금 전투 값을 반영할 때 넘기는 것. 없으면 카드에 적힌 기본 수치로 씁니다.
@@ -419,11 +421,18 @@ src/ui/
 ├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton…
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ save.ts                    IndexedDB 저장·불러오기
+├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
 └─ assets/                    직접 만든 그림만
+public/                       아이콘(직접 그린 SVG와 PNG), manifest.webmanifest
+pwa/sw.js                     서비스 워커 템플릿 (빌드 때 vite.config.ts가 파일 목록을 채워 dist/sw.js로)
 ```
+
+- 배포: `main`에 들어가면 `.github/workflows/pages.yml`이 GitHub Pages로 배포합니다. 빌드는 상대 경로(`base: './'`)라 하위 경로에서도 열립니다.
+- 오프라인: 서비스 워커가 처음 열 때 모든 파일을 미리 받아 둡니다. 화면은 네트워크 우선, 그 밖의 파일은 캐시 우선.
 
 - 화면은 `core`의 상태를 **보여 주기만** 합니다. 규칙 계산(피해, 비용, 낼 수 있는지)을 화면에서 다시 하지 않고 `getLegalActions`, `describeCard`, `describeIntent`, `previewEvolveCost`를 씁니다.
 - `dispatch(action)`: `applyAction`을 부르고, 새 상태를 저장하고, `events`를 재생 줄에 넣습니다. 재생이 끝날 때까지 화면은 재생 중인 모습을 보여 주고 입력을 막습니다.
+- 재생 방식: 재생 중에는 행동 전 상태의 복사본(`view`)에 이벤트에 적힌 값(피해량, 메모리, 실드 등)을 하나씩 옮겨 적어 보여 주고, 다 끝나면 진짜 상태로 바꿉니다 (`playback.ts`의 `applyEventToView`). 규칙을 다시 계산하지 않습니다. 재생 중 화면을 누르면 건너뜁니다. 속도는 보통·빠르게·끄기.
 - 저장: 행동 하나가 끝날 때마다 `GameState`를 IndexedDB에 씁니다. 앱을 다시 열면 이어서 합니다.
 
 ### 9.2 모바일 화면 원칙
@@ -447,6 +456,7 @@ src/ui/
 | `npm test` | Vitest 전체 |
 | `npm run sim -- …` | 봇 측정 (7.2) |
 | `npm run card-texts` | 카드·칩 설명 글 출력 (`docs/balance/card-texts.md`) |
+| `npm run e2e` | 360px 화면에서 전투 하나를 화면 조작만으로 끝까지 (`scripts/e2e/`, Chrome DevTools Protocol을 Node 내장 WebSocket으로 직접 다룸. 새 라이브러리 없음) |
 | `npm run dev` / `npm run build` | (1단계) 개발 서버 / 빌드 |
 
 - **작업을 끝냈다고 하기 전에** `npm run typecheck`, `npm run lint`, `npm test`가 모두 통과해야 합니다.

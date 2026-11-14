@@ -1,9 +1,9 @@
 // 카드·칩·인텐트 설명 글 (03 5.3). 효과 op마다 문장 틀이 하나씩 있습니다.
-import { getCard, getChip, getEnemy } from '../data/index';
+import { getCard, getChip, getEnemy, getEvent } from '../data/index';
 import { canEvolve, evolveCost } from './battle/evolve';
 import { enemyHitDamage, playerHitDamage } from './battle/damage';
 import { getMove } from './battle/enemy';
-import { currentForm, floorNonNegative } from './helpers';
+import { cardFace, currentForm, floorNonNegative } from './helpers';
 import { constants } from '../data/index';
 import type {
   ChipDef,
@@ -12,6 +12,8 @@ import type {
   EnemyEffect,
   GameState,
   Keyword,
+  Rarity,
+  RunEffect,
   Stage,
   StatusId,
 } from './types';
@@ -205,4 +207,60 @@ export function describeIntent(state: GameState, enemyIndex: number): IntentView
 /** 지금 진화 비용 (못 하면 null) */
 export function previewEvolveCost(state: GameState): number | null {
   return canEvolve(state) ? evolveCost(state) : null;
+}
+
+/**
+ * 손패 카드 또는 진화에 메모리를 쓴 뒤 바로 턴을 끝내면 적이 얻을 가속 (02 3.6).
+ * 0이면 당겨쓰지 않음. 화면의 당겨쓰기 경고에 씁니다 (03 9.2).
+ */
+export function previewOverdraw(state: GameState, what: { cardUid: number } | 'evolve'): number {
+  const battle = state.battle;
+  if (!battle) return 0;
+  let cost: number | null;
+  if (what === 'evolve') {
+    cost = evolveCost(state);
+  } else {
+    const card = battle.hand.find((c) => c.uid === what.cardUid);
+    cost = card ? cardFace(card).cost : null;
+  }
+  if (cost === null) return 0;
+  return Math.max(0, cost - battle.memory);
+}
+
+const RARITY_NAMES: Record<Rarity, string> = {
+  basic: '기본',
+  common: '일반',
+  uncommon: '고급',
+  rare: '희귀',
+  special: '특수',
+};
+
+/** 런 효과 하나의 설명 (이벤트 선택지 등, 02 7.5) */
+function describeRunEffect(effect: RunEffect): string {
+  switch (effect.op) {
+    case 'heal':
+      return `HP ${effect.amount} 회복`;
+    case 'loseHp':
+      return `HP ${effect.amount} 잃음`;
+    case 'gainBits':
+      return `${effect.amount} 비트`;
+    case 'addRandomCard':
+      return `무작위 ${RARITY_NAMES[effect.rarity]} 카드 1장`;
+    case 'offerCards':
+      return `${effect.upgraded ? '강화된 ' : ''}${
+        effect.rarity ? `${RARITY_NAMES[effect.rarity]} ` : ''
+      }카드 ${effect.count}장 중 1장 고르기`;
+    case 'addRandomChip':
+      return '무작위 디아크 칩 1개';
+    case 'addCard':
+      return `${getCard(effect.cardId).name} 1장을 덱에`;
+  }
+}
+
+/** 이벤트 선택지의 결과 설명. 효과가 없으면 '아무 일도 없음' */
+export function describeEventChoice(eventId: string, index: number): string {
+  const choice = getEvent(eventId).choices[index];
+  if (!choice) throw new Error(`없는 선택지: ${eventId} ${index}`);
+  if (choice.effects.length === 0) return '아무 일도 없음';
+  return choice.effects.map(describeRunEffect).join(', ');
 }
