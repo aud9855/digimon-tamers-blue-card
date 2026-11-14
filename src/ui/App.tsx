@@ -1,4 +1,5 @@
 // 국면(phase)에 따라 화면을 바꿈 (03 9.1)
+import { useEffect } from 'react';
 import type { Phase } from '../core/index';
 import { ActClearScreen } from './screens/ActClearScreen';
 import { BattleScreen } from './screens/BattleScreen';
@@ -26,7 +27,18 @@ const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
   runLost: RunEndScreen,
 };
 
+/** 휴대폰 뒤로 버튼·제스처로 실수로 나가지 않게 함 (03 9.2) */
+function useBackButtonGuard() {
+  useEffect(() => {
+    history.pushState({ guard: true }, '');
+    const onPop = () => history.pushState({ guard: true }, '');
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+}
+
 export function App() {
+  useBackButtonGuard();
   const phase = useGame((s) => s.state.phase);
   const Current = SCREENS[phase];
   return <Current />;

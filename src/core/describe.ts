@@ -3,7 +3,7 @@ import { getCard, getChip, getEnemy } from '../data/index';
 import { canEvolve, evolveCost } from './battle/evolve';
 import { enemyHitDamage, playerHitDamage } from './battle/damage';
 import { getMove } from './battle/enemy';
-import { currentForm, floorNonNegative } from './helpers';
+import { cardFace, currentForm, floorNonNegative } from './helpers';
 import { constants } from '../data/index';
 import type {
   ChipDef,
@@ -205,4 +205,22 @@ export function describeIntent(state: GameState, enemyIndex: number): IntentView
 /** 지금 진화 비용 (못 하면 null) */
 export function previewEvolveCost(state: GameState): number | null {
   return canEvolve(state) ? evolveCost(state) : null;
+}
+
+/**
+ * 손패 카드 또는 진화에 메모리를 쓴 뒤 바로 턴을 끝내면 적이 얻을 가속 (02 3.6).
+ * 0이면 당겨쓰지 않음. 화면의 당겨쓰기 경고에 씁니다 (03 9.2).
+ */
+export function previewOverdraw(state: GameState, what: { cardUid: number } | 'evolve'): number {
+  const battle = state.battle;
+  if (!battle) return 0;
+  let cost: number | null;
+  if (what === 'evolve') {
+    cost = evolveCost(state);
+  } else {
+    const card = battle.hand.find((c) => c.uid === what.cardUid);
+    cost = card ? cardFace(card).cost : null;
+  }
+  if (cost === null) return 0;
+  return Math.max(0, cost - battle.memory);
 }
