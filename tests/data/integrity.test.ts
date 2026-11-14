@@ -44,22 +44,22 @@ const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
 describe('콘텐츠 개수 (02 9절, 12절)', () => {
-  it('카드: 기본 5, 일반 21, 고급 17, 희귀 10, 필살기 9, 저주 1 (동료 4장 포함)', () => {
+  it('카드: 기본 5, 일반 21, 고급 17, 희귀 10, 필살기 10, 저주 2 (동료 4장 포함)', () => {
     const all = getCards();
-    expect(all).toHaveLength(63);
+    expect(all).toHaveLength(65);
     expect(countBy(all, (c) => c.rarity)).toEqual({
       basic: 5,
       common: 21,
       uncommon: 17,
       rare: 10,
-      special: 10,
+      special: 12,
     });
-    expect(all.filter((c) => c.type === 'signature')).toHaveLength(9);
-    expect(all.filter((c) => c.type === 'curse')).toHaveLength(1);
+    expect(all.filter((c) => c.type === 'signature')).toHaveLength(10);
+    expect(all.filter((c) => c.type === 'curse')).toHaveLength(2);
   });
 
-  it('형태 12, 적 24, 조우 39, 칩 11, 이벤트 8, 테이머 3', () => {
-    expect(getForms()).toHaveLength(12);
+  it('형태 13 (폭주 1 포함), 적 24, 조우 39, 칩 11, 이벤트 8, 테이머 3', () => {
+    expect(getForms()).toHaveLength(13);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
     expect(getChips()).toHaveLength(11);
@@ -109,7 +109,9 @@ describe('id (03 6절)', () => {
   });
 
   it('계열과 단계마다 형태가 하나뿐', () => {
-    const keys = getForms().map((f) => `${f.line}/${f.stage}`);
+    const keys = getForms()
+      .filter((f) => !f.rampage)
+      .map((f) => `${f.line}/${f.stage}`);
     expect(new Set(keys).size).toBe(keys.length);
   });
 });

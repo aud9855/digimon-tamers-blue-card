@@ -42,6 +42,18 @@ export const forms = [
     signatureCardId: 'royal_saber',
   },
   {
+    // 폭주 진화 (02 13.2)
+    id: 'megidramon',
+    name: '메기드라몬',
+    line: 'guilmon',
+    stage: 'mega',
+    attribute: 'virus',
+    tempHp: 25,
+    power: 6,
+    signatureCardId: 'megido_flame',
+    rampage: true,
+  },
+  {
     id: 'renamon',
     name: '레나몬',
     line: 'renamon',

@@ -38,6 +38,11 @@ export const constants = {
   MATRIX_HAND_BONUS: 2,
   MATRIX_MEMORY_BONUS: 1,
 
+  // ── 폭주 진화 (02 13.2) ──
+  RAMPAGE_HP_PCT: 0.25,
+  RAMPAGE_HP_LOSS: 3,
+  RAMPAGE_CURSE_ID: 'rampage_scar',
+
   // ── 막 (02 2절, 7.6) ──
   ACT_COUNT: 3,
   ACT_CLEAR_HEAL_PCT: 0.5,

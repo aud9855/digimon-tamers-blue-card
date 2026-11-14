@@ -1,5 +1,5 @@
 // 여러 모듈이 함께 쓰는 작은 도우미
-import { constants, getCard, getForm, getTamer } from '../data/index';
+import { constants, getCard, getForm, getRampageForm, getTamer } from '../data/index';
 import type {
   BattleState,
   CardFace,
@@ -40,7 +40,12 @@ export function currentForm(state: GameState): FormDef {
   const run = requireRun(state);
   const stage = state.battle?.stage ?? constants.STAGE_ORDER[0];
   if (!stage) throw new Error('STAGE_ORDER가 비었습니다');
-  return getForm(getTamer(run.tamerId).line, stage);
+  const line = getTamer(run.tamerId).line;
+  if (state.battle?.rampage) {
+    const rampageForm = getRampageForm(line);
+    if (rampageForm) return rampageForm;
+  }
+  return getForm(line, stage);
 }
 
 /** 매트릭스 에볼루션 중인지: 폭주가 아닌 궁극체 (02 13.1) */

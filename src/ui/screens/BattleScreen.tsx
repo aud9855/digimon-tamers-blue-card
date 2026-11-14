@@ -31,6 +31,7 @@ export interface BattleViewProps {
   targetable?: Set<number>;
   onEnemySelect?: (index: number) => void;
   onEvolve?: () => void;
+  onRampage?: () => void;
   onCardPointerDown?: (card: CardInstance, e: React.PointerEvent) => void;
   /** 적과 파트너 사이 (내기 영역, 경고) */
   middle?: ReactNode;
@@ -50,6 +51,7 @@ export function BattleView({
   targetable,
   onEnemySelect,
   onEvolve,
+  onRampage,
   onCardPointerDown,
   middle,
   footer,
@@ -108,7 +110,7 @@ export function BattleView({
             ))}
           </div>
         )}
-        <PartnerView state={state} onEvolve={onEvolve} />
+        <PartnerView state={state} onEvolve={onEvolve} onRampage={onRampage} />
         <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
         <div ref={handRef}>
           <Hand
@@ -279,6 +281,14 @@ export function BattleScreen() {
         targetable={targetable}
         onEnemySelect={(i) => selected && play(selected.uid, i)}
         onEvolve={onEvolve}
+        onRampage={
+          legal.some((a) => a.type === 'rampage')
+            ? () => {
+                reset();
+                dispatch({ type: 'rampage' });
+              }
+            : undefined
+        }
         onCardPointerDown={onCardPointerDown}
         handRef={handRef}
         middle={middle}

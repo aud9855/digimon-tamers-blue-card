@@ -54,6 +54,7 @@ describe('진화 처리 (02 3.7)', () => {
       to: 'champion',
       cost: 3,
       tempHpGained: 5,
+      formId: 'growlmon',
     });
   });
 
@@ -174,5 +175,56 @@ describe('매트릭스 에볼루션 (02 13.1)', () => {
     const { state: next, events } = act(state, { type: 'endTurn' });
     expect(events.some((e) => e.type === 'companionTriggered')).toBe(false);
     expect(battleOf(next).shield).toBe(0);
+  });
+});
+
+describe('폭주 진화 (02 13.2)', () => {
+  const DRAW = Array.from({ length: 20 }, () => 'guard');
+  const lowHp = (opts = {}) =>
+    makeBattle({ stage: 'champion', hp: 25, maxHp: 100, drawPile: DRAW, ...opts });
+
+  it('오유민, 성숙기·완전체, HP 25% 이하일 때만 고를 수 있음', () => {
+    expect(getLegalActions(lowHp())).toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(lowHp({ hp: 26 }))).not.toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(lowHp({ stage: 'rookie' }))).not.toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(lowHp({ stage: 'mega' }))).not.toContainEqual({ type: 'rampage' });
+  });
+
+  it('메기드라몬: 비용 0, 임시 HP, 필살기, 궁극체로 셈, 매트릭스는 아님', () => {
+    const state = lowHp({ memory: 0 });
+    const { state: next, events } = act(state, { type: 'rampage' });
+    const battle = battleOf(next);
+    expect(battle.memory).toBe(0);
+    expect(battle.stage).toBe('mega');
+    expect(battle.rampage).toBe(true);
+    expect(battle.tempHp).toBe(25);
+    expect(battle.hand.some((c) => c.defId === 'megido_flame')).toBe(true);
+    expect(eventsOf(events, 'evolved')[0]?.formId).toBe('megidramon');
+    expect(getLegalActions(next)).not.toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(next)).not.toContainEqual({ type: 'evolve' });
+    // 형태 공격력 6
+    const strikeState = lowHp({ hand: ['strike'] });
+    const raged = act(strikeState, { type: 'rampage' }).state;
+    const hit = play(raged, 'strike', 0).state;
+    expect(battleOf(hit).enemies[0]?.hp).toBe(100 - (6 + 6));
+  });
+
+  it('다음 턴부터 턴 시작마다 HP 3 잃음 (실드·임시 HP 무시)', () => {
+    const raged = act(lowHp(), { type: 'rampage' }).state;
+    const next = act(raged, { type: 'endTurn' }).state;
+    expect(next.run?.hp).toBe(25 - 3);
+  });
+
+  it('이기면 폭주의 흔적이 덱에', () => {
+    const state = lowHp({ hand: ['strike'], deck: ['strike'], enemyOverrides: [{ hp: 1 }] });
+    const raged = act(state, { type: 'rampage' }).state;
+    const won = play(raged, 'strike', 0).state;
+    expect(won.run?.deck.map((c) => c.defId)).toEqual(['strike', 'rampage_scar']);
+  });
+
+  it('다른 테이머는 폭주 진화가 없음', () => {
+    const state = lowHp();
+    if (state.run) state.run.tamerId = 'rika';
+    expect(getLegalActions(state)).not.toContainEqual({ type: 'rampage' });
   });
 });

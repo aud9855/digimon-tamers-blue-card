@@ -1,5 +1,6 @@
 import { constants, getEvent, getTamers } from '../data/index';
 import { canEvolve, evolve } from './battle/evolve';
+import { canRampage, rampage } from './battle/rampage';
 import { cardNeedsTarget, isCardPlayable, playCard } from './battle/cards';
 import { endTurn } from './battle/turn';
 import { isUpgradable, livingEnemyIndexes } from './helpers';
@@ -53,6 +54,7 @@ export function getLegalActions(state: GameState): Action[] {
         }
       }
       if (canEvolve(state)) actions.push({ type: 'evolve' });
+      if (canRampage(state)) actions.push({ type: 'rampage' });
       actions.push({ type: 'endTurn' });
       return actions;
     }
@@ -146,6 +148,8 @@ function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
       return playCard(draft, events, action.cardUid, action.targetIndex);
     case 'evolve':
       return evolve(draft, events);
+    case 'rampage':
+      return rampage(draft, events);
     case 'endTurn':
       return endTurn(draft, events);
     case 'pickCard':

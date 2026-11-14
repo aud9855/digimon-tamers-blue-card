@@ -266,6 +266,9 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
   const lethal = findLethal(state, legal);
   if (lethal) return lethal;
 
+  // 1-1. 폭주 진화: 할 수 있으면 함 (02 13.2, HP가 위험할 때만 조건이 맞음)
+  if (legal.some((a) => a.type === 'rampage')) return { type: 'rampage' };
+
   // 2. 진화 (당겨쓰지 않고)
   const evolveCost = previewEvolveCost(state);
   const evolveAllowed = ctx.evolve === 'asap' || (ctx.evolve === 'turn2' && battle.turn >= 2);

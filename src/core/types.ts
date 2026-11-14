@@ -68,6 +68,8 @@ export interface FormDef {
   tempHp: number;
   power: number;
   signatureCardId?: string;
+  /** 폭주 형태 (02 13.2): 보통 진화로는 되지 않음 */
+  rampage?: boolean;
 }
 export type EnemyEffect =
   | { op: 'attack'; amount: number; hits?: number }
@@ -287,7 +289,8 @@ export type Action =
   | { type: 'eventChoose'; index: number }
   | { type: 'proceed' }
   | { type: 'chooseStartChip'; index: number }
-  | { type: 'chooseFormTrait'; index: number };
+  | { type: 'chooseFormTrait'; index: number }
+  | { type: 'rampage' };
 
 // ── 일어난 일 목록 (03 4.1) ──
 export type Who = 'player' | number; // number: 적의 위치(index)
@@ -324,7 +327,15 @@ export type GameEvent =
   | { type: 'shieldGained'; target: Who; amount: number }
   | { type: 'statusApplied'; target: Who; status: StatusId; amount: number }
   | { type: 'accelChanged'; enemyIndex: number; accel: number } // 얻었을 때와 0이 됐을 때
-  | { type: 'evolved'; from: Stage; to: Stage; cost: number; tempHpGained: number }
+  | {
+      type: 'evolved';
+      from: Stage;
+      to: Stage;
+      cost: number;
+      tempHpGained: number;
+      /** 된 형태 (폭주면 폭주 형태) */
+      formId: string;
+    }
   | { type: 'enemyPhaseChanged'; enemyIndex: number; phaseIndex: number }
   | { type: 'enemyMoved'; enemyIndex: number; moveId: string }
   | { type: 'enemyIntent'; enemyIndex: number; moveId: string }

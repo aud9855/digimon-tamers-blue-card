@@ -491,6 +491,33 @@ export const cards = [
     },
   },
   {
+    id: 'megido_flame',
+    name: '메기드 플레임',
+    type: 'signature',
+    rarity: 'special',
+    pool: 'none',
+    base: {
+      cost: 2,
+      effects: [{ op: 'damage', amount: 20, target: 'allEnemies' }],
+      keywords: ['retain'],
+    },
+    upgraded: {
+      cost: 2,
+      effects: [{ op: 'damage', amount: 20, target: 'allEnemies' }],
+      keywords: ['retain'],
+    },
+  },
+  {
+    // 폭주의 대가 (02 13.2)
+    id: 'rampage_scar',
+    name: '폭주의 흔적',
+    type: 'curse',
+    rarity: 'special',
+    pool: 'none',
+    base: { cost: 0, effects: [], keywords: ['unplayable'] },
+    upgraded: { cost: 0, effects: [], keywords: ['unplayable'] },
+  },
+  {
     // 저주: 비용 0은 형식상 값
     id: 'bug_data',
     name: '버그 데이터',

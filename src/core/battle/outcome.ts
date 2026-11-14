@@ -1,6 +1,7 @@
 // 02 3.11 승패
 import { requireBattle, requireRun } from '../helpers';
-import { enterBattleReward } from '../run/reward';
+import { constants } from '../../data/index';
+import { addCardToDeck, enterBattleReward } from '../run/reward';
 import { setPhase } from '../phase';
 import type { GameEvent, GameState } from '../types';
 
@@ -54,5 +55,7 @@ export function winBattle(state: GameState, events: GameEvent[]): void {
     evolveCount: battle.evolveCount,
   });
   state.battle = null;
+  // 폭주의 대가: 저주 카드 (보상보다 먼저, 02 13.2)
+  if (battle.rampage) addCardToDeck(state, events, constants.RAMPAGE_CURSE_ID, false);
   enterBattleReward(state, events, battle.kind);
 }

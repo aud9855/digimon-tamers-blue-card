@@ -52,7 +52,7 @@ export function evolve(state: GameState, events: GameEvent[]): void {
   // 3.
   const tempHp = formTempHp(state, form);
   battle.tempHp += tempHp;
-  events.push({ type: 'evolved', from, to: next, cost, tempHpGained: tempHp });
+  events.push({ type: 'evolved', from, to: next, cost, tempHpGained: tempHp, formId: form.id });
   // 4. 필살기를 임시 카드로 손패에 (가득이면 버림 더미)
   if (form.signatureCardId) createTempCards(state, events, form.signatureCardId, 'hand', 1);
   // 5.

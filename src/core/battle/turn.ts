@@ -3,6 +3,7 @@ import { constants } from '../../data/index';
 import { isMatrix, requireBattle, requireRun } from '../helpers';
 import { triggerChips } from '../chips';
 import type { GameEvent, GameState } from '../types';
+import { loseHp } from './damage';
 import { enemyTakeTurn } from './enemy';
 import { battleStopped } from './outcome';
 import { drawCards, turnDrawCount } from './piles';
@@ -16,6 +17,11 @@ export function startPlayerTurn(state: GameState, events: GameEvent[]): void {
   // 1.
   battle.turn += 1;
   events.push({ type: 'turnStarted', turn: battle.turn });
+  // 폭주의 대가: 폭주한 다음 턴부터 HP를 잃음 (02 13.2)
+  if (battle.rampage) {
+    loseHp(state, events, constants.RAMPAGE_HP_LOSS);
+    if (battleStopped(state)) return;
+  }
   // 2. 첫 턴에는 실드를 지우지 않음 (전투 시작 칩이 준 실드를 살림)
   if (battle.turn >= 2) battle.shield = 0;
   // 3.
