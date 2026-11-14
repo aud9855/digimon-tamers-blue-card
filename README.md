@@ -4,11 +4,12 @@
 
 ## 지금 상태
 
-**0단계(규칙 프로토타입, 화면 없음)가 끝났습니다.** 1막의 규칙 엔진이 모두 동작하고, 봇이 1,000판을 돌려 [밸런스 목표](docs/02_RULES_SPEC.md) 10개를 모두 통과합니다 ([측정 기록](docs/balance/M0.md)). 다음 작업은 [작업 목록](docs/04_ROADMAP.md)의 1단계 T1-1(화면 뼈대)입니다.
+**3단계(깊이)까지 끝났습니다.** 3막, 테이머 4명(다영·진은 해금), 매트릭스·폭주 진화, 디지털 해저드 1~10, 도감, 효과음이 들어 있습니다. 밸런스 기록은 [M3](docs/balance/M3.md), 작업 목록은 [04 문서](docs/04_ROADMAP.md)에 있습니다. 그림은 아직 자리표시입니다.
 
 ## 해 보기
 
-휴대폰 브라우저로 **https://aud9855.github.io/digimon-tamers-blue-card/** 를 여세요. 홈 화면에 추가하면 앱처럼 열리고, 한 번 연 뒤에는 오프라인에서도 됩니다.
+- **웹**: 휴대폰 브라우저로 **https://aud9855.github.io/digimon-tamers-blue-card/** 를 여세요. 홈 화면에 추가하면 앱처럼 열리고, 한 번 연 뒤에는 오프라인에서도 됩니다.
+- **Android 앱**: 휴대폰에서 **https://github.com/aud9855/digimon-tamers-blue-card/releases/latest/download/blue-card.apk** 를 받아 설치하세요. 처음 설치할 때 "출처를 알 수 없는 앱"을 허용해야 합니다. 새 버전도 같은 주소로 받아 덮어 설치하면 저장이 남습니다.
 
 ## 명령
 
