@@ -15,7 +15,40 @@
     <title>디지몬 테이머즈: 블루 카드</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot" style="color:#94a3b8;font:14px sans-serif;text-align:center;padding-top:40vh">
+        불러오는 중…
+      </div>
+    </div>
     <script type="module" src="./src/ui/main.tsx"></script>
+    <script>
+      // 화면을 그리지 못했을 때(배포 직후 옛 캐시 등) 빈 화면 대신 다시 불러오기 버튼을 보여 줌.
+      // 화면이 그려지면 React가 #boot를 지우므로 아무 일도 없음
+      setTimeout(function () {
+        var boot = document.getElementById('boot');
+        if (!boot) return;
+        boot.innerHTML =
+          '화면을 불러오지 못했습니다.<br><br><button id="boot-retry" style="padding:12px 20px;border-radius:8px;border:0;background:#0284c7;color:#fff;font-weight:bold">다시 불러오기</button>';
+        document.getElementById('boot-retry').onclick = function () {
+          var done = function () {
+            location.replace(location.pathname + '?r=' + Date.now());
+          };
+          var jobs = [];
+          if (navigator.serviceWorker)
+            jobs.push(
+              navigator.serviceWorker.getRegistrations().then(function (rs) {
+                return Promise.all(rs.map(function (r) { return r.unregister(); }));
+              }),
+            );
+          if (window.caches)
+            jobs.push(
+              caches.keys().then(function (ks) {
+                return Promise.all(ks.map(function (k) { return caches.delete(k); }));
+              }),
+            );
+          Promise.all(jobs).then(done, done);
+        };
+      }, 8000);
+    </script>
   </body>
 </html>
