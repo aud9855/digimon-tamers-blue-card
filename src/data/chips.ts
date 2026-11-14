@@ -40,6 +40,13 @@ export const chips = [
     modifiers: { firstCardCostDelta: -1 },
   },
   {
+    id: 'trait_calm',
+    name: '침착함',
+    hidden: true,
+    trigger: 'onTurnStart',
+    effects: [{ op: 'shield', amount: 3 }],
+  },
+  {
     id: 'bit_pouch',
     name: '비트 주머니',
     modifiers: { battleBitsBonus: 5 },

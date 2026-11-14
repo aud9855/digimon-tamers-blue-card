@@ -50,4 +50,28 @@ export const tamers = [
     startEffects: [],
     startChips: ['trait_card_battler'],
   },
+  {
+    id: 'henry',
+    name: '곽소룡',
+    line: 'terriermon',
+    maxHp: 72,
+    startBits: 0,
+    startMaxStage: 'champion',
+    startMaxMemory: 3,
+    startDeck: [
+      'strike',
+      'strike',
+      'strike',
+      'strike',
+      'guard',
+      'guard',
+      'guard',
+      'guard',
+      'bunny_blast',
+      'terrier_tornado',
+    ],
+    // 특성 "침착함": 숨은 칩 (02 12.3)
+    startEffects: [],
+    startChips: ['trait_calm'],
+  },
 ] satisfies TamerDef[];

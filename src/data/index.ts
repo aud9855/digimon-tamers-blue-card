@@ -11,6 +11,7 @@ import type {
   TamerId,
 } from '../core/types';
 import { cards } from './cards';
+import { henryCards } from './cards-henry';
 import { rikaCards } from './cards-rika';
 import { chips } from './chips';
 import { constants, type Constants } from './constants';
@@ -34,7 +35,7 @@ interface Registry {
 }
 
 const registry: Registry = {
-  cards: [...cards, ...rikaCards],
+  cards: [...cards, ...rikaCards, ...henryCards],
   forms: [...forms],
   enemies: [...enemies],
   encounters: [...encounters],

@@ -139,3 +139,14 @@ describe('0단계 칩 6개가 실제 전투에서 동작', () => {
     expect(withPouch - without).toBe(5); // 비트 주머니
   });
 });
+
+describe('곽소룡 특성 침착함 (02 12.3)', () => {
+  it('매 턴 시작에 실드 +3 (실드를 지운 뒤)', () => {
+    const state = makeBattle({ deck: DECK, chips: ['trait_calm'] });
+    state.battle = null;
+    startBattle(state, [], 'test_dummy_one', 'normal');
+    expect(battleOf(state).shield).toBe(3);
+    const next = act(state, { type: 'endTurn' }).state;
+    expect(battleOf(next).shield).toBe(3);
+  });
+});
