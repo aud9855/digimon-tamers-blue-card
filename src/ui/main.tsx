@@ -1,7 +1,9 @@
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Action } from '../core/index';
-import { App } from './App';
+import { App as GameApp } from './App';
 import './index.css';
 import { isResumable, loadGame, loadSettings, saveGame, saveSettings } from './save';
 import { useGame } from './store';
@@ -54,15 +56,22 @@ useGame.subscribe((s, prev) => {
   }
 });
 
-// 오프라인 실행 (04 T1-8): 배포 빌드에서만 서비스 워커 등록
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+// 오프라인 실행 (04 T1-8): 웹 배포 빌드에서만 서비스 워커 등록 (APK는 파일이 앱 안에 있음)
+if (import.meta.env.PROD && !Capacitor.isNativePlatform() && 'serviceWorker' in navigator) {
   void navigator.serviceWorker.register('./sw.js');
+}
+
+// APK: 휴대폰 뒤로 버튼으로 앱이 닫히지 않게, 열린 창만 닫음 (03 9.2)
+if (Capacitor.isNativePlatform()) {
+  void App.addListener('backButton', () => {
+    if (useGame.getState().panel) useGame.getState().setPanel(null);
+  });
 }
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root가 없습니다');
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <GameApp />
   </StrictMode>,
 );

@@ -1,6 +1,6 @@
 {
   "name": "digimon-tamers-blue-card",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "private": true,
   "license": "UNLICENSED",
   "description": "디지몬 테이머즈 기반 모바일 덱빌딩 로그라이크 (비공식 팬 게임)",
@@ -19,9 +19,11 @@
     "format:check": "prettier --check .",
     "card-texts": "tsx scripts/card-texts.ts",
     "sim": "tsx src/sim/cli.ts",
-    "e2e": "node scripts/upper-drive.mjs scripts/e2e/battle.mjs"
+    "e2e": "node scripts/upper-drive.mjs scripts/e2e/battle.mjs",
+    "cap:sync": "npm run build && cap sync android"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^26.6.6",
@@ -39,6 +41,9 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zustand": "^5.1.0"
