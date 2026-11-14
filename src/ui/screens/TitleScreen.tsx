@@ -1,13 +1,17 @@
-import { describeTamer } from '../../core/index';
+import { describeTamer, getLegalActions } from '../../core/index';
 import { getForm, getTamers } from '../../data/index';
 import { ATTRIBUTE_BG } from '../components/labels';
 import { Screen } from '../components/Screen';
 import { SettingsButton } from '../components/Settings';
-import { useGame } from '../store';
+import { useDisplayState, useGame } from '../store';
 
 export function TitleScreen() {
   const dispatch = useGame((s) => s.dispatch);
   const setPanel = useGame((s) => s.setPanel);
+  const state = useDisplayState();
+  const open = new Set(
+    getLegalActions(state).flatMap((a) => (a.type === 'startRun' ? [a.tamerId] : [])),
+  );
   return (
     <Screen>
       <div className="flex justify-end px-4 pt-3">
@@ -23,12 +27,14 @@ export function TitleScreen() {
           <p className="text-left text-sm text-slate-400">테이머를 고르세요</p>
           {getTamers().map((t) => {
             const partner = getForm(t.line, 'rookie');
+            const locked = !open.has(t.id);
             return (
               <button
                 key={t.id}
                 type="button"
                 data-tamer={t.id}
-                className="flex min-h-16 items-center gap-3 rounded-xl bg-slate-800 p-3 text-left active:bg-slate-700"
+                disabled={locked}
+                className="flex min-h-16 items-center gap-3 rounded-xl bg-slate-800 p-3 text-left active:bg-slate-700 disabled:opacity-40"
                 onClick={() => dispatch({ type: 'startRun', tamerId: t.id })}
               >
                 <span
@@ -41,7 +47,9 @@ export function TitleScreen() {
                     <b>{t.name}</b>
                     <span className="text-xs text-rose-300">HP {t.maxHp}</span>
                   </span>
-                  <span className="block text-xs text-sky-200">{t.trait}</span>
+                  <span className="block text-xs text-sky-200">
+                    {locked ? '3막을 깨면 열립니다' : t.trait}
+                  </span>
                   <span className="block text-xs leading-snug text-slate-400">
                     {describeTamer(t.id)}
                   </span>

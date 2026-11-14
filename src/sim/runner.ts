@@ -2,6 +2,7 @@
 import {
   applyAction,
   createInitialState,
+  fullUnlocks,
   getLegalActions,
   type GameEvent,
   type GameState,
@@ -50,7 +51,8 @@ export interface RunRecord {
 export function runOne(seed: number, config: RunConfig): RunRecord {
   const policy = POLICIES[config.policy];
   const ctx = { rng: createSimRng(seed), tamerId: config.tamerId, evolve: config.evolve };
-  let state = createInitialState(seed);
+  // 시뮬레이터는 모든 것이 열린 상태로 (02 13.5)
+  let state = createInitialState(seed, fullUnlocks());
   const record: RunRecord = {
     seed,
     won: false,

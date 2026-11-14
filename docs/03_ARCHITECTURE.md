@@ -45,6 +45,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  ├─ types.ts            모든 타입 (4절)
 │  │  ├─ rng.ts              시드 난수
 │  │  ├─ state.ts            createInitialState
+│  │  ├─ meta.ts             프로필·해금·도감 (02 13.5, 판 밖)
 │  │  ├─ engine.ts           applyAction, getLegalActions (행동을 아래 모듈로 넘김)
 │  │  ├─ battle/
 │  │  │  ├─ start.ts         전투 시작 (02 3.2)
@@ -73,6 +74,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
 │  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  enemies.ts  encounters.ts
 │  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
+│  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
 │  │  ├─ policies/random.ts  policies/greedy.ts
@@ -280,7 +282,10 @@ export type GameEvent =
 ## 5. core가 밖에 내보내는 것 (src/core/index.ts)
 
 ```ts
-createInitialState(seed: number): GameState          // phase 'title'
+createInitialState(seed: number, unlocks?: Unlocks): GameState   // phase 'title', unlocks가 없으면 처음 해금 상태
+createProfile(): Profile   defaultUnlocks(): Unlocks   fullUnlocks(): Unlocks   // 02 13.5 (fullUnlocks는 시뮬레이터)
+applyRunResult(profile, finalState, events): Profile   // 판이 끝났을 때 판 수·해금·도감 갱신 (순수 함수)
+recordCodex(profile, events): Profile   // 도감만 (새로 본 것이 없으면 같은 객체)
 getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 모든 행동
 applyAction(state: GameState, action: Action): { state: GameState; events: GameEvent[] }
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
@@ -426,7 +431,7 @@ src/ui/
 ├─ screens/                   Title, Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
 ├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton…
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
-├─ save.ts                    IndexedDB 저장·불러오기
+├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
 ├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
 └─ assets/                    직접 만든 그림만
 public/                       아이콘(직접 그린 SVG와 PNG), manifest.webmanifest

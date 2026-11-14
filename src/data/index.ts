@@ -21,10 +21,11 @@ import { encounters } from './encounters';
 import { enemies } from './enemies';
 import { events } from './events';
 import { forms } from './forms';
+import { meta, type MetaDef } from './meta';
 import { tamers } from './tamers';
 
-export { constants };
-export type { Constants };
+export { constants, meta };
+export type { Constants, MetaDef };
 
 interface Registry {
   cards: CardDef[];

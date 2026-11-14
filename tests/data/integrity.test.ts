@@ -13,7 +13,9 @@ import {
   getEvents,
   getForm,
   getForms,
+  getTamer,
   getTamers,
+  meta,
   overrideRegistry,
 } from '../../src/data/index';
 
@@ -58,11 +60,11 @@ describe('콘텐츠 개수 (02 9절, 12절)', () => {
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(2);
   });
 
-  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 12, 이벤트 8, 테이머 4', () => {
+  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 15, 이벤트 8, 테이머 4', () => {
     expect(getForms()).toHaveLength(15);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
-    expect(getChips()).toHaveLength(12);
+    expect(getChips()).toHaveLength(15);
     expect(getEvents()).toHaveLength(8);
     expect(getTamers()).toHaveLength(4);
   });
@@ -336,12 +338,19 @@ describe('칩', () => {
     }
   });
 
-  it('시작 칩 3개 (02 12.7)', () => {
+  it('시작 칩: 처음 3개 + 해금 3개 (02 12.7, 13.5)', () => {
     expect(
       getChips()
         .filter((c) => c.start)
         .map((c) => c.id),
-    ).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
+    ).toEqual([...meta.baseStartChips, ...meta.startChipUnlockOrder]);
+    expect(meta.baseStartChips).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
+  });
+
+  it('메타 데이터의 id가 모두 있음 (02 13.5)', () => {
+    for (const id of [...meta.baseTamers, ...meta.firstWinTamers])
+      expect(() => getTamer(id)).not.toThrow();
+    expect(new Set([...meta.baseTamers, ...meta.firstWinTamers]).size).toBe(getTamers().length);
   });
 
   it("칩 효과는 target 'enemy'를 쓰지 않는다 (02 5절)", () => {

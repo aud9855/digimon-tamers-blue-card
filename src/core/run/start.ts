@@ -1,9 +1,10 @@
 // 02 8절 startRun, 6절 7번 chooseNode
-import { getChips, getTamer } from '../../data/index';
+import { constants, getChips, getTamer } from '../../data/index';
 import { setPhase } from '../phase';
 import { startBattle } from '../battle/start';
 import { gainChip } from '../chips';
 import { newCardInstance, requireRun } from '../helpers';
+import { shuffle } from '../rng';
 import type { GameEvent, GameState, TamerId } from '../types';
 import { afterRunEffects, enterEvent, enterTreasure, runRunEffects } from './event';
 import { findNode, generateMap } from './map';
@@ -32,10 +33,14 @@ export function startRun(state: GameState, events: GameEvent[], tamerId: TamerId
   run.deck = tamer.startDeck.map((id) => newCardInstance(state, id, false));
   run.map = generateMap(state, run.act);
   for (const chipId of tamer.startChips) gainChip(state, events, chipId);
-  // 시작 디아크: 시작 칩 3개 중 1개 고르기 (02 12.7)
-  const startChips = getChips()
-    .filter((c) => c.start)
+  // 시작 디아크: 열린 시작 칩 중 3개에서 1개 고르기 (02 12.7, 13.5)
+  const unlocked = getChips()
+    .filter((c) => c.start && state.unlocks.startChips.includes(c.id))
     .map((c) => c.id);
+  const startChips =
+    unlocked.length > constants.START_CHIP_CHOICES
+      ? shuffle(state, 'reward', unlocked).slice(0, constants.START_CHIP_CHOICES)
+      : unlocked;
   if (startChips.length > 0) {
     state.pending = { kind: 'startChip', chipIds: startChips };
     setPhase(state, events, 'startChip');

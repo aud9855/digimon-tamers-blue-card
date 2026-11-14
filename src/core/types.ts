@@ -265,9 +265,26 @@ export type Phase =
   | 'runWon'
   | 'runLost';
 export type RngStream = 'map' | 'battle' | 'reward' | 'event';
+/** 판 시작에 받는 해금 정보 (02 13.5) */
+export interface Unlocks {
+  tamers: TamerId[];
+  startChips: string[];
+  /** 열린 디지털 해저드 최고 단계 */
+  hazard: number;
+}
+
+/** 판 밖의 기록 (02 13.5). GameState와 따로 저장 */
+export interface Profile {
+  version: number;
+  runs: Partial<Record<TamerId, { played: number; won: number }>>;
+  unlocks: Unlocks;
+  codex: { forms: string[]; enemies: string[] };
+}
+
 export interface GameState {
   version: number; // 저장 형식 버전
   seed: number;
+  unlocks: Unlocks;
   rng: Record<RngStream, number>;
   phase: Phase;
   run: RunState | null;

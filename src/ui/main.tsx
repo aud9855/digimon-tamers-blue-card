@@ -5,7 +5,15 @@ import { createRoot } from 'react-dom/client';
 import type { Action } from '../core/index';
 import { App as GameApp } from './App';
 import './index.css';
-import { isResumable, loadGame, loadSettings, saveGame, saveSettings } from './save';
+import {
+  isResumable,
+  loadGame,
+  loadProfile,
+  loadSettings,
+  saveGame,
+  saveProfile,
+  saveSettings,
+} from './save';
 import { useGame } from './store';
 
 const params = new URLSearchParams(location.search);
@@ -15,6 +23,9 @@ const devOverride = import.meta.env.DEV && (params.has('debug') || params.has('s
 // 저장 불러오기 (03 9.1): 진행 중인 판이 있으면 그 자리에서 이어 함
 const settings = await loadSettings();
 useGame.setState({ speed: settings.speed, seenGuide: settings.seenGuide });
+// 프로필(해금·도감)을 먼저 불러와 제목 화면의 판이 해금 정보를 갖게 함 (02 13.5)
+useGame.setState({ profile: await loadProfile() });
+useGame.getState().newGame();
 if (!devOverride) {
   const saved = await loadGame();
   if (saved && isResumable(saved)) useGame.setState({ state: saved, lastEvents: [] });
@@ -47,6 +58,7 @@ if (import.meta.env.DEV) {
 // 행동 하나가 끝날 때마다 저장 (재생 중인 화면이 아니라 진짜 상태를 저장)
 useGame.subscribe((s, prev) => {
   if (s.state !== prev.state) void saveGame(s.state);
+  if (s.profile !== prev.profile) void saveProfile(s.profile);
   if (s.speed !== prev.speed || s.seenGuide !== prev.seenGuide) {
     void saveSettings({ speed: s.speed, seenGuide: s.seenGuide });
   }

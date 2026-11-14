@@ -3,10 +3,14 @@
 import { create } from 'zustand';
 import {
   applyAction,
+  applyRunResult,
   createInitialState,
+  createProfile,
+  recordCodex,
   type Action,
   type GameEvent,
   type GameState,
+  type Profile,
 } from '../core/index';
 import { applyEventToView, eventDuration, shouldPlay, type PlaybackSpeed } from './playback';
 
@@ -24,6 +28,8 @@ export interface PlaybackItem {
 export interface GameStore {
   /** 마지막 행동까지 반영된 진짜 상태 */
   state: GameState;
+  /** 판 밖의 기록 (02 13.5) */
+  profile: Profile;
   /** 마지막 행동에서 일어난 일 */
   lastEvents: GameEvent[];
   /** 재생 중에 보이는 상태 (재생 중이 아니면 null) */
@@ -41,7 +47,7 @@ export interface GameStore {
   /** 남은 재생을 건너뜀 */
   skipPlayback: () => void;
   setSpeed: (speed: PlaybackSpeed) => void;
-  /** 새 시드로 처음부터 */
+  /** 새 시드로 처음부터 (프로필의 해금 정보로) */
   newGame: (seed?: number) => void;
 }
 
@@ -88,6 +94,7 @@ export const useGame = create<GameStore>((set, get) => {
 
   return {
     state: createInitialState(randomSeed()),
+    profile: createProfile(),
     lastEvents: [],
     view: null,
     queue: [],
@@ -101,6 +108,12 @@ export const useGame = create<GameStore>((set, get) => {
       if (get().view) return; // 재생 중에는 입력을 받지 않음
       const before = get().state;
       const result = applyAction(before, action);
+      // 프로필: 판이 끝나면 결과를, 아니면 도감만 (02 13.5)
+      const ended = result.events.some((e) => e.type === 'runEnded');
+      const profile = ended
+        ? applyRunResult(get().profile, result.state, result.events)
+        : recordCodex(get().profile, result.events);
+      if (profile !== get().profile) set({ profile });
       if (shouldPlay(before, result.events, get().speed)) {
         set({
           state: result.state,
@@ -122,7 +135,7 @@ export const useGame = create<GameStore>((set, get) => {
     newGame: (seedValue) => {
       clearTimer();
       set({
-        state: createInitialState(seedValue ?? randomSeed()),
+        state: createInitialState(seedValue ?? randomSeed(), get().profile.unlocks),
         lastEvents: [],
         view: null,
         queue: [],

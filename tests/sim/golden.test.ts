@@ -2,38 +2,38 @@ import { describe, expect, it } from 'vitest';
 import { runOne } from '../../src/sim/runner';
 
 // 골든 값: 규칙이나 수치를 일부러 바꿨을 때만, 이유를 커밋 메시지에 적고 갱신합니다 (03 8.1).
-// 마지막 갱신: T2-7 (밸런스 2차: 테이머 HP, 2·3막 적 수치, 형태 공격력)
+// 마지막 갱신: T3-5: 시뮬레이터가 모든 해금으로 시작 (시작 칩 후보 6개 중 무작위 3개)
 const GOLDEN_SEED_12345 = {
   won: true,
   battles: 14,
-  finalHp: 100,
+  finalHp: 90,
   deck: [
-    'bite+',
-    'bite+',
+    'attack_plugin',
+    'attack_plugin+',
+    'bite',
+    'bite',
+    'bite',
     'blue_card+',
     'blue_card+',
-    'calumon+',
-    'charge',
-    'counter_stance+',
-    'defense_plugin',
     'evo_resonance',
     'evo_resonance',
-    'evo_resonance',
-    'evo_resonance',
+    'evo_resonance+',
     'fire_ball',
     'guard',
     'guard',
     'guard',
     'guard',
-    'kazu',
-    'rage',
+    'heavy_strike',
+    'heavy_strike+',
+    'rage+',
     'rage+',
     'rock_breaker',
-    'speed_plugin',
+    'rock_breaker+',
     'strike',
     'strike',
     'strike',
     'strike',
+    'sweep',
   ],
 };
 

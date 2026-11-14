@@ -5,6 +5,7 @@ import {
   describeChip,
   describeEventChoice,
   describeIntent,
+  fullUnlocks,
   getLegalActions,
   IllegalActionError,
   previewEvolveCost,
@@ -87,12 +88,18 @@ function expectOnlyLegal(state: GameState): void {
 }
 
 describe('국면마다 할 수 있는 행동 (02 2절, 03 5.2)', () => {
-  it('title: startRun (테이머마다)', () => {
+  it('title: startRun (열린 테이머마다, 02 13.5)', () => {
     const state = createInitialState(1);
     expect(getLegalActions(state)).toEqual(
-      getTamers().map((t) => ({ type: 'startRun', tamerId: t.id })),
+      getTamers()
+        .filter((t) => t.id !== 'ai_mako')
+        .map((t) => ({ type: 'startRun', tamerId: t.id })),
     );
     expectOnlyLegal(state);
+    const all = createInitialState(1, fullUnlocks());
+    expect(getLegalActions(all)).toEqual(
+      getTamers().map((t) => ({ type: 'startRun', tamerId: t.id })),
+    );
   });
 
   it('reward: 카드마다 pickCard, 그리고 skipCards', () => {

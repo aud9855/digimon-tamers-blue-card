@@ -34,7 +34,9 @@ export function getLegalActions(state: GameState): Action[] {
   const run = state.run;
   switch (state.phase) {
     case 'title':
-      return getTamers().map((t) => ({ type: 'startRun', tamerId: t.id }));
+      return getTamers()
+        .filter((t) => state.unlocks.tamers.includes(t.id))
+        .map((t) => ({ type: 'startRun', tamerId: t.id }));
 
     case 'map':
       return reachableNodeIds(state).map((nodeId) => ({ type: 'chooseNode', nodeId }));

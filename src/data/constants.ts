@@ -41,6 +41,8 @@ export const constants = {
   MATRIX_MEMORY_BONUS: 1,
 
   // ── 폭주 진화 (02 13.2) ──
+  /** 시작 칩 후보 수 (02 12.7, 13.5) */
+  START_CHIP_CHOICES: 3,
   RAMPAGE_HP_PCT: 0.25,
   RAMPAGE_HP_LOSS: 3,
   RAMPAGE_CURSE_ID: 'rampage_scar',

@@ -3,6 +3,7 @@ import { applyAction, getLegalActions } from '../../src/core/engine';
 import { baseEvolveCost, evolveCost } from '../../src/core/battle/evolve';
 import { previewEvolveCost } from '../../src/core/describe';
 import { overrideRegistry } from '../../src/data/index';
+import { fullUnlocks } from '../../src/core/meta';
 import { createInitialState } from '../../src/core/state';
 import { act, battleOf, eventsOf, makeBattle, play } from '../helpers/battle';
 import { baseFixtures } from '../helpers/fixtures';
@@ -299,7 +300,10 @@ describe('다영·진 (02 13.3)', () => {
   });
 
   it('형태 특성은 고르지 않음 (처음부터 궁극체까지 열림)', () => {
-    const s0 = applyAction(createInitialState(1), { type: 'startRun', tamerId: 'ai_mako' }).state;
+    const s0 = applyAction(createInitialState(1, fullUnlocks()), {
+      type: 'startRun',
+      tamerId: 'ai_mako',
+    }).state;
     const s1 = applyAction(s0, { type: 'chooseStartChip', index: 0 }).state;
     expect(s1.run?.maxStage).toBe('mega');
     expect(s1.run?.chips).toContain('trait_two_tamers');
