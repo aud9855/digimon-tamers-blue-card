@@ -96,10 +96,19 @@ describe('국면마다 할 수 있는 행동 (02 2절, 03 5.2)', () => {
         .map((t) => ({ type: 'startRun', tamerId: t.id })),
     );
     expectOnlyLegal(state);
+    // 모두 열리면 테이머 4명 × 해저드 0~10 (02 13.6)
     const all = createInitialState(1, fullUnlocks());
     expect(getLegalActions(all)).toEqual(
-      getTamers().map((t) => ({ type: 'startRun', tamerId: t.id })),
+      getTamers().flatMap((t) => [
+        { type: 'startRun', tamerId: t.id },
+        ...Array.from({ length: 10 }, (_, i) => ({
+          type: 'startRun',
+          tamerId: t.id,
+          hazard: i + 1,
+        })),
+      ]),
     );
+    expectOnlyLegal(all);
   });
 
   it('reward: 카드마다 pickCard, 그리고 skipCards', () => {

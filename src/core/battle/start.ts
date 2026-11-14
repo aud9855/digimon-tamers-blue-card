@@ -1,13 +1,25 @@
 // 02 3.2 전투 시작
 import { constants, getEncounter } from '../../data/index';
-import { emptyStatuses, hasKeyword, requireRun } from '../helpers';
+import { emptyStatuses, hasKeyword, hazardOn, pctFloor, requireRun } from '../helpers';
 import { triggerChips } from '../chips';
 import { shuffle } from '../rng';
 import { winIfCleared } from './outcome';
-import type { BattleState, GameEvent, GameState } from '../types';
+import type { BattleState, EnemyState, GameEvent, GameState } from '../types';
 import { createEnemy } from './enemy';
 import { setPhase } from '../phase';
 import { startPlayerTurn } from './turn';
+
+/** 해저드 1·9: 적의 최대 HP (02 13.6) */
+function hazardEnemy(state: GameState, enemy: EnemyState, kind: BattleState['kind']): EnemyState {
+  if (!hazardOn(state, 'enemyHp')) return enemy;
+  let maxHp = pctFloor(enemy.maxHp, constants.HAZARD_ENEMY_HP_PCT);
+  if (kind === 'boss' && hazardOn(state, 'bossHp')) {
+    maxHp = Math.floor(
+      (enemy.maxHp * constants.HAZARD_ENEMY_HP_PCT * constants.HAZARD_BOSS_HP_PCT) / 10000,
+    );
+  }
+  return { ...enemy, maxHp, hp: maxHp };
+}
 
 export function startBattle(
   state: GameState,
@@ -53,7 +65,7 @@ export function startBattle(
     discardPile: [],
     exhaustPile: [],
     companions: [],
-    enemies: encounter.enemies.map(createEnemy),
+    enemies: encounter.enemies.map((id) => hazardEnemy(state, createEnemy(id), kind)),
   };
   state.pending = null;
   setPhase(state, events, 'battle');

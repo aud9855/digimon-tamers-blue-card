@@ -475,7 +475,9 @@ function eventAction(state: GameState, legal: Action[]): Action {
 export const greedyPolicy: Policy = (state, legal, ctx) => {
   switch (state.phase) {
     case 'title':
-      return { type: 'startRun', tamerId: ctx.tamerId };
+      return ctx.hazard > 0
+        ? { type: 'startRun', tamerId: ctx.tamerId, hazard: ctx.hazard }
+        : { type: 'startRun', tamerId: ctx.tamerId };
     case 'battle':
       return battleAction(state, legal, ctx);
     case 'map':

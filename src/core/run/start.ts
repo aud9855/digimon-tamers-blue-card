@@ -3,7 +3,7 @@ import { constants, getChips, getTamer } from '../../data/index';
 import { setPhase } from '../phase';
 import { startBattle } from '../battle/start';
 import { gainChip } from '../chips';
-import { newCardInstance, requireRun } from '../helpers';
+import { hazardOn, newCardInstance, pctFloor, requireRun } from '../helpers';
 import { shuffle } from '../rng';
 import type { GameEvent, GameState, TamerId } from '../types';
 import { afterRunEffects, enterEvent, enterTreasure, runRunEffects } from './event';
@@ -11,13 +11,23 @@ import { findNode, generateMap } from './map';
 import { enterRest } from './rest';
 import { enterShop } from './shop';
 
-export function startRun(state: GameState, events: GameEvent[], tamerId: TamerId): void {
+export function startRun(
+  state: GameState,
+  events: GameEvent[],
+  tamerId: TamerId,
+  hazard = 0,
+): void {
   const tamer = getTamer(tamerId);
+  // 해저드 4: 최대 HP -10% (02 13.6). run을 만들기 전이므로 단계를 직접 비교
+  const maxHp =
+    hazard >= constants.HAZARD_LEVEL.maxHp
+      ? pctFloor(tamer.maxHp, constants.HAZARD_MAX_HP_PCT)
+      : tamer.maxHp;
   state.run = {
     tamerId,
     act: 1,
-    hp: tamer.maxHp,
-    maxHp: tamer.maxHp,
+    hp: maxHp,
+    maxHp,
     bits: tamer.startBits,
     maxStage: tamer.startMaxStage,
     maxMemory: tamer.startMaxMemory,
@@ -27,10 +37,15 @@ export function startRun(state: GameState, events: GameEvent[], tamerId: TamerId
     nodeId: null,
     path: [],
     removalsBought: 0,
+    hazard,
     formTraits: {},
   };
   const run = state.run;
   run.deck = tamer.startDeck.map((id) => newCardInstance(state, id, false));
+  // 해저드 5: 시작 덱에 버그 데이터 1장
+  if (hazardOn(state, 'startCurse')) {
+    run.deck.push(newCardInstance(state, constants.HAZARD_START_CURSE, false));
+  }
   run.map = generateMap(state, run.act);
   for (const chipId of tamer.startChips) gainChip(state, events, chipId);
   // 시작 디아크: 열린 시작 칩 중 3개에서 1개 고르기 (02 12.7, 13.5)

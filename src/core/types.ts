@@ -229,6 +229,8 @@ export interface RunState {
   nodeId: string | null; // 지금 있는 칸 (막 시작 전에는 null)
   path: string[]; // 이번 막에서 지나온 칸 id (지금 칸 포함)
   removalsBought: number;
+  /** 디지털 해저드 단계 (02 13.6) */
+  hazard: number;
   /** 단계별로 고른 형태 특성 (02 12.5) */
   formTraits: Partial<Record<Stage, FormTraitId>>;
 }
@@ -295,7 +297,7 @@ export interface GameState {
 
 // ── 행동 ──
 export type Action =
-  | { type: 'startRun'; tamerId: TamerId }
+  | { type: 'startRun'; tamerId: TamerId; hazard?: number }
   | { type: 'chooseNode'; nodeId: string }
   | { type: 'playCard'; cardUid: number; targetIndex?: number }
   | { type: 'evolve' }

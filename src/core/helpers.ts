@@ -25,6 +25,16 @@ export function emptyStatuses(): Statuses {
   return { strength: 0, weak: 0, vulnerable: 0 };
 }
 
+/** 디지털 해저드의 그 규칙이 켜져 있는지 (02 13.6: 단계 N은 1~N 모두) */
+export function hazardOn(state: GameState, rule: keyof typeof constants.HAZARD_LEVEL): boolean {
+  return (state.run?.hazard ?? 0) >= constants.HAZARD_LEVEL[rule];
+}
+
+/** 퍼센트 정수로 곱하고 내림 */
+export function pctFloor(value: number, pct: number): number {
+  return Math.floor((value * pct) / 100);
+}
+
 export function requireRun(state: GameState): RunState {
   if (!state.run) throw new Error('런이 없습니다');
   return state.run;

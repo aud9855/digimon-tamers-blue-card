@@ -34,9 +34,17 @@ export function getLegalActions(state: GameState): Action[] {
   const run = state.run;
   switch (state.phase) {
     case 'title':
+      // 열린 테이머마다 해저드 0(필드 없음)부터 열린 최고 단계까지 (02 13.6)
       return getTamers()
         .filter((t) => state.unlocks.tamers.includes(t.id))
-        .map((t) => ({ type: 'startRun', tamerId: t.id }));
+        .flatMap((t) => [
+          { type: 'startRun', tamerId: t.id } as Action,
+          ...Array.from({ length: state.unlocks.hazard }, (_, i): Action => ({
+            type: 'startRun',
+            tamerId: t.id,
+            hazard: i + 1,
+          })),
+        ]);
 
     case 'map':
       return reachableNodeIds(state).map((nodeId) => ({ type: 'chooseNode', nodeId }));
@@ -147,7 +155,7 @@ export function isLegalAction(state: GameState, action: Action): boolean {
 function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
   switch (action.type) {
     case 'startRun':
-      return startRun(draft, events, action.tamerId);
+      return startRun(draft, events, action.tamerId, action.hazard ?? 0);
     case 'chooseNode':
       return chooseNode(draft, events, action.nodeId);
     case 'playCard':

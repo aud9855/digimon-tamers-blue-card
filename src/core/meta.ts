@@ -76,5 +76,8 @@ export function applyRunResult(
   addUnique<TamerId>(next.unlocks.tamers, meta.firstWinTamers);
   const chip = meta.startChipUnlockOrder.find((id) => !next.unlocks.startChips.includes(id));
   if (chip) next.unlocks.startChips.push(chip);
+  // 해저드 N으로 이기면 N+1이 열림 (02 13.6)
+  const hazard = Math.min(meta.maxHazard, (run.hazard ?? 0) + 1);
+  next.unlocks.hazard = Math.max(next.unlocks.hazard, hazard);
   return next;
 }

@@ -379,8 +379,10 @@ interface IntentView {
 npm run sim -- --policy greedy --tamer takato --runs 1000 --seed-start 1
 npm run sim -- --policy greedy --evolve turn2 --tamer takato --runs 1000
 npm run sim -- --report m0
+npm run sim -- --policy greedy --tamer takato --runs 1000 --hazard 10
 ```
 - `--evolve asap|turn2|never` (기본 `asap`)로 `greedy`의 진화 방식을 바꿉니다.
+- `--hazard N` (기본 0)으로 디지털 해저드 단계를 정합니다 (02 13.6). 시뮬레이터는 모든 해금이 열린 상태로 판을 시작합니다 (02 13.5).
 - `--report m0`은 02 10절에 필요한 측정(`greedy` 세 가지 진화 방식과 `random`)을 모두 돌려 지표 10개를 한 표로 냅니다.
 - 판마다 시드 `seed-start`부터 1씩 올립니다. 한 판은 행동 5,000번을 넘으면 실패로 처리합니다.
 - 출력: 02 10절의 지표 표, 지표마다 목표 범위와 `통과`/`벗어남`, 조우별 승률·평균 턴 수·평균 HP 손실, 카드별 고른 횟수.

@@ -96,6 +96,34 @@ export const constants = {
     { weights: { rest: 100 } },
   ] as MapRowRule[],
   BOSS_ROW: 8,
+
+  // ── 디지털 해저드 (02 13.6): 규칙마다 켜지는 단계와 수치 ──
+  HAZARD_LEVEL: {
+    enemyHp: 1,
+    restHeal: 2,
+    mapRows: 3,
+    maxHp: 4,
+    startCurse: 5,
+    enemyDamage: 6,
+    actClearHeal: 7,
+    shopPrice: 8,
+    bossHp: 9,
+    rewardOffer: 10,
+  },
+  /** 퍼센트 정수로 계산 (부동소수 오차를 피함) */
+  HAZARD_ENEMY_HP_PCT: 110,
+  HAZARD_BOSS_HP_PCT: 115,
+  HAZARD_REST_HEAL_PCT: 0.2,
+  /** 지도 행(0부터)과 가중치 변화 */
+  HAZARD_MAP_ROWS: [2, 4],
+  HAZARD_MAP_ELITE_DELTA: 15,
+  HAZARD_MAP_BATTLE_DELTA: -15,
+  HAZARD_MAX_HP_PCT: 90,
+  HAZARD_START_CURSE: 'bug_data',
+  HAZARD_ENEMY_DAMAGE_MULT: 1.1,
+  HAZARD_ACT_CLEAR_HEAL_PCT: 0.3,
+  HAZARD_SHOP_PRICE_PCT: 120,
+  HAZARD_REWARD_OFFER_SIZE: 2,
   BOSS_COL: 1,
 };
 

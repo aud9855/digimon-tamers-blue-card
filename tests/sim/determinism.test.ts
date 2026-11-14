@@ -6,7 +6,12 @@ import { createSimRng } from '../../src/sim/rng';
 
 /** 한 판을 돌리되, saveAt번째 행동 전에 상태를 JSON으로 저장했다 되살려 이어 함 */
 function playWithSave(seed: number, policy: PolicyName, saveAt: number): GameState {
-  const ctx = { rng: createSimRng(seed), tamerId: 'takato' as const, evolve: 'asap' as const };
+  const ctx = {
+    rng: createSimRng(seed),
+    tamerId: 'takato' as const,
+    evolve: 'asap' as const,
+    hazard: 0,
+  };
   let state = createInitialState(seed);
   for (let step = 0; step < MAX_ACTIONS; step++) {
     if (step === saveAt) state = JSON.parse(JSON.stringify(state)) as GameState;
@@ -56,7 +61,12 @@ describe('결정성 (03 5절 약속 2·5)', () => {
   });
 
   it('applyAction은 받은 상태를 바꾸지 않는다 (한 판 내내)', () => {
-    const ctx = { rng: createSimRng(5), tamerId: 'takato' as const, evolve: 'asap' as const };
+    const ctx = {
+      rng: createSimRng(5),
+      tamerId: 'takato' as const,
+      evolve: 'asap' as const,
+      hazard: 0,
+    };
     let state = createInitialState(5);
     for (let step = 0; step < 300; step++) {
       const legal = getLegalActions(state);

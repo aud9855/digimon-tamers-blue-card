@@ -13,7 +13,12 @@ import { createSimRng } from '../sim/rng';
 
 /** 시드 seed의 greedy 판에서 steps번째 전투 행동 뒤의 상태 */
 export function botBattleState(seed: number, steps: number): GameState {
-  const ctx = { rng: createSimRng(seed), tamerId: 'takato' as const, evolve: 'asap' as const };
+  const ctx = {
+    rng: createSimRng(seed),
+    tamerId: 'takato' as const,
+    evolve: 'asap' as const,
+    hazard: 0,
+  };
   let state = createInitialState(seed, fullUnlocks());
   let battleSteps = 0;
   for (let i = 0; i < 5000; i++) {
@@ -28,7 +33,12 @@ export function botBattleState(seed: number, steps: number): GameState {
 
 /** 시드 seed의 greedy 판에서 actions번 행동한 뒤, phase가 있으면 그 국면이 될 때까지 */
 export function botRunState(seed: number, actions: number, phase?: GameState['phase']): GameState {
-  const ctx = { rng: createSimRng(seed), tamerId: 'takato' as const, evolve: 'asap' as const };
+  const ctx = {
+    rng: createSimRng(seed),
+    tamerId: 'takato' as const,
+    evolve: 'asap' as const,
+    hazard: 0,
+  };
   let state = createInitialState(seed, fullUnlocks());
   for (let i = 0; i < 5000; i++) {
     if (i >= actions && (!phase || state.phase === phase)) return state;
@@ -57,6 +67,7 @@ export function botAction(state: GameState) {
     rng: createSimRng(state.seed),
     tamerId: 'takato' as const,
     evolve: 'asap' as const,
+    hazard: 0,
   };
   const legal = getLegalActions(state);
   return legal.length > 0 ? greedyPolicy(state, legal, ctx) : null;

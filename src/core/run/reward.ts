@@ -3,7 +3,7 @@ import { constants, getCards, getChips } from '../../data/index';
 import type { RarityWeights } from '../../data/constants';
 import { setPhase } from '../phase';
 import { battleBitsBonus, gainChip, isRandomChip } from '../chips';
-import { newCardInstance, requireRun } from '../helpers';
+import { hazardOn, newCardInstance, requireRun } from '../helpers';
 import { nextInt, weightedPick } from '../rng';
 import type {
   BattleState,
@@ -127,7 +127,10 @@ function rollBits(state: GameState, range: { min: number; max: number }): number
  * 확률이 0이면 난수를 쓰지 않습니다.
  */
 function battleOffer(state: GameState, weights: RarityWeights): CardOffer {
-  const offer = makeOffer(state, constants.CARD_OFFER_SIZE, weights, false);
+  const size = hazardOn(state, 'rewardOffer')
+    ? constants.HAZARD_REWARD_OFFER_SIZE
+    : constants.CARD_OFFER_SIZE;
+  const offer = makeOffer(state, size, weights, false);
   const chance = constants.UPGRADE_CHANCE[requireRun(state).act] ?? 0;
   if (chance > 0) {
     for (const card of offer.cards) {
