@@ -14,7 +14,8 @@ import { MemoryGauge } from '../components/MemoryGauge';
 import { PartnerView } from '../components/PartnerView';
 import { Screen } from '../components/Screen';
 import { enemyIndexAt, useCardPointer } from '../input/drag';
-import { useGame } from '../store';
+import { useDisplayState, useGame } from '../store';
+import type { PlaybackSpeed } from '../playback';
 
 type PlayAction = Extract<Action, { type: 'playCard' }>;
 
@@ -33,6 +34,8 @@ export interface BattleViewProps {
   middle?: ReactNode;
   /** 맨 아래 오른쪽 (턴 끝 버튼) */
   footer?: ReactNode;
+  /** 맨 위 오른쪽 (재생 속도) */
+  headerRight?: ReactNode;
   handRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -47,6 +50,7 @@ export function BattleView({
   onCardPointerDown,
   middle,
   footer,
+  headerRight,
   handRef,
 }: BattleViewProps) {
   const battle = state.battle;
@@ -60,7 +64,10 @@ export function BattleView({
           {run.act}막 ·{' '}
           {battle.kind === 'boss' ? '보스' : battle.kind === 'elite' ? '강적' : '전투'}
         </span>
-        <span>턴 {battle.turn}</span>
+        <span className="flex items-center gap-2">
+          턴 {battle.turn}
+          {headerRight}
+        </span>
       </div>
 
       {/* 적과 인텐트 */}
@@ -76,7 +83,12 @@ export function BattleView({
         ))}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-4">{middle}</div>
+      {/* 가운데 (내기 영역·경고): 자리가 모자라면 적 쪽으로 겹쳐 뜸 */}
+      <div className="relative min-h-2 flex-1">
+        <div className="pointer-events-none absolute inset-x-4 bottom-2 z-20 flex flex-col items-center [&_button]:pointer-events-auto">
+          {middle}
+        </div>
+      </div>
 
       <div className="flex flex-col gap-2">
         <PartnerView state={state} onEvolve={onEvolve} />
@@ -102,12 +114,25 @@ export function BattleView({
   );
 }
 
+const NEXT_SPEED: Record<PlaybackSpeed, PlaybackSpeed> = {
+  normal: 'fast',
+  fast: 'off',
+  off: 'normal',
+};
+const SPEED_LABEL: Record<PlaybackSpeed, string> = {
+  normal: '연출 ▶',
+  fast: '연출 ▶▶',
+  off: '연출 끔',
+};
+
 /** 이만큼 위로 끌어 놓으면 대상이 필요 없는 카드를 냄 (px, 손패 위쪽 기준) */
 const DROP_ABOVE_HAND = 40;
 
 export function BattleScreen() {
-  const state = useGame((s) => s.state);
+  const state = useDisplayState();
   const dispatch = useGame((s) => s.dispatch);
+  const speed = useGame((s) => s.speed);
+  const setSpeed = useGame((s) => s.setSpeed);
   const [selectedUid, setSelectedUid] = useState<number | null>(null);
   const [zoom, setZoom] = useState<CardInstance | null>(null);
   const [drag, setDrag] = useState<{ card: CardInstance; x: number; y: number } | null>(null);
@@ -240,6 +265,16 @@ export function BattleScreen() {
         onCardPointerDown={onCardPointerDown}
         handRef={handRef}
         middle={middle}
+        headerRight={
+          <button
+            type="button"
+            data-testid="speed"
+            onClick={() => setSpeed(NEXT_SPEED[speed])}
+            className="-my-3 min-h-11 min-w-11 rounded-lg px-2 text-slate-300 active:bg-slate-800"
+          >
+            {SPEED_LABEL[speed]}
+          </button>
+        }
         footer={
           <button
             type="button"

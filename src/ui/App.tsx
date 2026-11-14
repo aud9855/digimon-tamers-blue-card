@@ -11,7 +11,8 @@ import { RunEndScreen } from './screens/RunEndScreen';
 import { ShopScreen } from './screens/ShopScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { TreasureScreen } from './screens/TreasureScreen';
-import { useGame } from './store';
+import { PlaybackOverlay } from './components/PlaybackOverlay';
+import { useDisplayState } from './store';
 
 const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
   title: TitleScreen,
@@ -39,7 +40,12 @@ function useBackButtonGuard() {
 
 export function App() {
   useBackButtonGuard();
-  const phase = useGame((s) => s.state.phase);
+  const phase = useDisplayState().phase;
   const Current = SCREENS[phase];
-  return <Current />;
+  return (
+    <>
+      <Current />
+      <PlaybackOverlay />
+    </>
+  );
 }

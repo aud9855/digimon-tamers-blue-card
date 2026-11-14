@@ -11,7 +11,7 @@ export function PartnerView({ state, onEvolve }: { state: GameState; onEvolve?: 
   const form = getForm(getTamer(run.tamerId).line, battle.stage);
   const cost = previewEvolveCost(state);
   return (
-    <div className="flex items-center gap-3 px-4">
+    <div className="flex items-center gap-3 px-4" data-testid="partner">
       <div
         className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl ${ATTRIBUTE_BG[form.attribute]} p-1 text-center text-xs font-bold text-white`}
       >

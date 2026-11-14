@@ -34,7 +34,7 @@ export function CardView({
   return (
     <div
       className={`relative flex flex-col rounded-lg border-2 ${TYPE_STYLE[def.type]} ${
-        large ? 'h-72 w-52 p-3' : 'h-28 w-full p-1'
+        large ? 'h-72 w-52 p-3' : 'h-[100px] w-full p-1'
       } ${dimmed ? 'opacity-40' : ''} ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
     >
       <div

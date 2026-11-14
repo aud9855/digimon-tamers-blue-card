@@ -34,3 +34,100 @@ body {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── 연출 (04 T1-4). 길이는 재생 속도에 맞춰 --fx-ms로 정함 ── */
+@keyframes fx-float {
+  0% {
+    transform: translate(-50%, -20%) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -160%) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes fx-slash {
+  0% {
+    transform: translate(-50%, 60%) rotate(-8deg) scale(0.7);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) rotate(-4deg) scale(1.05);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(-50%, -60%) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -140%) scale(0.6);
+    opacity: 0;
+  }
+}
+@keyframes fx-streak {
+  0% {
+    transform: translate(-60%, -50%) rotate(-25deg) scaleX(0);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(-50%, -50%) rotate(-25deg) scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-40%, -50%) rotate(-25deg) scaleX(1);
+    opacity: 0;
+  }
+}
+@keyframes fx-cutin {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  20% {
+    transform: translateX(0) skewX(-12deg);
+  }
+  80% {
+    transform: translateX(0) skewX(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) skewX(-12deg);
+    opacity: 0;
+  }
+}
+@keyframes fx-pop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+.fx-float {
+  animation: fx-float var(--fx-ms) ease-out forwards;
+}
+.fx-slash {
+  animation: fx-slash var(--fx-ms) ease-in-out forwards;
+}
+.fx-streak {
+  animation: fx-streak var(--fx-ms) ease-out forwards;
+}
+.fx-cutin {
+  animation: fx-cutin var(--fx-ms) ease-in-out forwards;
+}
+.fx-pop {
+  animation: fx-pop var(--fx-ms) ease-out forwards;
+}

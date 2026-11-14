@@ -63,7 +63,7 @@ export function EnemyView({
     >
       <IntentBadge intent={intent} />
       <div
-        className={`flex aspect-square w-full max-w-24 items-center justify-center rounded-xl ${ATTRIBUTE_BG[def.attribute]} p-1 text-center text-xs font-bold text-white`}
+        className={`flex aspect-square w-full max-w-20 items-center justify-center rounded-xl ${ATTRIBUTE_BG[def.attribute]} p-1 text-center text-xs font-bold text-white`}
       >
         {def.name}
       </div>

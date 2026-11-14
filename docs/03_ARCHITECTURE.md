@@ -425,6 +425,7 @@ src/ui/
 
 - 화면은 `core`의 상태를 **보여 주기만** 합니다. 규칙 계산(피해, 비용, 낼 수 있는지)을 화면에서 다시 하지 않고 `getLegalActions`, `describeCard`, `describeIntent`, `previewEvolveCost`를 씁니다.
 - `dispatch(action)`: `applyAction`을 부르고, 새 상태를 저장하고, `events`를 재생 줄에 넣습니다. 재생이 끝날 때까지 화면은 재생 중인 모습을 보여 주고 입력을 막습니다.
+- 재생 방식: 재생 중에는 행동 전 상태의 복사본(`view`)에 이벤트에 적힌 값(피해량, 메모리, 실드 등)을 하나씩 옮겨 적어 보여 주고, 다 끝나면 진짜 상태로 바꿉니다 (`playback.ts`의 `applyEventToView`). 규칙을 다시 계산하지 않습니다. 재생 중 화면을 누르면 건너뜁니다. 속도는 보통·빠르게·끄기.
 - 저장: 행동 하나가 끝날 때마다 `GameState`를 IndexedDB에 씁니다. 앱을 다시 열면 이어서 합니다.
 
 ### 9.2 모바일 화면 원칙
