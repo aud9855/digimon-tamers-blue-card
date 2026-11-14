@@ -27,9 +27,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    // 페이지: 네트워크가 되면 새것, 안 되면 저장해 둔 index.html
+    // 페이지: 네트워크가 되면 새것, 안 되면 저장해 둔 index.html.
+    // 브라우저 캐시(Pages는 10분)를 건너뜀: 배포 직후 옛 index.html이 지워진 옛 JS를 찾아 빈 화면이 되는 것을 막음
     event.respondWith(
-      fetch(request).catch(() =>
+      // navigate 요청에는 옵션을 붙일 수 없어 주소로 새 요청을 만듦
+      fetch(request.url, { cache: 'no-cache', credentials: 'same-origin' }).catch(() =>
         caches.match('./index.html').then((cached) => cached ?? Response.error()),
       ),
     );
