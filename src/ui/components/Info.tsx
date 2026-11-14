@@ -1,5 +1,9 @@
 // 정보·저작권 고지 (01 10절, 04 T1-10)
+import { Capacitor } from '@capacitor/core';
+
 export const SOURCE_URL = 'https://github.com/aud9855/digimon-tamers-blue-card';
+/** 가장 최근 출시 APK (Releases에 늘 같은 이름으로 올림) */
+export const APK_URL = `${SOURCE_URL}/releases/latest/download/blue-card.apk`;
 
 export function InfoContent() {
   return (
@@ -9,6 +13,23 @@ export function InfoContent() {
         디지몬 테이머즈를 바탕으로 한 <b>비공식·비영리 팬 게임</b>입니다. 판매, 광고, 후원 보상이
         없습니다.
       </p>
+
+      {!Capacitor.isNativePlatform() && (
+        <>
+          <h3 className="mt-4 font-bold text-sky-200">Android 앱</h3>
+          <p className="mt-1">
+            브라우저 없이 하려면 앱을 받아 설치하세요. 처음 설치할 때 "출처를 알 수 없는 앱"을
+            허용해야 합니다.
+          </p>
+          <a
+            href={APK_URL}
+            data-testid="apk-link"
+            className="mt-2 inline-block rounded-lg bg-sky-700 px-4 py-2 font-bold text-white"
+          >
+            앱(APK) 받기
+          </a>
+        </>
+      )}
 
       <h3 className="mt-4 font-bold text-sky-200">저작권</h3>
       <ul className="mt-1 list-disc pl-5">

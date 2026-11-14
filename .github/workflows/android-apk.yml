@@ -65,6 +65,8 @@ jobs:
           if [ "$KIND" = "release" ]; then NAME="blue-card-v$VERSION.apk"; else NAME="blue-card-v$VERSION-DEBUG.apk"; fi
           mkdir -p "$GITHUB_WORKSPACE/apk-out"
           cp "$SRC" "$GITHUB_WORKSPACE/apk-out/$NAME"
+          # 늘 같은 이름: releases/latest/download/blue-card.apk 로 받을 수 있게
+          if [ "$KIND" = "release" ]; then cp "$SRC" "$GITHUB_WORKSPACE/apk-out/blue-card.apk"; fi
           echo "APK_NAME=$NAME" >> "$GITHUB_ENV"
           echo "APK_VERSION=$VERSION" >> "$GITHUB_ENV"
           {
@@ -92,7 +94,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "apk-out/$APK_NAME" --clobber
+            gh release upload "$GITHUB_REF_NAME" "apk-out/$APK_NAME" apk-out/blue-card.apk --clobber
           else
-            gh release create "$GITHUB_REF_NAME" "apk-out/$APK_NAME" --title "블루 카드 $GITHUB_REF_NAME (Android)" --notes "설치 방법: docs/android.md"
+            gh release create "$GITHUB_REF_NAME" "apk-out/$APK_NAME" apk-out/blue-card.apk --latest --title "블루 카드 $GITHUB_REF_NAME (Android)" --notes "휴대폰에서 blue-card.apk를 받아 설치하세요. 자세한 방법: docs/android.md"
           fi

@@ -4,7 +4,7 @@
 
 ## 설치 (휴대폰)
 
-1. GitHub 저장소의 **Releases**에서 `blue-card-vX.Y.Z.apk`를 휴대폰으로 받습니다.
+1. 휴대폰에서 https://github.com/aud9855/digimon-tamers-blue-card/releases/latest/download/blue-card.apk 를 받습니다 (가장 최근 버전, 게임 안 "정보·저작권" 창에도 링크가 있음). Releases의 `blue-card-vX.Y.Z.apk`와 같은 파일입니다.
 2. 파일을 열면 "출처를 알 수 없는 앱 설치"를 허용하라고 합니다. 받은 앱(브라우저 또는 파일 앱)에 허용합니다.
 3. 설치하고 엽니다. 진행 상황은 앱 안에 저장됩니다.
 
@@ -37,7 +37,7 @@
    git tag v0.2.0
    git push origin v0.2.0
    ```
-3. Actions의 "Android APK"가 끝나면 Releases에 `blue-card-v0.2.0.apk`가 붙습니다 (서명 키가 등록돼 있을 때만).
+3. Actions의 "Android APK"가 끝나면 Releases에 `blue-card-v0.2.0.apk`와 `blue-card.apk`(늘 같은 이름)가 붙습니다 (서명 키가 등록돼 있을 때만).
 
 ## 로컬에서 (선택)
 
