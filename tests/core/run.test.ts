@@ -102,7 +102,7 @@ describe('7.1 전투 보상', () => {
   });
 
   it('보스 (마지막 막): 보상 없이 바로 runWon', () => {
-    const { state, events } = winBattle('boss');
+    const { state, events } = winBattle('boss', { act: 3 });
     expect(state.phase).toBe('runWon');
     expect(state.run?.bits).toBe(0);
     expect(eventsOf(events, 'runEnded')[0]?.won).toBe(true);
@@ -363,7 +363,7 @@ describe('7.5 이벤트와 런 효과', () => {
   });
 });
 
-describe('7.6 막 넘어가기 (ACT_COUNT 2, 시험용 2막 조우)', () => {
+describe('7.6 막 넘어가기 (ACT_COUNT 2로 줄여 확인)', () => {
   let restoreAct: () => void;
   beforeEach(() => {
     restoreAct = overrideRegistry({ constants: { ACT_COUNT: 2 } });
@@ -386,7 +386,7 @@ describe('7.6 막 넘어가기 (ACT_COUNT 2, 시험용 2막 조우)', () => {
     expect(act2.run?.nodeId).toBeNull();
     expect(act2.run?.path).toEqual([]);
     const boss = act2.run?.map.nodes.find((n) => n.type === 'boss');
-    expect(boss?.encounterId).toBe('test_a2_boss');
+    expect(boss?.encounterId).toBe('a2_boss_zhuqiaomon');
     expect(boss?.id).toBe('a2_boss');
   });
 
@@ -410,5 +410,41 @@ describe('보상 국면 비트 상수', () => {
     expect(constants.BITS_NORMAL).toEqual({ min: 12, max: 18 });
     expect(constants.BITS_ELITE).toEqual({ min: 28, max: 35 });
     expect(constants.NO_CHIP_BITS).toBe(50);
+  });
+});
+
+describe('12.2 보상 카드가 강화되어 나올 확률', () => {
+  function upgradedRatio(act: number): number {
+    let upgraded = 0;
+    let total = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const offer = rewardOf(winBattle('normal', { seed, act }).state).offers[0];
+      for (const c of offer?.cards ?? []) {
+        total++;
+        if (c.upgraded) upgraded++;
+      }
+    }
+    return upgraded / total;
+  }
+
+  it('1막 0%, 2막 약 15%, 3막 약 30%', () => {
+    expect(upgradedRatio(1)).toBe(0);
+    const act2 = upgradedRatio(2);
+    expect(act2).toBeGreaterThan(0.1);
+    expect(act2).toBeLessThan(0.2);
+    const act3 = upgradedRatio(3);
+    expect(act3).toBeGreaterThan(0.24);
+    expect(act3).toBeLessThan(0.36);
+  });
+
+  it('이벤트의 카드 고르기에는 쓰지 않는다', () => {
+    const state = mapState();
+    if (!state.run) throw new Error('런 없음');
+    state.run.act = 3;
+    for (let i = 0; i < 20; i++) {
+      runRunEffects(state, [], [{ op: 'offerCards', count: 3 }]);
+    }
+    const all = rewardOf(state).offers.flatMap((o) => o.cards);
+    expect(all.every((c) => !c.upgraded)).toBe(true);
   });
 });

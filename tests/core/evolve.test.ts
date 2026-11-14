@@ -57,7 +57,7 @@ describe('진화 처리 (02 3.7)', () => {
     });
   });
 
-  it('시험용 형태로 성장기에서 궁극체까지 한 단계씩 진화', () => {
+  it('성장기에서 궁극체까지 한 단계씩 진화 (메가로그라우몬·듀크몬)', () => {
     const state = makeBattle({ maxStage: 'mega', memory: 4 });
     // 비용: 성숙기 1, 완전체 2, 궁극체 4 → 4 - 1 - 2 = 1, 1 - 4 = -3 (가능)
     const s1 = act(state, { type: 'evolve' }).state;
@@ -74,7 +74,7 @@ describe('진화 처리 (02 3.7)', () => {
       battleOf(s3)
         .hand.map((c) => c.defId)
         .sort(),
-    ).toEqual(['exhaust_flame', 'test_sig_mega', 'test_sig_ultimate'].sort());
+    ).toEqual(['atomic_blaster', 'exhaust_flame', 'royal_saber'].sort());
     expect(battleOf(s3).evolveCount).toBe(3);
     expect(getLegalActions(s3)).not.toContainEqual({ type: 'evolve' });
   });

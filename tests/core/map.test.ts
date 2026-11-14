@@ -202,3 +202,20 @@ describe('런 시작과 이동 (02 8절, 6절 7번)', () => {
     }
   });
 });
+
+describe('2·3막 지도 (02 12.1)', () => {
+  it('그 막의 조우와, acts에 그 막이 든 이벤트만 나온다', () => {
+    for (const act of [2, 3]) {
+      for (let seed = 1; seed <= 50; seed++) {
+        const map = generateMap(createInitialState(seed), act);
+        for (const node of map.nodes) {
+          if (node.encounterId) expect(getEncounter(node.encounterId).act).toBe(act);
+          if (node.eventId) {
+            expect(getEvents().find((e) => e.id === node.eventId)?.acts).toContain(act);
+          }
+        }
+        expect(map.bossNodeId).toBe(`a${act}_boss`);
+      }
+    }
+  });
+});

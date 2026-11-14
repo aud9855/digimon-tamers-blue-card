@@ -111,6 +111,8 @@ export type RunEffect =
   | { op: 'addCard'; cardId: string };
 export interface EventDef {
   id: string;
+  /** 나오는 막 (02 12.1) */
+  acts: number[];
   title: string;
   text: string;
   choices: { label: string; effects: RunEffect[] }[];

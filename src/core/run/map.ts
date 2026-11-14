@@ -91,7 +91,10 @@ export function generateMap(state: GameState, act: number): ActMap {
       } else if (node.type === 'elite') {
         node.encounterId = encounterBag('elite')().id;
       } else if (node.type === 'event') {
-        eventBag ??= makeBag(state, getEvents());
+        eventBag ??= makeBag(
+          state,
+          getEvents().filter((e) => e.acts.includes(act)),
+        );
         node.eventId = eventBag().id;
       }
     }

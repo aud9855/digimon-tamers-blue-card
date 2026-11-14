@@ -383,6 +383,46 @@ export const cards = [
     },
   },
   {
+    id: 'atomic_blaster',
+    name: '아토믹 블래스터',
+    type: 'signature',
+    rarity: 'special',
+    pool: 'none',
+    base: {
+      cost: 2,
+      effects: [{ op: 'damage', amount: 24, target: 'enemy' }],
+      keywords: ['retain'],
+    },
+    upgraded: {
+      cost: 2,
+      effects: [{ op: 'damage', amount: 24, target: 'enemy' }],
+      keywords: ['retain'],
+    },
+  },
+  {
+    id: 'royal_saber',
+    name: '로열 세이버',
+    type: 'signature',
+    rarity: 'special',
+    pool: 'none',
+    base: {
+      cost: 3,
+      effects: [
+        { op: 'damage', amount: 32, target: 'enemy' },
+        { op: 'shield', amount: 10 },
+      ],
+      keywords: ['retain'],
+    },
+    upgraded: {
+      cost: 3,
+      effects: [
+        { op: 'damage', amount: 32, target: 'enemy' },
+        { op: 'shield', amount: 10 },
+      ],
+      keywords: ['retain'],
+    },
+  },
+  {
     // 저주: 비용 0은 형식상 값
     id: 'bug_data',
     name: '버그 데이터',

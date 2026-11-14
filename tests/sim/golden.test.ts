@@ -2,15 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { runOne } from '../../src/sim/runner';
 
 // 골든 값: 규칙이나 수치를 일부러 바꿨을 때만, 이유를 커밋 메시지에 적고 갱신합니다 (03 8.1).
-// 마지막 갱신: T0-12 (T0-11 밸런스 수치 기준)
+// 마지막 갱신: T2-2 (막 3개, 2·3막 콘텐츠)
 const GOLDEN_SEED_12345 = {
-  won: true,
-  battles: 4,
-  finalHp: 44,
+  won: false,
+  battles: 8,
+  finalHp: -11,
   deck: [
-    'attack_plugin',
+    'bite',
     'bite+',
+    'blue_card',
     'charge',
+    'digital_hazard',
     'fire_ball',
     'guard',
     'guard',
@@ -24,6 +26,8 @@ const GOLDEN_SEED_12345 = {
     'strike',
     'strike',
     'sweep',
+    'sweep',
+    'sweep+',
   ],
 };
 

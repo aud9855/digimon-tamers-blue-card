@@ -43,35 +43,43 @@ function expectUniqueIds(list: readonly { id: string }[]): void {
 const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
-describe('0단계 콘텐츠 개수 (04 T0-3)', () => {
-  it('카드 23개: 기본 3, 일반 9, 고급 6, 희귀 3, 필살기 1, 저주 1', () => {
+describe('콘텐츠 개수 (02 9절, 12절)', () => {
+  it('카드: 기본 3, 일반 9, 고급 6, 희귀 3, 필살기 3, 저주 1', () => {
     const all = getCards();
-    expect(all).toHaveLength(23);
+    expect(all).toHaveLength(25);
     expect(countBy(all, (c) => c.rarity)).toEqual({
       basic: 3,
       common: 9,
       uncommon: 6,
       rare: 3,
-      special: 2,
+      special: 4,
     });
-    expect(all.filter((c) => c.type === 'signature')).toHaveLength(1);
+    expect(all.filter((c) => c.type === 'signature')).toHaveLength(3);
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(1);
   });
 
-  it('형태 2, 적 9, 조우 13, 칩 6, 이벤트 2, 테이머 1', () => {
-    expect(getForms()).toHaveLength(2);
-    expect(getEnemies()).toHaveLength(9);
-    expect(getAllEncounters()).toHaveLength(13);
+  it('형태 4, 적 24, 조우 39, 칩 6, 이벤트 6, 테이머 1', () => {
+    expect(getForms()).toHaveLength(4);
+    expect(getEnemies()).toHaveLength(24);
+    expect(getAllEncounters()).toHaveLength(39);
     expect(getChips()).toHaveLength(6);
-    expect(getEvents()).toHaveLength(2);
+    expect(getEvents()).toHaveLength(6);
     expect(getTamers()).toHaveLength(1);
   });
 
-  it('조우 난이도별 개수: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4)', () => {
-    expect(getEncounters(1, 'easy')).toHaveLength(4);
-    expect(getEncounters(1, 'normal')).toHaveLength(6);
-    expect(getEncounters(1, 'elite')).toHaveLength(2);
-    expect(getEncounters(1, 'boss')).toHaveLength(1);
+  it('막마다 조우: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4, 12.10)', () => {
+    for (const act of [1, 2, 3]) {
+      expect(getEncounters(act, 'easy')).toHaveLength(4);
+      expect(getEncounters(act, 'normal')).toHaveLength(6);
+      expect(getEncounters(act, 'elite')).toHaveLength(2);
+      expect(getEncounters(act, 'boss')).toHaveLength(1);
+    }
+  });
+
+  it('막마다 이벤트가 하나 이상 (02 12.1)', () => {
+    for (let act = 1; act <= constants.ACT_COUNT; act++) {
+      expect(getEvents().filter((e) => e.acts.includes(act)).length).toBeGreaterThan(0);
+    }
   });
 });
 
@@ -325,22 +333,22 @@ describe('overrideRegistry (03 8.1)', () => {
         { ...originalStrike, name: '바뀐 타격' },
         { ...originalStrike, id: 'test_card', name: '시험 카드' },
       ],
-      constants: { ACT_COUNT: 2 },
+      constants: { ACT_COUNT: 7 },
     });
     expect(getCard('strike').name).toBe('바뀐 타격');
     expect(getCard('test_card').name).toBe('시험 카드');
-    expect(constants.ACT_COUNT).toBe(2);
+    expect(constants.ACT_COUNT).toBe(7);
 
     restore();
     restore = null;
     expect(getCard('strike').name).toBe('타격');
     expect(() => getCard('test_card')).toThrow();
-    expect(constants.ACT_COUNT).toBe(1);
+    expect(constants.ACT_COUNT).toBe(3);
   });
 
   it('없는 id를 찾으면 예외', () => {
     expect(() => getCard('no_such_card')).toThrow();
     expect(() => getEnemy('no_such_enemy')).toThrow();
-    expect(() => getForm('guilmon', 'mega')).toThrow();
+    expect(() => getForm('no_such_line', 'rookie')).toThrow();
   });
 });
