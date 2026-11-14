@@ -132,7 +132,8 @@ export function m0Metrics(m: M0Inputs): Metric[] {
 
 // ── 02 12.12 지표 (2단계, 테이머마다) ──
 
-export function m2Metrics(m: M0Inputs): Metric[] {
+/** act1: 진화의 보람은 1막 기준으로 잼 (02 12.12, T2-7 사용자 결정) */
+export function m2Metrics(m: M0Inputs, act1: { greedy: Summary; greedyNever: Summary }): Metric[] {
   const pct = (v: number | null) => (v === null ? null : v * 100);
   const lateBoss = [m.greedy.bossTurnsByAct[2], m.greedy.bossTurnsByAct[3]].filter(
     (v): v is number => v !== null && v !== undefined,
@@ -172,8 +173,8 @@ export function m2Metrics(m: M0Inputs): Metric[] {
       unit: '%',
     },
     {
-      name: '진화의 보람 (asap - never)',
-      value: (m.greedy.winRate - m.greedyNever.winRate) * 100,
+      name: '진화의 보람 (asap - never, 1막)',
+      value: (act1.greedy.winRate - act1.greedyNever.winRate) * 100,
       min: 10,
       max: 30,
       unit: '%p',

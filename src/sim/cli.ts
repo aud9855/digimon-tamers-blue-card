@@ -148,13 +148,16 @@ function reportM2(args: Args): void {
   const results = tamers.map((tamerId) => {
     const run = (policy: PolicyName, evolve: EvolveMode) =>
       runMany({ tamerId, policy, evolve }, args.runs, args.seedStart);
+    const greedyRecords = run('greedy', 'asap');
+    const neverRecords = run('greedy', 'never');
     const inputs = {
-      greedy: summarize(run('greedy', 'asap')),
+      greedy: summarize(greedyRecords),
       greedyTurn2: summarize(run('greedy', 'turn2')),
-      greedyNever: summarize(run('greedy', 'never')),
+      greedyNever: summarize(neverRecords),
       random: summarize(run('random', 'asap')),
     };
-    return { tamerId, inputs, metrics: m2Metrics(inputs) };
+    const act1 = { greedy: summarize(greedyRecords, 1), greedyNever: summarize(neverRecords, 1) };
+    return { tamerId, inputs, metrics: m2Metrics(inputs, act1) };
   });
   const winRates = results.map((r) => r.inputs.greedy.winRate * 100);
   const spread = Math.max(...winRates) - Math.min(...winRates);
