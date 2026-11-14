@@ -7,7 +7,13 @@ import {
   SAVE_VERSION,
 } from '../../src/core/index';
 import { botBattleState } from '../../src/ui/debug';
-import { isResumable, parseProfile, parseSavedGame, parseSettings } from '../../src/ui/save';
+import {
+  isConsistentState,
+  isResumable,
+  parseProfile,
+  parseSavedGame,
+  parseSettings,
+} from '../../src/ui/save';
 
 describe('저장 형식 (04 T1-7)', () => {
   it('전투 도중 상태를 JSON으로 저장했다 되살리면 같다', () => {
@@ -70,5 +76,21 @@ describe('프로필 저장 (02 13.5)', () => {
     const restored = parseSavedGame(JSON.stringify({ ...old, version: 1 }));
     expect(restored?.version).toBe(SAVE_VERSION);
     expect(restored?.unlocks).toEqual(defaultUnlocks());
+  });
+});
+
+describe('국면과 상태가 맞는 저장만 이어 함 (빈 화면 막기)', () => {
+  it('맞는 저장은 그대로', () => {
+    const state = botBattleState(3, 7);
+    expect(isConsistentState(state)).toBe(true);
+    expect(isConsistentState(createInitialState(1))).toBe(true);
+  });
+
+  it('판이 없는 지도, 대기 정보가 다른 보상, 전투 정보가 없는 전투는 버림', () => {
+    const state = botBattleState(3, 7);
+    expect(parseSavedGame(JSON.stringify({ ...state, phase: 'map', run: null }))).toBeNull();
+    expect(parseSavedGame(JSON.stringify({ ...state, phase: 'reward', pending: null }))).toBeNull();
+    expect(parseSavedGame(JSON.stringify({ ...state, battle: null }))).toBeNull();
+    expect(parseSavedGame(JSON.stringify(state))).toEqual(state);
   });
 });

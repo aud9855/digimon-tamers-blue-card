@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Action } from '../core/index';
 import { App as GameApp } from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 import {
   isResumable,
@@ -21,15 +22,20 @@ const params = new URLSearchParams(location.search);
 const devOverride = import.meta.env.DEV && (params.has('debug') || params.has('seed'));
 
 // 저장 불러오기 (03 9.1): 진행 중인 판이 있으면 그 자리에서 이어 함
-const settings = await loadSettings();
-useGame.setState({ speed: settings.speed, seenGuide: settings.seenGuide });
-useGame.getState().setSound(settings.sound);
-// 프로필(해금·도감)을 먼저 불러와 제목 화면의 판이 해금 정보를 갖게 함 (02 13.5)
-useGame.setState({ profile: await loadProfile() });
-useGame.getState().newGame();
-if (!devOverride) {
-  const saved = await loadGame();
-  if (saved && isResumable(saved)) useGame.setState({ state: saved, lastEvents: [] });
+// 불러오기가 실패해도(저장소를 못 여는 브라우저 등) 화면은 처음 상태로 그림
+try {
+  const settings = await loadSettings();
+  useGame.setState({ speed: settings.speed, seenGuide: settings.seenGuide });
+  useGame.getState().setSound(settings.sound);
+  // 프로필(해금·도감)을 먼저 불러와 제목 화면의 판이 해금 정보를 갖게 함 (02 13.5)
+  useGame.setState({ profile: await loadProfile() });
+  useGame.getState().newGame();
+  if (!devOverride) {
+    const saved = await loadGame();
+    if (saved && isResumable(saved)) useGame.setState({ state: saved, lastEvents: [] });
+  }
+} catch (error) {
+  console.error('저장 불러오기 실패', error);
 }
 
 if (import.meta.env.DEV) {
@@ -85,6 +91,8 @@ const root = document.getElementById('root');
 if (!root) throw new Error('#root가 없습니다');
 createRoot(root).render(
   <StrictMode>
-    <GameApp />
+    <ErrorBoundary>
+      <GameApp />
+    </ErrorBoundary>
   </StrictMode>,
 );
