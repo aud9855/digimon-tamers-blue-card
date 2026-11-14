@@ -1,6 +1,6 @@
 // 도트 그림 검사 (04 7절): 규격, 팔레트, 빠진 그림
 import { describe, expect, it } from 'vitest';
-import { getEnemies, getForms } from '../../src/data/index';
+import { getEnemies, getForms, getTamers } from '../../src/data/index';
 import { CHIP_ART, ENEMY_ART, FORM_ART, NODE_ART, TAMER_ART } from '../../src/ui/art/index';
 import { ART_SIZE, type PixelArt } from '../../src/ui/art/types';
 import { pixelRuns } from '../../src/ui/components/PixelArtView';
@@ -46,5 +46,9 @@ describe('빠진 그림 없음', () => {
 
   it('적·보스마다 도트 (G3)', () => {
     for (const e of getEnemies()) expect(ENEMY_ART[e.id], e.id).toBeDefined();
+  });
+
+  it('테이머마다 얼굴 (G4)', () => {
+    for (const t of getTamers()) expect(TAMER_ART[t.id], t.id).toBeDefined();
   });
 });

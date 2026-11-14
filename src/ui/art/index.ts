@@ -2,11 +2,12 @@
 import type { NodeType } from '../../core/index';
 import { ENEMY_ART_LIST } from './enemies';
 import { PARTNER_ART } from './partners';
+import { TAMER_ART_LIST } from './tamers';
 import type { PixelArt } from './types';
 
 export const FORM_ART: Record<string, PixelArt> = PARTNER_ART;
 export const ENEMY_ART: Record<string, PixelArt> = ENEMY_ART_LIST;
-export const TAMER_ART: Record<string, PixelArt> = {};
+export const TAMER_ART: Record<string, PixelArt> = TAMER_ART_LIST;
 export const CHIP_ART: Record<string, PixelArt> = {};
 export const NODE_ART: Partial<Record<NodeType, PixelArt>> = {};
 
