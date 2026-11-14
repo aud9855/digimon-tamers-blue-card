@@ -4,6 +4,7 @@ export { applyAction, getLegalActions, IllegalActionError } from './engine';
 export {
   describeCard,
   describeChip,
+  describeEventChoice,
   describeIntent,
   previewEvolveCost,
   previewOverdraw,

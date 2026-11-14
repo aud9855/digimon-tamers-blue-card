@@ -17,8 +17,3 @@ export function Screen({ title, children }: { title?: string; children: ReactNod
     </div>
   );
 }
-
-/** 국면 화면의 임시 몸통: 아직 만들지 않은 화면에 씀 */
-export function Placeholder({ children }: { children?: ReactNode }) {
-  return <div className="flex-1 overflow-y-auto px-4 pb-4">{children}</div>;
-}

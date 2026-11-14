@@ -44,3 +44,14 @@ export function debugStateFromUrl(search: string): GameState | null {
   }
   return null;
 }
+
+/** 지금 상태에서 greedy 봇이 고를 행동 (자동 확인 스크립트가 화면 조작으로 옮김) */
+export function botAction(state: GameState) {
+  const ctx = {
+    rng: createSimRng(state.seed),
+    tamerId: 'takato' as const,
+    evolve: 'asap' as const,
+  };
+  const legal = getLegalActions(state);
+  return legal.length > 0 ? greedyPolicy(state, legal, ctx) : null;
+}
