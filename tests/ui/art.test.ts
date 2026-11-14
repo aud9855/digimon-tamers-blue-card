@@ -1,6 +1,6 @@
 // 도트 그림 검사 (04 7절): 규격, 팔레트, 빠진 그림
 import { describe, expect, it } from 'vitest';
-import { getEnemies, getForms, getTamers } from '../../src/data/index';
+import { getChips, getEnemies, getForms, getTamers } from '../../src/data/index';
 import { CHIP_ART, ENEMY_ART, FORM_ART, NODE_ART, TAMER_ART } from '../../src/ui/art/index';
 import { ART_SIZE, type PixelArt } from '../../src/ui/art/types';
 import { pixelRuns } from '../../src/ui/components/PixelArtView';
@@ -25,7 +25,7 @@ describe('도트 그림 규격 (04 7절)', () => {
     for (const [id, a] of Object.entries(TAMER_ART)) checkArt(`테이머 ${id}`, a, ART_SIZE.face);
     for (const [id, a] of Object.entries(CHIP_ART)) checkArt(`칩 ${id}`, a, ART_SIZE.icon);
     for (const [id, a] of Object.entries(NODE_ART)) {
-      if (a) checkArt(`칸 ${id}`, a, ART_SIZE.icon);
+      checkArt(`칸 ${id}`, a, ART_SIZE.icon);
     }
   });
 
@@ -50,5 +50,18 @@ describe('빠진 그림 없음', () => {
 
   it('테이머마다 얼굴 (G4)', () => {
     for (const t of getTamers()) expect(TAMER_ART[t.id], t.id).toBeDefined();
+  });
+
+  it('보이는 칩마다 아이콘, 지도 칸 7종 아이콘 (G5)', () => {
+    for (const c of getChips().filter((c) => !c.hidden)) expect(CHIP_ART[c.id], c.id).toBeDefined();
+    expect(Object.keys(NODE_ART).sort()).toEqual([
+      'battle',
+      'boss',
+      'elite',
+      'event',
+      'rest',
+      'shop',
+      'treasure',
+    ]);
   });
 });
