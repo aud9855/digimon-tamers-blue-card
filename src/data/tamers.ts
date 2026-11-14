@@ -26,4 +26,28 @@ export const tamers = [
     startEffects: [{ op: 'offerCards', count: 3, upgraded: true, rarity: 'common' }],
     startChips: [],
   },
+  {
+    id: 'rika',
+    name: '은세나',
+    line: 'renamon',
+    maxHp: 70,
+    startBits: 0,
+    startMaxStage: 'champion',
+    startMaxMemory: 3,
+    startDeck: [
+      'strike',
+      'strike',
+      'strike',
+      'strike',
+      'guard',
+      'guard',
+      'guard',
+      'guard',
+      'diamond_storm',
+      'card_slash',
+    ],
+    // 특성 "카드 배틀 실력자": 숨은 칩 (02 12.3)
+    startEffects: [],
+    startChips: ['trait_card_battler'],
+  },
 ] satisfies TamerDef[];

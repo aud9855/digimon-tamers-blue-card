@@ -70,7 +70,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
-│  │  ├─ forms.ts  cards.ts  enemies.ts  encounters.ts
+│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  enemies.ts  encounters.ts
 │  │  ├─ chips.ts  events.ts  tamers.ts
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
@@ -287,6 +287,7 @@ describeChip(chipId: string): string
 describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
 describeIntent(state: GameState, enemyIndex: number): IntentView   // 화면에 보일 종류·피해량·횟수
 previewEvolveCost(state: GameState): number | null   // 지금 진화 비용 (못 하면 null)
+previewCardCost(state, cardUid): number | null   // 지금 낼 때의 비용 (처음 내는 카드 할인 포함)
 previewOverdraw(state, { cardUid } | 'evolve'): number   // 그것을 하고 바로 턴을 끝내면 적이 얻을 가속 (당겨쓰기 경고)
 class IllegalActionError extends Error
 

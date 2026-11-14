@@ -24,6 +24,12 @@ function sumModifier(state: GameState, key: keyof NonNullable<ChipDef['modifiers
 export const evolveCostDelta = (state: GameState) => sumModifier(state, 'evolveCostDelta');
 export const battleBitsBonus = (state: GameState) => sumModifier(state, 'battleBitsBonus');
 export const handSizeBonus = (state: GameState) => sumModifier(state, 'handSizeBonus');
+export const firstCardCostDelta = (state: GameState) => sumModifier(state, 'firstCardCostDelta');
+
+/** 보상·상점·보물·이벤트로 얻을 수 있는 칩인지 (숨은 칩·시작 칩 제외, 02 12.3, 12.7) */
+export function isRandomChip(chip: ChipDef): boolean {
+  return !chip.hidden && !chip.start;
+}
 
 /** 칩 얻기. 같은 칩은 한 번만. maxHpBonus는 얻을 때 최대 HP와 지금 HP를 함께 올림 */
 export function gainChip(state: GameState, events: GameEvent[], chipId: string): void {

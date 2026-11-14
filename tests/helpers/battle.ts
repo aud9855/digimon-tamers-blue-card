@@ -37,6 +37,7 @@ export interface BattleOptions {
   tempHp?: number;
   statuses?: Partial<Statuses>;
   turn?: number;
+  cardsPlayedThisTurn?: number;
   kind?: BattleState['kind'];
   act?: number;
 }
@@ -91,6 +92,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     statuses: { ...emptyStatuses(), ...opts.statuses },
     evolvedThisTurn: false,
     freeEvolve: false,
+    cardsPlayedThisTurn: opts.cardsPlayedThisTurn ?? 0,
     drawPile: makeCards(state, opts.drawPile ?? []),
     hand: makeCards(state, opts.hand ?? []),
     discardPile: makeCards(state, opts.discardPile ?? []),

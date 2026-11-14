@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runEffects } from '../../src/core/battle/effects';
 import { getLegalActions, IllegalActionError } from '../../src/core/engine';
+import { previewCardCost } from '../../src/core/describe';
 import type { Effect, GameEvent, GameState } from '../../src/core/types';
 import { getCards, overrideRegistry } from '../../src/data/index';
 import { act, battleOf, eventsOf, handUid, makeBattle, play } from '../helpers/battle';
@@ -264,5 +265,57 @@ describe('승리와 패배 (02 3.11)', () => {
     const { state: next, events } = act(state, { type: 'endTurn' });
     expect(next.phase).toBe('runLost');
     expect(eventsOf(events, 'enemyMoved')).toHaveLength(1);
+  });
+});
+
+describe('은세나 규칙 (02 12.3, 12.11)', () => {
+  it('처음 내는 카드만 비용이 1 줄고, 0 아래로는 안 감', () => {
+    {
+      const state = makeBattle({
+        hand: ['heavy_strike', 'strike', 'card_slash'],
+        chips: ['trait_card_battler'],
+        memory: 3,
+      });
+      expect(previewCardCost(state, handUid(state, 'heavy_strike'))).toBe(1);
+      expect(previewCardCost(state, handUid(state, 'card_slash'))).toBe(0);
+      const s1 = play(state, 'heavy_strike', 0).state;
+      expect(battleOf(s1).memory).toBe(2);
+      expect(battleOf(s1).cardsPlayedThisTurn).toBe(1);
+      expect(previewCardCost(s1, handUid(s1, 'strike'))).toBe(1);
+    }
+  });
+
+  it('할인된 비용으로 낼 수 있는지 판정 (메모리 -3 한계)', () => {
+    const state = makeBattle({
+      hand: ['heavy_strike'],
+      chips: ['trait_card_battler'],
+      memory: -2,
+    });
+    // 할인 없으면 -2 - 2 = -4로 못 냄, 할인하면 -3으로 냄
+    expect(previewCardCost(state, handUid(state, 'heavy_strike'))).toBe(1);
+    expect(() => play(state, 'heavy_strike', 0)).not.toThrow();
+  });
+
+  it('낸 카드 수는 턴 시작에 0으로', () => {
+    const state = makeBattle({ hand: ['strike'], cardsPlayedThisTurn: 3, drawPile: ['guard'] });
+    const next = act(state, { type: 'endTurn' }).state;
+    expect(battleOf(next).cardsPlayedThisTurn).toBe(0);
+  });
+
+  it('ifPlayedThisTurn: 이 카드보다 먼저 낸 카드 수로 판정', () => {
+    const first = makeBattle({ hand: ['roundhouse'], cardsPlayedThisTurn: 1 });
+    expect(battleOf(play(first, 'roundhouse', 0).state).enemies[0]?.hp).toBe(100 - 6);
+    const third = makeBattle({ hand: ['roundhouse'], cardsPlayedThisTurn: 2 });
+    expect(battleOf(play(third, 'roundhouse', 0).state).enemies[0]?.hp).toBe(100 - 12);
+  });
+
+  it('ifPlayedThisTurn 안쪽의 enemy 대상도 대상이 필요한 카드로 셈', () => {
+    const state = makeBattle({ hand: ['roundhouse'] });
+    const uid = handUid(state, 'roundhouse');
+    expect(getLegalActions(state)).toContainEqual({
+      type: 'playCard',
+      cardUid: uid,
+      targetIndex: 0,
+    });
   });
 });

@@ -32,6 +32,13 @@ export const chips = [
     trigger: 'onEvolve',
     effects: [{ op: 'shield', amount: 5 }],
   },
+  // ── 테이머 특성 (숨은 칩, 02 12.3) ──
+  {
+    id: 'trait_card_battler',
+    name: '카드 배틀 실력자',
+    hidden: true,
+    modifiers: { firstCardCostDelta: -1 },
+  },
   {
     id: 'bit_pouch',
     name: '비트 주머니',

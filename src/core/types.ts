@@ -30,7 +30,9 @@ export type Effect =
   | { op: 'freeEvolve' }
   | { op: 'addCard'; cardId: string; to: 'hand' | 'discard' | 'draw'; count: number }
   | { op: 'ifStage'; min: Stage; then: Effect[]; else?: Effect[] }
-  | { op: 'ifEvolvedThisTurn'; then: Effect[]; else?: Effect[] };
+  | { op: 'ifEvolvedThisTurn'; then: Effect[]; else?: Effect[] }
+  /** 이 카드보다 먼저 이번 턴에 낸 카드가 min장 이상이면 (02 12.11) */
+  | { op: 'ifPlayedThisTurn'; min: number; then: Effect[]; else?: Effect[] };
 
 // ── 정의 (src/data가 채움, 바뀌지 않음) ──
 export interface CardFace {
@@ -94,8 +96,14 @@ export interface ChipDef {
   name: string;
   trigger?: ChipTrigger;
   effects?: Effect[];
+  /** 테이머 특성용 숨은 칩: 보상·상점에 안 나오고 칩으로 보이지 않음 (02 12.3) */
+  hidden?: boolean;
+  /** 시작 칩: 판 시작에만 고름 (02 12.7) */
+  start?: boolean;
   modifiers?: {
     evolveCostDelta?: number;
+    /** 그 턴에 처음 내는 카드의 비용에 더함 (02 12.11) */
+    firstCardCostDelta?: number;
     battleBitsBonus?: number;
     handSizeBonus?: number;
     maxHpBonus?: number;
@@ -163,6 +171,8 @@ export interface BattleState {
   statuses: Statuses;
   evolvedThisTurn: boolean;
   freeEvolve: boolean;
+  /** 이번 턴에 낸 카드 수. 카드를 옮긴 뒤 올림 (02 12.3) */
+  cardsPlayedThisTurn: number;
   drawPile: CardInstance[];
   hand: CardInstance[];
   discardPile: CardInstance[];

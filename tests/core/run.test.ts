@@ -448,3 +448,21 @@ describe('12.2 보상 카드가 강화되어 나올 확률', () => {
     expect(all.every((c) => !c.upgraded)).toBe(true);
   });
 });
+
+describe('숨은 칩과 시작 칩은 무작위로 나오지 않음 (02 12.3, 12.7)', () => {
+  it('보물·상점·강적 보상의 칩 후보에서 빠진다', () => {
+    const hidden = getChips()
+      .filter((c) => c.hidden || c.start)
+      .map((c) => c.id);
+    expect(hidden.length).toBeGreaterThan(0);
+    for (let seed = 1; seed <= 40; seed++) {
+      const state = mapState(seed);
+      enterTreasure(state, []);
+      enterShop(state, []);
+      const shop = shopOf(state);
+      for (const id of [...(state.run?.chips ?? []), ...shop.chips.map((c) => c.chipId)]) {
+        expect(hidden).not.toContain(id);
+      }
+    }
+  });
+});

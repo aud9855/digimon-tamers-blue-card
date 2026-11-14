@@ -2,7 +2,7 @@
 import { constants, getCards, getChips } from '../../data/index';
 import type { RarityWeights } from '../../data/constants';
 import { setPhase } from '../phase';
-import { battleBitsBonus, gainChip } from '../chips';
+import { battleBitsBonus, gainChip, isRandomChip } from '../chips';
 import { newCardInstance, requireRun } from '../helpers';
 import { nextInt, weightedPick } from '../rng';
 import type {
@@ -95,7 +95,7 @@ export function gainRandomChip(
   stream: RngStream,
 ): string | null {
   const run = requireRun(state);
-  const candidates = getChips().filter((c) => !run.chips.includes(c.id));
+  const candidates = getChips().filter((c) => isRandomChip(c) && !run.chips.includes(c.id));
   const pick = candidates[candidates.length > 0 ? nextInt(state, stream, candidates.length) : 0];
   if (!pick) {
     gainBits(state, events, constants.NO_CHIP_BITS);

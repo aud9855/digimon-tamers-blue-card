@@ -5,6 +5,7 @@ import {
   applyAction,
   describeIntent,
   getLegalActions,
+  previewCardCost,
   previewEvolveCost,
   type Action,
   type CardInstance,
@@ -109,8 +110,9 @@ function cardOf(state: GameState, uid: number): CardInstance | undefined {
   return state.battle?.hand.find((c) => c.uid === uid);
 }
 
-function costOf(card: CardInstance): number {
-  return cardFace(card).cost;
+/** 지금 낼 때의 비용 (처음 내는 카드 할인 포함, core가 계산) */
+function costOf(state: GameState, card: CardInstance): number {
+  return previewCardCost(state, card.uid) ?? cardFace(card).cost;
 }
 
 /** 이번 적 턴에 받을 피해 (인텐트 합 - 실드 - 임시 HP) */
@@ -237,7 +239,7 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
   }
 
   const byCard = groupByCard(playActions(legal));
-  const affordable = (card: CardInstance) => costOf(card) <= battle.memory;
+  const affordable = (card: CardInstance) => costOf(state, card) <= battle.memory;
 
   // 3. 막기
   const incoming = incomingDamage(state);
@@ -263,7 +265,7 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
     if (!card || !affordable(card)) continue;
     const effects = effectsOf(state, card);
     const isPrep =
-      costOf(card) === 0 ||
+      costOf(state, card) === 0 ||
       effects.some((e) => e.op === 'draw' || (e.op === 'applyStatus' && e.status === 'strength'));
     if (isPrep) return chooseTarget(state, card, options);
   }
@@ -275,7 +277,8 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
     const card = cardOf(state, uid);
     if (!card || !affordable(card) || !isAttackCard(card)) continue;
     const action = chooseTarget(state, card, options);
-    const value = expectedDamage(state, card, action.targetIndex) / Math.max(costOf(card), 1);
+    const value =
+      expectedDamage(state, card, action.targetIndex) / Math.max(costOf(state, card), 1);
     if (value > bestValue) {
       bestAttack = action;
       bestValue = value;
@@ -293,9 +296,9 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
       if (!card || !isAttackCard(card) || a.targetIndex === undefined) continue;
       const enemy = battle.enemies[a.targetIndex];
       if (!enemy || expectedDamage(state, card, a.targetIndex) < enemy.hp + enemy.shield) continue;
-      if (costOf(card) < finisherCost) {
+      if (costOf(state, card) < finisherCost) {
         finisher = a;
-        finisherCost = costOf(card);
+        finisherCost = costOf(state, card);
       }
     }
   }

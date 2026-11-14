@@ -114,7 +114,7 @@ describe('0단계 칩 6개가 실제 전투에서 동작', () => {
   it('큐브 실드, 용기의 증표, 데이터 조각, 예비 배터리, 진화의 고동, 비트 주머니', () => {
     const realChips = getChips()
       .map((c) => c.id)
-      .filter((id) => !id.startsWith('test_'));
+      .filter((id) => !id.startsWith('test_') && !getChips().find((c) => c.id === id)?.hidden);
     expect(realChips).toHaveLength(6);
 
     const state = freshBattle(realChips);

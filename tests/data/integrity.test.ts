@@ -44,27 +44,27 @@ const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
 describe('콘텐츠 개수 (02 9절, 12절)', () => {
-  it('카드: 기본 3, 일반 9, 고급 6, 희귀 3, 필살기 3, 저주 1', () => {
+  it('카드: 기본 4, 일반 15, 고급 10, 희귀 6, 필살기 6, 저주 1', () => {
     const all = getCards();
-    expect(all).toHaveLength(25);
+    expect(all).toHaveLength(42);
     expect(countBy(all, (c) => c.rarity)).toEqual({
-      basic: 3,
-      common: 9,
-      uncommon: 6,
-      rare: 3,
-      special: 4,
+      basic: 4,
+      common: 15,
+      uncommon: 10,
+      rare: 6,
+      special: 7,
     });
-    expect(all.filter((c) => c.type === 'signature')).toHaveLength(3);
+    expect(all.filter((c) => c.type === 'signature')).toHaveLength(6);
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(1);
   });
 
-  it('형태 4, 적 24, 조우 39, 칩 6, 이벤트 6, 테이머 1', () => {
-    expect(getForms()).toHaveLength(4);
+  it('형태 8, 적 24, 조우 39, 칩 7, 이벤트 6, 테이머 2', () => {
+    expect(getForms()).toHaveLength(8);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
-    expect(getChips()).toHaveLength(6);
+    expect(getChips()).toHaveLength(7);
     expect(getEvents()).toHaveLength(6);
-    expect(getTamers()).toHaveLength(1);
+    expect(getTamers()).toHaveLength(2);
   });
 
   it('막마다 조우: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4, 12.10)', () => {
@@ -261,10 +261,38 @@ describe('카드', () => {
     }
   });
 
-  it('0단계에서는 기본~희귀 카드가 모두 takato 풀 (02 4.1)', () => {
-    const takato: TamerId = 'takato';
-    for (const card of getCards().filter((c) => c.rarity !== 'special')) {
-      expect(card.pool).toBe(takato);
+  it('공용 카드는 타격·방어와 플러그인류 (02 12.8)', () => {
+    const neutral = getCards()
+      .filter((c) => c.pool === 'neutral')
+      .map((c) => c.id)
+      .sort();
+    expect(neutral).toEqual(
+      [
+        'attack_plugin',
+        'charge',
+        'defense_plugin',
+        'guard',
+        'recovery_floppy',
+        'speed_plugin',
+        'strike',
+      ].sort(),
+    );
+  });
+
+  it('테이머의 시작 덱은 그 테이머 풀이나 공용 카드', () => {
+    for (const tamer of getTamers()) {
+      for (const id of tamer.startDeck) {
+        const pool: TamerId | 'neutral' | 'none' = getCard(id).pool;
+        expect([tamer.id, 'neutral']).toContain(pool);
+      }
+    }
+  });
+
+  it('테이머마다 자기 계열의 형태가 네 단계 모두 있음', () => {
+    for (const tamer of getTamers()) {
+      for (const stage of ['rookie', 'champion', 'ultimate', 'mega'] as const) {
+        expect(() => getForm(tamer.line, stage)).not.toThrow();
+      }
     }
   });
 

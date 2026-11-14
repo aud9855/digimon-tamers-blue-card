@@ -23,6 +23,7 @@ export function startPlayerTurn(state: GameState, events: GameEvent[]): void {
   // 4.
   battle.evolvedThisTurn = false;
   battle.freeEvolve = false;
+  battle.cardsPlayedThisTurn = 0;
   // 5.
   drawCards(state, events, turnDrawCount(state));
   // 6.

@@ -44,6 +44,7 @@ export function startBattle(
     statuses: emptyStatuses(),
     evolvedThisTurn: false,
     freeEvolve: false,
+    cardsPlayedThisTurn: 0,
     drawPile,
     hand: [],
     discardPile: [],

@@ -15,7 +15,7 @@ import { enterRest } from '../../src/core/run/rest';
 import { enterShop } from '../../src/core/run/shop';
 import { createInitialState } from '../../src/core/state';
 import type { Action, Effect, GameState } from '../../src/core/types';
-import { getCards, getChips, overrideRegistry } from '../../src/data/index';
+import { getCards, getChips, getTamers, overrideRegistry } from '../../src/data/index';
 import { battleOf, makeBattle } from '../helpers/battle';
 import { baseFixtures } from '../helpers/fixtures';
 
@@ -90,7 +90,9 @@ function expectOnlyLegal(state: GameState): void {
 describe('국면마다 할 수 있는 행동 (02 2절, 03 5.2)', () => {
   it('title: startRun (테이머마다)', () => {
     const state = createInitialState(1);
-    expect(getLegalActions(state)).toEqual([{ type: 'startRun', tamerId: 'takato' }]);
+    expect(getLegalActions(state)).toEqual(
+      getTamers().map((t) => ({ type: 'startRun', tamerId: t.id })),
+    );
     expectOnlyLegal(state);
   });
 
