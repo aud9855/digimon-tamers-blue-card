@@ -138,6 +138,8 @@ export interface EventDef {
 export interface TamerDef {
   id: TamerId;
   name: string;
+  /** 테이머 특성 이름 (02 8절, 12.3) */
+  trait: string;
   line: string;
   maxHp: number;
   startBits: number;

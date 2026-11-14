@@ -31,6 +31,7 @@ export function Hand({
             defId={card.defId}
             upgraded={card.upgraded}
             state={state}
+            cardUid={card.uid}
             dimmed={playable ? !playable(card) : false}
             selected={selectedUid === card.uid}
           />

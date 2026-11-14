@@ -19,6 +19,7 @@ const DURATION: Partial<Record<GameEvent['type'], number>> = {
   turnStarted: 450,
   battleEnded: 900,
   chipTriggered: 300,
+  companionTriggered: 300,
   accelChanged: 200,
 };
 

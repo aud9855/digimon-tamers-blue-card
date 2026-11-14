@@ -1,7 +1,7 @@
 // 재생 중인 일 하나를 연출 (04 T1-4). 재생 중에는 화면 전체를 덮어 입력을 막고, 누르면 건너뜀.
 import { useLayoutEffect, useState, type CSSProperties } from 'react';
 import type { GameState, Who } from '../../core/index';
-import { getChip, getEnemy, getForm, getTamer } from '../../data/index';
+import { getCard, getChip, getEnemy, getForm, getTamer } from '../../data/index';
 import { eventDuration } from '../playback';
 import { useGame, type PlaybackItem } from '../store';
 import { CardView } from './CardView';
@@ -206,6 +206,18 @@ function Effect({ item, view, ms }: { item: PlaybackItem; view: GameState; ms: n
           ms={ms}
         />
       );
+    case 'companionTriggered': {
+      const card = view.battle?.companions.find((c) => c.uid === e.cardUid);
+      return card ? (
+        <Floating
+          who="player"
+          text={getCard(card.defId).name}
+          className="rounded bg-lime-900/80 px-2 text-sm text-lime-100"
+          item={item}
+          ms={ms}
+        />
+      ) : null;
+    }
     case 'battleEnded':
       return (
         <Center item={item} ms={ms}>

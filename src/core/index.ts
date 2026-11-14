@@ -6,6 +6,7 @@ export {
   describeChip,
   describeEventChoice,
   describeIntent,
+  describeTamer,
   previewCardCost,
   previewEvolveCost,
   previewOverdraw,

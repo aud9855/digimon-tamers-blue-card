@@ -5,6 +5,7 @@ export const tamers = [
   {
     id: 'takato',
     name: '오유민',
+    trait: '직접 그린 카드',
     line: 'guilmon',
     maxHp: 100,
     startBits: 0,
@@ -29,6 +30,7 @@ export const tamers = [
   {
     id: 'rika',
     name: '은세나',
+    trait: '카드 배틀 실력자',
     line: 'renamon',
     maxHp: 72,
     startBits: 0,
@@ -53,6 +55,7 @@ export const tamers = [
   {
     id: 'henry',
     name: '곽소룡',
+    trait: '침착함',
     line: 'terriermon',
     maxHp: 68,
     startBits: 0,

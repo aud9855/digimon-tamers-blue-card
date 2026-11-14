@@ -1,5 +1,5 @@
 // 카드·칩·인텐트 설명 글 (03 5.3). 효과 op마다 문장 틀이 하나씩 있습니다.
-import { getCard, getChip, getEnemy, getEvent } from '../data/index';
+import { getCard, getChip, getEnemy, getEvent, getTamer } from '../data/index';
 import { cardCost } from './battle/cards';
 import { canEvolve, evolveCost } from './battle/evolve';
 import { enemyHitDamage, playerHitDamage } from './battle/damage';
@@ -17,6 +17,7 @@ import type {
   RunEffect,
   Stage,
   StatusId,
+  TamerId,
 } from './types';
 
 /** 설명 글에 지금 전투 값을 반영할 때 넘기는 것 */
@@ -280,6 +281,16 @@ function describeRunEffect(effect: RunEffect): string {
     case 'addCard':
       return `${getCard(effect.cardId).name} 1장을 덱에`;
   }
+}
+
+/** 테이머 특성 설명 (숨은 칩과 판 시작 런 효과, 02 8절, 12.3) */
+export function describeTamer(tamerId: TamerId): string {
+  const tamer = getTamer(tamerId);
+  const parts = [
+    ...tamer.startChips.filter((id) => getChip(id).hidden).map((id) => describeChip(id)),
+    ...tamer.startEffects.map((e) => `판 시작에 ${describeRunEffect(e)}.`),
+  ];
+  return parts.join(' ');
 }
 
 /** 이벤트 선택지의 결과 설명. 효과가 없으면 '아무 일도 없음' */

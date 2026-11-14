@@ -71,7 +71,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
 │  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  enemies.ts  encounters.ts
-│  │  ├─ chips.ts  events.ts  tamers.ts
+│  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
 │  │  ├─ policies/random.ts  policies/greedy.ts
@@ -85,7 +85,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ sim/                   봇 스모크·결정성·골든 테스트
 │  └─ helpers/               테스트용 전투 만들기 등
 ├─ scripts/
-│  ├─ vitest.mjs             npm test 실행기 (Windows 소문자 드라이브 경로 문제를 피함)
+│  ├─ upper-drive.mjs        dev·build·test·e2e 실행기 (Windows 소문자 드라이브 경로에서 vitest·Tailwind가 깨지는 문제를 피함)
 │  └─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
 └─ .github/workflows/ci.yml
 ```
@@ -155,7 +155,7 @@ export type RunEffect =
   | { op: 'addRandomChip' } | { op: 'addCard'; cardId: string };
 export interface EventDef { id: string; title: string; text: string; choices: { label: string; effects: RunEffect[] }[] }
 export interface TamerDef {
-  id: TamerId; name: string; line: string; maxHp: number;
+  id: TamerId; name: string; trait: string; line: string; maxHp: number;
   startBits: number; startMaxStage: Stage; startMaxMemory: number;
   startDeck: string[]; startEffects: RunEffect[]; startChips: string[];
 }
@@ -285,6 +285,7 @@ applyAction(state: GameState, action: Action): { state: GameState; events: GameE
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
 describeChip(chipId: string): string
 describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
+describeTamer(tamerId): string   // 테이머 특성 설명
 describeIntent(state: GameState, enemyIndex: number): IntentView   // 화면에 보일 종류·피해량·횟수
 previewEvolveCost(state: GameState): number | null   // 지금 진화 비용 (못 하면 null)
 previewCardCost(state, cardUid): number | null   // 지금 낼 때의 비용 (처음 내는 카드 할인 포함)

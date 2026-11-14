@@ -1,4 +1,4 @@
-import { describeCard, type GameState } from '../../core/index';
+import { describeCard, previewCardCost, type GameState } from '../../core/index';
 import { getCard } from '../../data/index';
 import type { CardType } from '../../core/index';
 
@@ -18,6 +18,8 @@ export interface CardViewProps {
   dimmed?: boolean;
   selected?: boolean;
   size?: 'hand' | 'large';
+  /** 손패의 카드면 지금 낼 때의 비용(처음 내는 카드 할인 등)을 보여 줌 */
+  cardUid?: number;
 }
 
 export function CardView({
@@ -27,9 +29,12 @@ export function CardView({
   dimmed = false,
   selected = false,
   size = 'hand',
+  cardUid,
 }: CardViewProps) {
   const def = getCard(defId);
   const face = upgraded ? def.upgraded : def.base;
+  const cost =
+    state && cardUid !== undefined ? (previewCardCost(state, cardUid) ?? face.cost) : face.cost;
   const text = describeCard(defId, upgraded, state ? { state } : undefined);
   const large = size === 'large';
   return (
@@ -39,11 +44,11 @@ export function CardView({
       } ${dimmed ? 'opacity-40' : ''} ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
     >
       <div
-        className={`absolute flex items-center justify-center rounded-full bg-memory font-black text-slate-900 ${
-          large ? '-top-3 -left-3 h-9 w-9 text-lg' : '-top-1.5 -left-1.5 h-5 w-5 text-xs'
-        }`}
+        className={`absolute flex items-center justify-center rounded-full font-black text-slate-900 ${
+          cost < face.cost ? 'bg-lime-300' : 'bg-memory'
+        } ${large ? '-top-3 -left-3 h-9 w-9 text-lg' : '-top-1.5 -left-1.5 h-5 w-5 text-xs'}`}
       >
-        {face.cost}
+        {cost}
       </div>
       <div
         className={`line-clamp-2 text-center font-bold break-keep ${

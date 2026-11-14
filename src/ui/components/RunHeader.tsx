@@ -1,6 +1,6 @@
 // 런 정보 줄: HP, 비트, 덱 장수, 칩 (전투 밖 화면 위쪽)
 import { useState } from 'react';
-import { describeChip, type GameState } from '../../core/index';
+import { describeChip, describeTamer, type GameState } from '../../core/index';
 import { getChip, getTamer } from '../../data/index';
 import { SettingsButton } from './Settings';
 
@@ -12,7 +12,13 @@ export function RunHeader({ state }: { state: GameState }) {
   return (
     <div className="px-4 pt-3" data-testid="run-header">
       <div className="flex items-center justify-between gap-2 text-sm">
-        <span className="font-bold">{getTamer(run.tamerId).name}</span>
+        <button
+          type="button"
+          className="-my-2 min-h-9 font-bold"
+          onClick={() => setOpen((v) => !v)}
+        >
+          {getTamer(run.tamerId).name}
+        </button>
         <span className="text-rose-300">
           HP {Math.max(0, run.hp)}/{run.maxHp}
         </span>
@@ -36,6 +42,10 @@ export function RunHeader({ state }: { state: GameState }) {
       )}
       {open && (
         <div className="mt-1 rounded-lg bg-slate-900 p-2 text-xs text-slate-300">
+          <p>
+            <b className="text-sky-200">{getTamer(run.tamerId).trait}</b>{' '}
+            {describeTamer(run.tamerId)}
+          </p>
           {chips.map((id) => (
             <p key={id}>
               <b className="text-sky-200">{getChip(id).name}</b> {describeChip(id)}
