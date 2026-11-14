@@ -7,6 +7,8 @@ import {
   type GameState,
   type Profile,
 } from '../core/index';
+import { getCard, getEnemy, getTamer } from '../data/index';
+import type { TamerId } from '../core/index';
 import type { PlaybackSpeed } from './playback';
 
 const DB_NAME = 'digimon-blue-card';
@@ -97,13 +99,58 @@ export function isConsistentState(state: GameState): boolean {
   }
   if (state.phase === 'battle') {
     const b = state.battle;
-    if (!b || !Array.isArray(b.hand) || !Array.isArray(b.enemies) || !Array.isArray(b.drawPile)) {
-      return false;
-    }
+    if (!b) return false;
+    const lists = [b.hand, b.enemies, b.drawPile, b.discardPile, b.exhaustPile, b.companions];
+    if (!lists.every(Array.isArray)) return false;
+  }
+  // 지금 데이터에 없는 카드·적이 있으면 그릴 수 없음
+  try {
+    const cards = [
+      ...run.deck,
+      ...(state.battle
+        ? [
+            ...state.battle.hand,
+            ...state.battle.drawPile,
+            ...state.battle.discardPile,
+            ...state.battle.exhaustPile,
+            ...state.battle.companions,
+          ]
+        : []),
+    ];
+    for (const c of cards) getCard(c.defId);
+    for (const e of state.battle?.enemies ?? []) getEnemy(e.defId);
+    getTamer(run.tamerId as TamerId);
+  } catch {
+    return false;
   }
   const kind = PENDING_OF[state.phase];
   if (kind && state.pending?.kind !== kind) return false;
   return true;
+}
+
+/**
+ * 나중 단계에서 생긴 필드를 기본값으로 채움.
+ * 저장 버전 1은 1단계와 2단계에 함께 쓰였고, 1단계 저장에는 2단계의 필드(동료 등)가 없습니다.
+ * 기본값은 그 필드가 생기기 전의 규칙과 같은 뜻입니다 (동료 없음, 형태 특성 없음, 해저드 0 등).
+ */
+export function fillMissingFields(state: GameState): void {
+  const run = state.run as (Partial<NonNullable<GameState['run']>> & object) | null;
+  if (run) {
+    run.formTraits ??= {};
+    run.hazard ??= 0;
+    run.removalsBought ??= 0;
+  }
+  const battle = state.battle as (Partial<NonNullable<GameState['battle']>> & object) | null;
+  if (battle) {
+    battle.companions ??= [];
+    battle.cardsPlayedThisTurn ??= 0;
+    battle.rampage ??= false;
+    battle.handChoice ??= null;
+    battle.exhaustPile ??= [];
+    battle.evolveCount ??= 0;
+  }
+  const pending = state.pending as { kind?: string; traitStage?: unknown } | null;
+  if (pending?.kind === 'actClear') pending.traitStage ??= null;
 }
 
 /** 저장된 값이 이 버전의 게임 상태인지 확인. 아니면 null (깨진 저장, 옛 버전) */
@@ -122,6 +169,7 @@ export function parseSavedGame(raw: unknown): GameState | null {
     } else {
       return null;
     }
+    fillMissingFields(state);
     return isConsistentState(state) ? state : null;
   } catch {
     return null;
