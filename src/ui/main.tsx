@@ -48,6 +48,11 @@ useGame.subscribe((s, prev) => {
   if (s.speed !== prev.speed) void saveSettings({ speed: s.speed });
 });
 
+// 오프라인 실행 (04 T1-8): 배포 빌드에서만 서비스 워커 등록
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  void navigator.serviceWorker.register('./sw.js');
+}
+
 const root = document.getElementById('root');
 if (!root) throw new Error('#root가 없습니다');
 createRoot(root).render(

@@ -19,6 +19,21 @@ export default tseslint.config(
     },
   },
   {
+    // 서비스 워커 템플릿 (빌드 때 __PRECACHE__·__VERSION__을 채움)
+    files: ['pwa/sw.js'],
+    languageOptions: {
+      globals: {
+        self: 'readonly',
+        caches: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        Response: 'readonly',
+        __PRECACHE__: 'readonly',
+        __VERSION__: 'readonly',
+      },
+    },
+  },
+  {
     // 개발용 Node 스크립트
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: { process: 'readonly' } },

@@ -6,6 +6,10 @@
 
 **0단계(규칙 프로토타입, 화면 없음)가 끝났습니다.** 1막의 규칙 엔진이 모두 동작하고, 봇이 1,000판을 돌려 [밸런스 목표](docs/02_RULES_SPEC.md) 10개를 모두 통과합니다 ([측정 기록](docs/balance/M0.md)). 다음 작업은 [작업 목록](docs/04_ROADMAP.md)의 1단계 T1-1(화면 뼈대)입니다.
 
+## 해 보기
+
+휴대폰 브라우저로 **https://aud9855.github.io/digimon-tamers-blue-card/** 를 여세요. 홈 화면에 추가하면 앱처럼 열리고, 한 번 연 뒤에는 오프라인에서도 됩니다.
+
 ## 명령
 
 Node.js 22 이상이 필요합니다.
@@ -18,6 +22,8 @@ npm test            # 테스트 전체
 npm run sim -- --policy greedy --tamer takato --runs 1000   # 봇 1,000판
 npm run sim -- --report m0                                  # 밸런스 지표 10개 표
 npm run card-texts  # 카드·칩 설명 글을 docs/balance/card-texts.md로
+npm run dev         # 개발 서버 (휴대폰에서 같은 와이파이로 접속 가능)
+npm run build       # 배포 빌드 (dist/, 서비스 워커 포함)
 ```
 
 ## 문서
