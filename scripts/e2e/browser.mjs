@@ -27,29 +27,54 @@ function findBrowser() {
 
 /** 헤드리스 브라우저를 띄우고 첫 페이지를 다루는 도구를 돌려줌 */
 export async function launchBrowser({ width = 360, height = 640 } = {}) {
-  const port = 9300 + Math.floor(Math.random() * 600);
   const profile = mkdtempSync(join(tmpdir(), 'blue-card-e2e-'));
   const proc = spawn(findBrowser(), [
     '--headless=new',
     '--disable-gpu',
+    '--disable-dev-shm-usage',
     '--no-sandbox',
     '--no-first-run',
-    `--remote-debugging-port=${port}`,
+    '--no-default-browser-check',
+    // 포트 0: 비어 있는 포트를 브라우저가 고르고, stderr에 주소를 알려 줌
+    '--remote-debugging-port=0',
     `--user-data-dir=${profile}`,
     'about:blank',
   ]);
 
+  // "DevTools listening on ws://127.0.0.1:PORT/devtools/browser/..." 줄에서 포트를 읽음
+  let output = '';
+  const port = await new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`브라우저가 30초 안에 뜨지 않았습니다.\n${output}`)),
+      30_000,
+    );
+    const onData = (chunk) => {
+      output += chunk.toString();
+      const match = output.match(/DevTools listening on ws:\/\/[^:]+:(\d+)\//);
+      if (match) {
+        clearTimeout(timer);
+        resolve(Number(match[1]));
+      }
+    };
+    proc.stderr.on('data', onData);
+    proc.stdout.on('data', onData);
+    proc.on('exit', (code) => {
+      clearTimeout(timer);
+      reject(new Error(`브라우저가 바로 끝났습니다 (코드 ${code}).\n${output}`));
+    });
+  });
+
   let page;
   for (let i = 0; i < 100 && !page; i++) {
     try {
-      const targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
+      const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
       page = targets.find((t) => t.type === 'page');
     } catch {
       // 아직 뜨는 중
     }
     if (!page) await sleep(100);
   }
-  if (!page) throw new Error('브라우저에 연결하지 못했습니다');
+  if (!page) throw new Error(`브라우저 페이지에 연결하지 못했습니다.\n${output}`);
 
   const ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
