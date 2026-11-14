@@ -4,7 +4,9 @@ export type Stage = 'rookie' | 'champion' | 'ultimate' | 'mega';
 export type Attribute = 'vaccine' | 'data' | 'virus' | 'none';
 export type StatusId = 'strength' | 'weak' | 'vulnerable';
 export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako';
-export type CardType = 'attack' | 'skill' | 'signature' | 'curse';
+export type CardType = 'attack' | 'skill' | 'signature' | 'curse' | 'companion';
+/** 형태 특성 (02 12.5) */
+export type FormTraitId = 'tough' | 'sharp';
 export type Rarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
 export type Keyword = 'exhaust' | 'retain' | 'innate' | 'unplayable';
 
@@ -35,10 +37,18 @@ export type Effect =
   | { op: 'ifPlayedThisTurn'; min: number; then: Effect[]; else?: Effect[] };
 
 // ── 정의 (src/data가 채움, 바뀌지 않음) ──
+/** 동료 효과 (02 12.6): 칩과 같은 구조 */
+export interface CompanionEffect {
+  trigger?: ChipTrigger;
+  effects?: Effect[];
+  modifiers?: { evolveCostDelta?: number };
+}
 export interface CardFace {
   cost: number;
   effects: Effect[];
   keywords?: Keyword[];
+  /** 동료 카드만: 동료 자리에 있는 동안의 효과 */
+  companion?: CompanionEffect;
 }
 export interface CardDef {
   id: string;
@@ -177,6 +187,8 @@ export interface BattleState {
   hand: CardInstance[];
   discardPile: CardInstance[];
   exhaustPile: CardInstance[];
+  /** 동료 자리 (02 12.6) */
+  companions: CardInstance[];
   enemies: EnemyState[];
 }
 export type NodeType = 'battle' | 'elite' | 'event' | 'shop' | 'rest' | 'treasure' | 'boss';
@@ -207,6 +219,8 @@ export interface RunState {
   nodeId: string | null; // 지금 있는 칸 (막 시작 전에는 null)
   path: string[]; // 이번 막에서 지나온 칸 id (지금 칸 포함)
   removalsBought: number;
+  /** 단계별로 고른 형태 특성 (02 12.5) */
+  formTraits: Partial<Record<Stage, FormTraitId>>;
 }
 // 플레이어 HP는 run.hp 하나뿐입니다. 전투 중에도 run.hp를 직접 고칩니다.
 // 지금 형태는 getForm(tamer.line, battle.stage)로 찾습니다. 전투 밖에서는 성장기입니다.
@@ -224,9 +238,12 @@ export type Pending =
   | { kind: 'rest' }
   | { kind: 'event'; eventId: string }
   | { kind: 'treasure'; chipId: string | null }
-  | { kind: 'actClear' };
+  | { kind: 'startChip'; chipIds: string[] }
+  /** traitStage: 특성을 고를 단계 (고르면 null) */
+  | { kind: 'actClear'; traitStage: Stage | null };
 export type Phase =
   | 'title'
+  | 'startChip'
   | 'map'
   | 'battle'
   | 'reward'
@@ -264,7 +281,9 @@ export type Action =
   | { type: 'restHeal' }
   | { type: 'restUpgrade'; cardUid: number }
   | { type: 'eventChoose'; index: number }
-  | { type: 'proceed' };
+  | { type: 'proceed' }
+  | { type: 'chooseStartChip'; index: number }
+  | { type: 'chooseFormTrait'; index: number };
 
 // ── 일어난 일 목록 (03 4.1) ──
 export type Who = 'player' | number; // number: 적의 위치(index)
@@ -277,7 +296,13 @@ export type GameEvent =
   | { type: 'deckShuffled' }
   | { type: 'cardDrawn'; cardUid: number }
   | { type: 'cardPlayed'; cardUid: number; targetIndex?: number }
-  | { type: 'cardMoved'; cardUid: number; to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' }
+  | {
+      type: 'cardMoved';
+      cardUid: number;
+      to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' | 'companion';
+    }
+  | { type: 'companionTriggered'; cardUid: number }
+  | { type: 'formTraitChosen'; stage: Stage; traitId: FormTraitId }
   | { type: 'cardCreated'; cardUid: number; defId: string; to: 'hand' | 'draw' | 'discard' }
   | { type: 'memoryChanged'; memory: number }
   | {

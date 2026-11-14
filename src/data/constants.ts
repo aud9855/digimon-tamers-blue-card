@@ -1,5 +1,5 @@
 // 규칙 상수 (03 6절). 밸런스 조정은 이 파일과 다른 data 파일만 고칩니다.
-import type { NodeType, Rarity, Stage } from '../core/types';
+import type { FormTraitId, NodeType, Rarity, Stage } from '../core/types';
 
 export type RarityWeights = Partial<Record<Rarity, number>>;
 export type EncounterTierForMap = 'easy' | 'normal';
@@ -27,6 +27,12 @@ export const constants = {
   WEAK_MULT: 0.75,
   VULNERABLE_MULT: 1.5,
   EVOLVE_BASE_COST: { champion: 3, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
+
+  // ── 동료·형태 특성 (02 12.5, 12.6) ──
+  COMPANION_SLOTS: 2,
+  FORM_TRAITS: ['tough', 'sharp'] as FormTraitId[],
+  FORM_TRAIT_TEMP_HP: 6,
+  FORM_TRAIT_POWER: 1,
 
   // ── 막 (02 2절, 7.6) ──
   ACT_COUNT: 3,

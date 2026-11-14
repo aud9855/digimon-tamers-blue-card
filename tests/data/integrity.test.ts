@@ -44,26 +44,26 @@ const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
 describe('콘텐츠 개수 (02 9절, 12절)', () => {
-  it('카드: 기본 5, 일반 21, 고급 14, 희귀 9, 필살기 9, 저주 1', () => {
+  it('카드: 기본 5, 일반 21, 고급 17, 희귀 10, 필살기 9, 저주 1 (동료 4장 포함)', () => {
     const all = getCards();
-    expect(all).toHaveLength(59);
+    expect(all).toHaveLength(63);
     expect(countBy(all, (c) => c.rarity)).toEqual({
       basic: 5,
       common: 21,
-      uncommon: 14,
-      rare: 9,
+      uncommon: 17,
+      rare: 10,
       special: 10,
     });
     expect(all.filter((c) => c.type === 'signature')).toHaveLength(9);
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(1);
   });
 
-  it('형태 12, 적 24, 조우 39, 칩 8, 이벤트 6, 테이머 3', () => {
+  it('형태 12, 적 24, 조우 39, 칩 11, 이벤트 8, 테이머 3', () => {
     expect(getForms()).toHaveLength(12);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
-    expect(getChips()).toHaveLength(8);
-    expect(getEvents()).toHaveLength(6);
+    expect(getChips()).toHaveLength(11);
+    expect(getEvents()).toHaveLength(8);
     expect(getTamers()).toHaveLength(3);
   });
 
@@ -275,6 +275,10 @@ describe('카드', () => {
         'recovery_floppy',
         'speed_plugin',
         'strike',
+        'juri',
+        'kazu',
+        'kenta',
+        'calumon',
       ].sort(),
     );
   });
@@ -314,6 +318,28 @@ describe('칩', () => {
       expect(triggered).toBe((chip.effects?.length ?? 0) > 0);
       expect(triggered || chip.modifiers !== undefined).toBe(true);
     }
+  });
+
+  it('동료 효과는 target enemy를 쓰지 않고, 수치 보정은 evolveCostDelta만 (02 12.6)', () => {
+    for (const card of getCards().filter((c) => c.type === 'companion')) {
+      for (const face of [card.base, card.upgraded]) {
+        expect(face.companion).toBeDefined();
+        for (const e of flatten(face.companion?.effects ?? [])) {
+          if ('target' in e) expect(e.target).not.toBe('enemy');
+        }
+        expect(Object.keys(face.companion?.modifiers ?? {})).toEqual(
+          face.companion?.modifiers ? ['evolveCostDelta'] : [],
+        );
+      }
+    }
+  });
+
+  it('시작 칩 3개 (02 12.7)', () => {
+    expect(
+      getChips()
+        .filter((c) => c.start)
+        .map((c) => c.id),
+    ).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
   });
 
   it("칩 효과는 target 'enemy'를 쓰지 않는다 (02 5절)", () => {

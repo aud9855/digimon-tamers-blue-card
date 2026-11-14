@@ -3,6 +3,7 @@ import { applyAction, getLegalActions, IllegalActionError } from '../../src/core
 import { generateMap } from '../../src/core/run/map';
 import { createInitialState } from '../../src/core/state';
 import type { ActMap, GameState, MapNode } from '../../src/core/types';
+import { startedRun } from '../helpers/battle';
 import { constants, getCard, getEncounter, getEvents } from '../../src/data/index';
 
 function mapFor(seed: number): ActMap {
@@ -135,10 +136,10 @@ describe('지도 생성 (02 6절), 시드 200개', () => {
 
 describe('런 시작과 이동 (02 8절, 6절 7번)', () => {
   function started(seed = 1): GameState {
-    return applyAction(createInitialState(seed), { type: 'startRun', tamerId: 'takato' }).state;
+    return startedRun(seed);
   }
 
-  it('startRun 뒤 국면이 reward이고 강화된 일반 카드 3장이 보임 (오유민 특성)', () => {
+  it('startRun과 시작 칩 뒤 국면이 reward이고 강화된 일반 카드 3장이 보임 (오유민 특성)', () => {
     for (let seed = 1; seed <= 30; seed++) {
       const state = started(seed);
       expect(state.phase).toBe('reward');

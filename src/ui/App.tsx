@@ -8,6 +8,7 @@ import { MapScreen } from './screens/MapScreen';
 import { RestScreen } from './screens/RestScreen';
 import { RewardScreen } from './screens/RewardScreen';
 import { RunEndScreen } from './screens/RunEndScreen';
+import { StartChipScreen } from './screens/StartChipScreen';
 import { ShopScreen } from './screens/ShopScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { TreasureScreen } from './screens/TreasureScreen';
@@ -17,6 +18,7 @@ import { useDisplayState } from './store';
 
 const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
   title: TitleScreen,
+  startChip: StartChipScreen,
   map: MapScreen,
   battle: BattleScreen,
   reward: RewardScreen,

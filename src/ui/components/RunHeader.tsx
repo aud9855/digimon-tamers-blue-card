@@ -8,6 +8,7 @@ export function RunHeader({ state }: { state: GameState }) {
   const run = state.run;
   const [open, setOpen] = useState(false);
   if (!run) return null;
+  const chips = run.chips.filter((id) => !getChip(id).hidden);
   return (
     <div className="px-4 pt-3" data-testid="run-header">
       <div className="flex items-center justify-between gap-2 text-sm">
@@ -20,13 +21,13 @@ export function RunHeader({ state }: { state: GameState }) {
         <span className="text-slate-400">{run.act}막</span>
         <SettingsButton />
       </div>
-      {run.chips.length > 0 && (
+      {chips.length > 0 && (
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="mt-1 flex min-h-8 w-full flex-wrap items-center gap-1 text-left text-xs text-sky-200"
         >
-          {run.chips.map((id) => (
+          {chips.map((id) => (
             <span key={id} className="rounded bg-sky-900/70 px-1.5 py-0.5">
               {getChip(id).name}
             </span>
@@ -35,7 +36,7 @@ export function RunHeader({ state }: { state: GameState }) {
       )}
       {open && (
         <div className="mt-1 rounded-lg bg-slate-900 p-2 text-xs text-slate-300">
-          {run.chips.map((id) => (
+          {chips.map((id) => (
             <p key={id}>
               <b className="text-sky-200">{getChip(id).name}</b> {describeChip(id)}
             </p>

@@ -363,6 +363,74 @@ export const cards = [
     },
   },
 
+  // ── 동료 (공용, 02 12.6) ──
+  {
+    id: 'juri',
+    name: '황주연',
+    type: 'companion',
+    rarity: 'uncommon',
+    pool: 'neutral',
+    base: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'heal', amount: 2 }] },
+    },
+    upgraded: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'heal', amount: 3 }] },
+    },
+  },
+  {
+    id: 'kazu',
+    name: '강재호',
+    type: 'companion',
+    rarity: 'uncommon',
+    pool: 'neutral',
+    base: {
+      cost: 1,
+      effects: [],
+      companion: {
+        trigger: 'onTurnStart',
+        effects: [{ op: 'damage', amount: 3, target: 'randomEnemy' }],
+      },
+    },
+    upgraded: {
+      cost: 1,
+      effects: [],
+      companion: {
+        trigger: 'onTurnStart',
+        effects: [{ op: 'damage', amount: 5, target: 'randomEnemy' }],
+      },
+    },
+  },
+  {
+    id: 'kenta',
+    name: '이성우',
+    type: 'companion',
+    rarity: 'uncommon',
+    pool: 'neutral',
+    base: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'shield', amount: 3 }] },
+    },
+    upgraded: {
+      cost: 1,
+      effects: [],
+      companion: { trigger: 'onTurnStart', effects: [{ op: 'shield', amount: 5 }] },
+    },
+  },
+  {
+    id: 'calumon',
+    name: '동글몬',
+    type: 'companion',
+    rarity: 'rare',
+    pool: 'neutral',
+    base: { cost: 1, effects: [], companion: { modifiers: { evolveCostDelta: -1 } } },
+    upgraded: { cost: 0, effects: [], companion: { modifiers: { evolveCostDelta: -1 } } },
+  },
+
   // ── 특수 ──
   {
     // 필살기: 0단계에서는 강화가 없으므로 두 면이 같습니다 (02 4.2)

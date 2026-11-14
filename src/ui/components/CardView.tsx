@@ -7,6 +7,7 @@ const TYPE_STYLE: Record<CardType, string> = {
   skill: 'border-sky-400 bg-sky-950',
   signature: 'border-amber-300 bg-amber-950',
   curse: 'border-slate-500 bg-slate-900',
+  companion: 'border-lime-400 bg-lime-950',
 };
 
 export interface CardViewProps {

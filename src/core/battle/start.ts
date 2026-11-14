@@ -49,6 +49,7 @@ export function startBattle(
     hand: [],
     discardPile: [],
     exhaustPile: [],
+    companions: [],
     enemies: encounter.enemies.map(createEnemy),
   };
   state.pending = null;

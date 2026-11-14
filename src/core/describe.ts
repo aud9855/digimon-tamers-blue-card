@@ -4,7 +4,7 @@ import { cardCost } from './battle/cards';
 import { canEvolve, evolveCost } from './battle/evolve';
 import { enemyHitDamage, playerHitDamage } from './battle/damage';
 import { getMove } from './battle/enemy';
-import { currentForm, floorNonNegative } from './helpers';
+import { floorNonNegative, formPower } from './helpers';
 import { constants } from '../data/index';
 import type {
   ChipDef,
@@ -68,8 +68,7 @@ function damageAmount(amount: number, ctx: DescribeContext | undefined): number 
   if (target !== undefined && state.battle.enemies[target]?.alive) {
     return playerHitDamage(state, amount, target).damage;
   }
-  const form = currentForm(state);
-  const raw = amount + form.power + state.battle.statuses.strength;
+  const raw = amount + formPower(state) + state.battle.statuses.strength;
   return floorNonNegative(raw * (state.battle.statuses.weak > 0 ? constants.WEAK_MULT : 1));
 }
 
@@ -151,6 +150,15 @@ export function describeCard(defId: string, upgraded: boolean, ctx?: DescribeCon
   const def = getCard(defId);
   const face = upgraded ? def.upgraded : def.base;
   const parts = face.effects.map((e) => describeEffect(e, ctx));
+  if (face.companion) {
+    const c = face.companion;
+    if (c.trigger && c.effects) {
+      parts.push(`동료: ${TRIGGER_NAMES[c.trigger]} ${joinEffects(c.effects, undefined, ', ')}`);
+    }
+    if (c.modifiers) {
+      parts.push(...describeModifiers(c.modifiers).map((t) => `동료: ${t}`));
+    }
+  }
   for (const keyword of face.keywords ?? []) parts.push(KEYWORD_NAMES[keyword]);
   return sentences(parts);
 }

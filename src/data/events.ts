@@ -89,4 +89,24 @@ export const events = [
       { label: '돌아간다', effects: [] },
     ],
   },
+  {
+    id: 'juri_cheer',
+    acts: [1, 2, 3],
+    title: '황주연의 응원',
+    text: '황주연이 숨을 고르며 달려와 손에 쥔 카드를 흔든다. 다치지 말라며 응급 상자를 내밀고, 같이 가면 힘이 되어 주겠다고 한다.',
+    choices: [
+      { label: '고맙다고 한다', effects: [{ op: 'heal', amount: 15 }] },
+      { label: '함께 가자고 한다', effects: [{ op: 'addCard', cardId: 'juri' }] },
+    ],
+  },
+  {
+    id: 'calumon_glow',
+    acts: [3],
+    title: '동글몬의 빛',
+    text: '지친 동글몬의 이마에서 붉은 빛이 희미하게 깜빡인다. 손을 잡아 주면 그 빛이 디아크로 흘러들 것 같다. 아니면 조용히 쉬게 둘 수도 있다.',
+    choices: [
+      { label: '손을 잡는다', effects: [{ op: 'addCard', cardId: 'calumon' }] },
+      { label: '쉬게 한다', effects: [{ op: 'heal', amount: 20 }] },
+    ],
+  },
 ] satisfies EventDef[];

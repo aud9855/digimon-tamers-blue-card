@@ -1,6 +1,6 @@
 // 02 5절 디아크 칩
 import { getChip } from '../data/index';
-import { requireRun } from './helpers';
+import { cardFace, requireRun } from './helpers';
 import type { ChipDef, ChipTrigger, GameEvent, GameState } from './types';
 import { runEffects } from './battle/effects';
 
@@ -14,6 +14,14 @@ export function triggerChips(state: GameState, events: GameEvent[], trigger: Chi
     events.push({ type: 'chipTriggered', chipId });
     runEffects(state, events, chip.effects, {});
   }
+  // 동료: 칩 다음, 자리 순서대로 (02 12.6)
+  for (const card of state.battle?.companions ?? []) {
+    const companion = cardFace(card).companion;
+    if (companion?.trigger !== trigger || !companion.effects) continue;
+    if (state.phase !== 'battle') return;
+    events.push({ type: 'companionTriggered', cardUid: card.uid });
+    runEffects(state, events, companion.effects, {});
+  }
 }
 
 function sumModifier(state: GameState, key: keyof NonNullable<ChipDef['modifiers']>): number {
@@ -21,7 +29,13 @@ function sumModifier(state: GameState, key: keyof NonNullable<ChipDef['modifiers
   return run.chips.reduce((sum, id) => sum + (getChip(id).modifiers?.[key] ?? 0), 0);
 }
 
-export const evolveCostDelta = (state: GameState) => sumModifier(state, 'evolveCostDelta');
+/** 칩과 동료의 진화 비용 보정 합 */
+export const evolveCostDelta = (state: GameState) =>
+  sumModifier(state, 'evolveCostDelta') +
+  (state.battle?.companions ?? []).reduce(
+    (sum, card) => sum + (cardFace(card).companion?.modifiers?.evolveCostDelta ?? 0),
+    0,
+  );
 export const battleBitsBonus = (state: GameState) => sumModifier(state, 'battleBitsBonus');
 export const handSizeBonus = (state: GameState) => sumModifier(state, 'handSizeBonus');
 export const firstCardCostDelta = (state: GameState) => sumModifier(state, 'firstCardCostDelta');

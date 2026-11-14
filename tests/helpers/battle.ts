@@ -10,10 +10,12 @@ import type {
   EnemyState,
   GameEvent,
   GameState,
+  RunState,
   Stage,
   Statuses,
+  TamerId,
 } from '../../src/core/types';
-import { getTamer } from '../../src/data/index';
+import { getChips, getTamer } from '../../src/data/index';
 
 /** 'strike'는 기본 면, 'strike+'는 강화 면 */
 export type CardSpec = string;
@@ -38,6 +40,8 @@ export interface BattleOptions {
   statuses?: Partial<Statuses>;
   turn?: number;
   cardsPlayedThisTurn?: number;
+  companions?: CardSpec[];
+  formTraits?: RunState['formTraits'];
   kind?: BattleState['kind'];
   act?: number;
 }
@@ -73,6 +77,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     nodeId: null,
     path: [],
     removalsBought: 0,
+    formTraits: opts.formTraits ?? {},
   };
   state.run.deck = makeCards(state, opts.deck ?? []);
   const enemies = (opts.enemies ?? ['test_dummy']).map((id, i) => ({
@@ -97,6 +102,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     hand: makeCards(state, opts.hand ?? []),
     discardPile: makeCards(state, opts.discardPile ?? []),
     exhaustPile: [],
+    companions: makeCards(state, opts.companions ?? []),
     enemies,
   };
   state.phase = 'battle';
@@ -140,4 +146,19 @@ export function eventsOf<T extends GameEvent['type']>(
   type: T,
 ): Extract<GameEvent, { type: T }>[] {
   return events.filter((e): e is Extract<GameEvent, { type: T }> => e.type === type);
+}
+
+/** 런을 시작하고 시작 칩을 고른 상태 (오유민이면 특성 카드 고르기 국면) */
+export function startedRun(seed = 1, tamerId: TamerId = 'takato', startChip = 0): GameState {
+  const s = applyAction(createInitialState(seed), { type: 'startRun', tamerId }).state;
+  return s.phase === 'startChip'
+    ? applyAction(s, { type: 'chooseStartChip', index: startChip }).state
+    : s;
+}
+
+/** 무작위로 얻을 수 있는 칩 (숨은 칩·시작 칩 제외) */
+export function randomChipIds(): string[] {
+  return getChips()
+    .filter((c) => !c.hidden && !c.start)
+    .map((c) => c.id);
 }

@@ -16,7 +16,7 @@ import { enterShop } from '../../src/core/run/shop';
 import { createInitialState } from '../../src/core/state';
 import type { Action, Effect, GameState } from '../../src/core/types';
 import { getCards, getChips, getTamers, overrideRegistry } from '../../src/data/index';
-import { battleOf, makeBattle } from '../helpers/battle';
+import { battleOf, makeBattle, startedRun } from '../helpers/battle';
 import { baseFixtures } from '../helpers/fixtures';
 
 let restore: () => void;
@@ -26,8 +26,7 @@ beforeEach(() => {
 afterEach(() => restore());
 
 function mapState(seed = 1): GameState {
-  const s = applyAction(createInitialState(seed), { type: 'startRun', tamerId: 'takato' }).state;
-  return applyAction(s, { type: 'skipCards' }).state;
+  return applyAction(startedRun(seed), { type: 'skipCards' }).state;
 }
 
 /** 모든 종류의 행동 견본 (목록 밖 행동 확인용) */
@@ -97,10 +96,7 @@ describe('국면마다 할 수 있는 행동 (02 2절, 03 5.2)', () => {
   });
 
   it('reward: 카드마다 pickCard, 그리고 skipCards', () => {
-    const state = applyAction(createInitialState(1), {
-      type: 'startRun',
-      tamerId: 'takato',
-    }).state;
+    const state = startedRun(1);
     expect(getLegalActions(state)).toEqual([
       { type: 'pickCard', index: 0 },
       { type: 'pickCard', index: 1 },

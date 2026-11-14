@@ -1,5 +1,5 @@
 // 02 3.5 카드 내기
-import { constants } from '../../data/index';
+import { constants, getCard } from '../../data/index';
 import { cardFace, hasKeyword, requireBattle } from '../helpers';
 import { firstCardCostDelta, triggerChips } from '../chips';
 import type { CardInstance, Effect, GameEvent, GameState } from '../types';
@@ -37,6 +37,13 @@ export function cardCost(state: GameState, card: CardInstance): number {
 export function isCardPlayable(state: GameState, card: CardInstance): boolean {
   if (state.phase !== 'battle') return false;
   if (hasKeyword(card, 'unplayable')) return false;
+  // 동료 자리가 차 있으면 동료 카드를 낼 수 없음 (02 12.6)
+  if (
+    getCard(card.defId).type === 'companion' &&
+    requireBattle(state).companions.length >= constants.COMPANION_SLOTS
+  ) {
+    return false;
+  }
   return canSpendMemory(state, cardCost(state, card));
 }
 
@@ -66,8 +73,11 @@ export function playCard(
   // 3. 패배하면 남은 처리를 모두 멈춤
   runEffects(state, events, face.effects, targetIndex === undefined ? {} : { targetIndex });
   if (battleStopped(state)) return;
-  // 4.
-  if (face.keywords?.includes('exhaust')) {
+  // 4. 동료는 동료 자리로 (02 12.6)
+  if (getCard(card.defId).type === 'companion') {
+    battle.companions.push(card);
+    events.push({ type: 'cardMoved', cardUid, to: 'companion' });
+  } else if (face.keywords?.includes('exhaust')) {
     battle.exhaustPile.push(card);
     events.push({ type: 'cardMoved', cardUid, to: 'exhaust' });
   } else {
