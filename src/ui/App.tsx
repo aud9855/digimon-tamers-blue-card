@@ -13,7 +13,9 @@ import { ShopScreen } from './screens/ShopScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { TreasureScreen } from './screens/TreasureScreen';
 import { PlaybackOverlay } from './components/PlaybackOverlay';
+import { ErrorScreen } from './components/ErrorBoundary';
 import { PanelHost } from './components/Settings';
+import { isConsistentState } from './save';
 import { useDisplayState } from './store';
 
 const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
@@ -43,8 +45,13 @@ function useBackButtonGuard() {
 
 export function App() {
   useBackButtonGuard();
-  const phase = useDisplayState().phase;
-  const Current = SCREENS[phase];
+  const state = useDisplayState();
+  const Current = SCREENS[state.phase] as (typeof SCREENS)[Phase] | undefined;
+  // 상태가 국면과 맞지 않으면 화면이 아무것도 그리지 못하므로 빈 화면 대신 안내
+  if (!Current || !isConsistentState(state)) {
+    const message = `상태가 맞지 않음: phase=${state.phase}, pending=${state.pending?.kind ?? '없음'}`;
+    return <ErrorScreen message={message} />;
+  }
   return (
     <>
       <Current />

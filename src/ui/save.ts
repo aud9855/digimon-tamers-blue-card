@@ -49,6 +49,18 @@ async function put(key: string, value: unknown): Promise<void> {
   db.close();
 }
 
+async function remove(key: string): Promise<void> {
+  if (!available()) return;
+  const db = await open();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
 async function get(key: string): Promise<unknown> {
   if (!available()) return undefined;
   const db = await open();
@@ -61,6 +73,39 @@ async function get(key: string): Promise<unknown> {
   return value;
 }
 
+/** 국면마다 있어야 하는 대기 정보 (02 2절의 표) */
+const PENDING_OF: Partial<Record<GameState['phase'], string>> = {
+  startChip: 'startChip',
+  reward: 'reward',
+  shop: 'shop',
+  rest: 'rest',
+  event: 'event',
+  treasure: 'treasure',
+  actClear: 'actClear',
+};
+
+/**
+ * 국면과 상태가 맞는지 (화면이 그릴 수 있는지).
+ * 맞지 않으면 화면이 아무것도 그리지 못해 빈 화면이 되므로, 그런 저장은 이어 하지 않습니다.
+ */
+export function isConsistentState(state: GameState): boolean {
+  if (state.phase === 'title') return true;
+  const run = state.run as Partial<NonNullable<GameState['run']>> | null;
+  if (!run || !Array.isArray(run.deck) || !Array.isArray(run.chips) || !run.map) return false;
+  if (!Array.isArray(run.map.nodes) || !Array.isArray(run.path) || typeof run.hp !== 'number') {
+    return false;
+  }
+  if (state.phase === 'battle') {
+    const b = state.battle;
+    if (!b || !Array.isArray(b.hand) || !Array.isArray(b.enemies) || !Array.isArray(b.drawPile)) {
+      return false;
+    }
+  }
+  const kind = PENDING_OF[state.phase];
+  if (kind && state.pending?.kind !== kind) return false;
+  return true;
+}
+
 /** 저장된 값이 이 버전의 게임 상태인지 확인. 아니면 null (깨진 저장, 옛 버전) */
 export function parseSavedGame(raw: unknown): GameState | null {
   if (typeof raw !== 'string') return null;
@@ -69,10 +114,15 @@ export function parseSavedGame(raw: unknown): GameState | null {
     if (typeof value.phase !== 'string') return null;
     if (typeof value.seed !== 'number' || !value.rng) return null;
     // 버전 1 → 2: 해금 정보가 생김 (02 13.5). 1단계·2단계의 판은 처음 해금 상태로 이어 함
-    if (value.version === 1)
-      return { ...value, version: SAVE_VERSION, unlocks: defaultUnlocks() } as GameState;
-    if (value.version !== SAVE_VERSION || !value.unlocks) return null;
-    return value as GameState;
+    let state: GameState;
+    if (value.version === 1) {
+      state = { ...value, version: SAVE_VERSION, unlocks: defaultUnlocks() } as GameState;
+    } else if (value.version === SAVE_VERSION && value.unlocks) {
+      state = value as GameState;
+    } else {
+      return null;
+    }
+    return isConsistentState(state) ? state : null;
   } catch {
     return null;
   }
@@ -121,6 +171,11 @@ export async function loadProfile(): Promise<Profile> {
 /** 저장 형식은 JSON 문자열 (03 5절 약속 5: JSON으로 되살릴 수 있어야 함) */
 export async function saveGame(state: GameState): Promise<void> {
   await put(GAME_KEY, JSON.stringify(state));
+}
+
+/** 진행 중인 판만 지움 (오류 화면의 "저장 지우고 처음으로") */
+export async function clearSavedGame(): Promise<void> {
+  await remove(GAME_KEY);
 }
 
 export async function loadGame(): Promise<GameState | null> {
