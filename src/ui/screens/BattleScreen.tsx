@@ -31,6 +31,7 @@ export interface BattleViewProps {
   targetable?: Set<number>;
   onEnemySelect?: (index: number) => void;
   onEvolve?: () => void;
+  onRampage?: () => void;
   onCardPointerDown?: (card: CardInstance, e: React.PointerEvent) => void;
   /** 적과 파트너 사이 (내기 영역, 경고) */
   middle?: ReactNode;
@@ -50,6 +51,7 @@ export function BattleView({
   targetable,
   onEnemySelect,
   onEvolve,
+  onRampage,
   onCardPointerDown,
   middle,
   footer,
@@ -108,7 +110,7 @@ export function BattleView({
             ))}
           </div>
         )}
-        <PartnerView state={state} onEvolve={onEvolve} />
+        <PartnerView state={state} onEvolve={onEvolve} onRampage={onRampage} />
         <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
         <div ref={handRef}>
           <Hand
@@ -279,6 +281,14 @@ export function BattleScreen() {
         targetable={targetable}
         onEnemySelect={(i) => selected && play(selected.uid, i)}
         onEvolve={onEvolve}
+        onRampage={
+          legal.some((a) => a.type === 'rampage')
+            ? () => {
+                reset();
+                dispatch({ type: 'rampage' });
+              }
+            : undefined
+        }
         onCardPointerDown={onCardPointerDown}
         handRef={handRef}
         middle={middle}
@@ -313,6 +323,33 @@ export function BattleScreen() {
           style={{ left: drag.x, top: drag.y }}
         >
           <CardView defId={drag.card.defId} upgraded={drag.card.upgraded} state={state} />
+        </div>
+      )}
+      {battle.handChoice && (
+        // 두 사람의 카드: 두 묶음 중 하나를 고름 (02 13.3)
+        <div
+          className="fixed inset-0 z-30 flex flex-col justify-center gap-4 bg-slate-950/90 px-3"
+          data-testid="hand-choice"
+        >
+          <p className="text-center text-sm text-sky-200">이번 턴에 쓸 묶음을 고르세요</p>
+          {battle.handChoice.map((group, index) => (
+            <button
+              key={index}
+              type="button"
+              data-hand-group={index}
+              onClick={() => dispatch({ type: 'chooseHandGroup', index })}
+              className="rounded-xl border-2 border-slate-700 bg-slate-900 p-2 active:border-sky-400"
+            >
+              <span className="mb-2 block text-left text-xs text-slate-400">
+                {index === 0 ? '다영의 카드' : '진의 카드'} ({group.length}장)
+              </span>
+              <span className="grid grid-cols-5 gap-1.5">
+                {group.map((c) => (
+                  <CardView key={c.uid} defId={c.defId} upgraded={c.upgraded} state={state} />
+                ))}
+              </span>
+            </button>
+          ))}
         </div>
       )}
       {zoom && (

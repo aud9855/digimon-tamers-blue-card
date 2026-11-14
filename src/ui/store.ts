@@ -3,14 +3,20 @@
 import { create } from 'zustand';
 import {
   applyAction,
+  applyRunResult,
   createInitialState,
+  createProfile,
+  recordCodex,
   type Action,
   type GameEvent,
   type GameState,
+  type Profile,
 } from '../core/index';
+import { getChip, getTamer } from '../data/index';
 import { applyEventToView, eventDuration, shouldPlay, type PlaybackSpeed } from './playback';
+import { playSound, setSoundEnabled, soundFor, soundsForBatch } from './sound';
 
-export type Panel = 'settings' | 'guide' | 'info';
+export type Panel = 'settings' | 'guide' | 'info' | 'codex';
 
 /** 재생 중인 일 하나와, 연출에 필요한 덧붙임 정보 */
 export interface PlaybackItem {
@@ -24,6 +30,10 @@ export interface PlaybackItem {
 export interface GameStore {
   /** 마지막 행동까지 반영된 진짜 상태 */
   state: GameState;
+  /** 판 밖의 기록 (02 13.5) */
+  profile: Profile;
+  /** 이번 판이 끝나며 새로 열린 것 (결과 화면에 보임) */
+  unlockNotice: string[];
   /** 마지막 행동에서 일어난 일 */
   lastEvents: GameEvent[];
   /** 재생 중에 보이는 상태 (재생 중이 아니면 null) */
@@ -41,13 +51,31 @@ export interface GameStore {
   /** 남은 재생을 건너뜀 */
   skipPlayback: () => void;
   setSpeed: (speed: PlaybackSpeed) => void;
-  /** 새 시드로 처음부터 */
+  /** 효과음 켜기·끄기 (02 13.7) */
+  sound: boolean;
+  setSound: (on: boolean) => void;
+  /** 새 시드로 처음부터 (프로필의 해금 정보로) */
   newGame: (seed?: number) => void;
 }
 
 /** 화면 쪽 시드. core가 아니므로 무작위 API를 써도 됩니다. */
 export function randomSeed(): number {
   return Math.floor(Math.random() * 0x7fffffff);
+}
+
+/** 프로필의 해금이 늘어난 것을 글로 (화면 표시용, 규칙 계산이 아님) */
+export function unlockNotice(before: Profile, after: Profile): string[] {
+  const notes: string[] = [];
+  for (const id of after.unlocks.tamers) {
+    if (!before.unlocks.tamers.includes(id)) notes.push(`새 테이머: ${getTamer(id).name}`);
+  }
+  for (const id of after.unlocks.startChips) {
+    if (!before.unlocks.startChips.includes(id)) notes.push(`새 시작 칩: ${getChip(id).name}`);
+  }
+  if (after.unlocks.hazard > before.unlocks.hazard) {
+    notes.push(`디지털 해저드 ${after.unlocks.hazard}단계가 열렸습니다`);
+  }
+  return notes;
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -77,6 +105,8 @@ export const useGame = create<GameStore>((set, get) => {
       applyEventToView(next, event);
       const duration = eventDuration(event, speed);
       if (duration > 0) {
+        const kind = soundFor(event);
+        if (kind) playSound(kind);
         set({ view: next, queue: rest, current: { event, card, seq: ++seq } });
         timer = setTimeout(step, duration);
         return;
@@ -88,6 +118,8 @@ export const useGame = create<GameStore>((set, get) => {
 
   return {
     state: createInitialState(randomSeed()),
+    profile: createProfile(),
+    unlockNotice: [],
     lastEvents: [],
     view: null,
     queue: [],
@@ -101,6 +133,13 @@ export const useGame = create<GameStore>((set, get) => {
       if (get().view) return; // 재생 중에는 입력을 받지 않음
       const before = get().state;
       const result = applyAction(before, action);
+      // 프로필: 판이 끝나면 결과를, 아니면 도감만 (02 13.5)
+      const ended = result.events.some((e) => e.type === 'runEnded');
+      const profile = ended
+        ? applyRunResult(get().profile, result.state, result.events)
+        : recordCodex(get().profile, result.events);
+      if (ended) set({ unlockNotice: unlockNotice(get().profile, profile) });
+      if (profile !== get().profile) set({ profile });
       if (shouldPlay(before, result.events, get().speed)) {
         set({
           state: result.state,
@@ -111,6 +150,7 @@ export const useGame = create<GameStore>((set, get) => {
         });
         step();
       } else {
+        for (const kind of soundsForBatch(result.events)) playSound(kind);
         set({ state: result.state, lastEvents: result.events });
       }
     },
@@ -119,11 +159,17 @@ export const useGame = create<GameStore>((set, get) => {
       set({ view: null, queue: [], current: null });
     },
     setSpeed: (speed) => set({ speed }),
+    sound: true,
+    setSound: (on) => {
+      setSoundEnabled(on);
+      set({ sound: on });
+    },
     newGame: (seedValue) => {
       clearTimer();
       set({
-        state: createInitialState(seedValue ?? randomSeed()),
+        state: createInitialState(seedValue ?? randomSeed(), get().profile.unlocks),
         lastEvents: [],
+        unlockNotice: [],
         view: null,
         queue: [],
         current: null,

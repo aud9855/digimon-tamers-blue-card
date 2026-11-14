@@ -1,6 +1,13 @@
 // 02 3.8 피해 계산·적용
 import { constants, getEnemy } from '../../data/index';
-import { currentForm, floorNonNegative, formPower, requireBattle, requireRun } from '../helpers';
+import {
+  currentForm,
+  floorNonNegative,
+  formPower,
+  hazardOn,
+  requireBattle,
+  requireRun,
+} from '../helpers';
 import type { Attribute, GameEvent, GameState } from '../types';
 import { checkDefeat } from './outcome';
 
@@ -47,7 +54,8 @@ export function enemyHitDamage(state: GameState, amount: number, enemyIndex: num
     (1 + constants.ACCEL_PER_POINT * enemy.accel) *
     attrMult *
     (enemy.statuses.weak > 0 ? constants.WEAK_MULT : 1) *
-    (battle.statuses.vulnerable > 0 ? constants.VULNERABLE_MULT : 1);
+    (battle.statuses.vulnerable > 0 ? constants.VULNERABLE_MULT : 1) *
+    (hazardOn(state, 'enemyDamage') ? constants.HAZARD_ENEMY_DAMAGE_MULT : 1);
   return { damage: floorNonNegative(raw * mult), attrMult };
 }
 

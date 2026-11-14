@@ -1,5 +1,5 @@
 // 여러 모듈이 함께 쓰는 작은 도우미
-import { constants, getCard, getForm, getTamer } from '../data/index';
+import { constants, getCard, getForm, getRampageForm, getTamer } from '../data/index';
 import type {
   BattleState,
   CardFace,
@@ -25,6 +25,16 @@ export function emptyStatuses(): Statuses {
   return { strength: 0, weak: 0, vulnerable: 0 };
 }
 
+/** 디지털 해저드의 그 규칙이 켜져 있는지 (02 13.6: 단계 N은 1~N 모두) */
+export function hazardOn(state: GameState, rule: keyof typeof constants.HAZARD_LEVEL): boolean {
+  return (state.run?.hazard ?? 0) >= constants.HAZARD_LEVEL[rule];
+}
+
+/** 퍼센트 정수로 곱하고 내림 */
+export function pctFloor(value: number, pct: number): number {
+  return Math.floor((value * pct) / 100);
+}
+
 export function requireRun(state: GameState): RunState {
   if (!state.run) throw new Error('런이 없습니다');
   return state.run;
@@ -40,7 +50,18 @@ export function currentForm(state: GameState): FormDef {
   const run = requireRun(state);
   const stage = state.battle?.stage ?? constants.STAGE_ORDER[0];
   if (!stage) throw new Error('STAGE_ORDER가 비었습니다');
-  return getForm(getTamer(run.tamerId).line, stage);
+  const line = getTamer(run.tamerId).line;
+  if (state.battle?.rampage) {
+    const rampageForm = getRampageForm(line);
+    if (rampageForm) return rampageForm;
+  }
+  return getForm(line, stage);
+}
+
+/** 매트릭스 에볼루션 중인지: 폭주가 아닌 궁극체 (02 13.1) */
+export function isMatrix(state: GameState): boolean {
+  const battle = state.battle;
+  return battle !== null && battle.stage === 'mega' && !battle.rampage;
 }
 
 /** 지금 형태의 공격력 (형태 특성 sharp 포함, 02 12.5) */

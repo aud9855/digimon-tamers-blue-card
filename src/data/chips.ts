@@ -53,12 +53,39 @@ export const chips = [
     start: true,
     modifiers: { battleBitsBonus: 10, maxHpBonus: 5 },
   },
+  // 해금으로 열리는 시작 칩 (02 13.5)
+  {
+    id: 'memory_booster',
+    name: '메모리 부스터',
+    start: true,
+    trigger: 'onFirstTurn',
+    effects: [{ op: 'gainMemory', amount: 2 }],
+  },
+  {
+    id: 'evo_charger',
+    name: '진화 충전기',
+    start: true,
+    trigger: 'onFirstTurn',
+    effects: [{ op: 'freeEvolve' }],
+  },
+  {
+    id: 'heal_chip',
+    name: '회복 칩',
+    start: true,
+    modifiers: { maxHpBonus: 10 },
+  },
   // ── 테이머 특성 (숨은 칩, 02 12.3) ──
   {
     id: 'trait_card_battler',
     name: '카드 배틀 실력자',
     hidden: true,
     modifiers: { firstCardCostDelta: -1 },
+  },
+  {
+    id: 'trait_two_tamers',
+    name: '두 사람의 카드',
+    hidden: true,
+    modifiers: { handGroups: 2 },
   },
   {
     id: 'trait_calm',

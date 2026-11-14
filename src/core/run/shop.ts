@@ -2,17 +2,22 @@
 import { constants, getCard, getChips } from '../../data/index';
 import { setPhase } from '../phase';
 import { gainChip, isRandomChip } from '../chips';
-import { requireRun } from '../helpers';
+import { hazardOn, pctFloor, requireRun } from '../helpers';
 import { nextInt } from '../rng';
 import type { GameEvent, GameState, Pending } from '../types';
 import { addCardToDeck, gainBits, makeCardChoices } from './reward';
 
 type ShopPending = Extract<Pending, { kind: 'shop' }>;
 
-function cardPrice(defId: string): number {
+/** 해저드 8: 상점 가격 +20% (02 13.6) */
+function shopPrice(state: GameState, price: number): number {
+  return hazardOn(state, 'shopPrice') ? pctFloor(price, constants.HAZARD_SHOP_PRICE_PCT) : price;
+}
+
+function cardPrice(state: GameState, defId: string): number {
   const price = constants.SHOP_CARD_PRICE[getCard(defId).rarity];
   if (price === undefined) throw new Error(`가격이 없는 카드: ${defId}`);
-  return price;
+  return shopPrice(state, price);
 }
 
 /** 들어올 때 reward 난수로 진열을 정함 */
@@ -23,11 +28,16 @@ export function enterShop(state: GameState, events: GameEvent[]): void {
   const chips: ShopPending['chips'] = [];
   for (let i = 0; i < constants.SHOP_CHIP_COUNT && remaining.length > 0; i++) {
     const [pick] = remaining.splice(nextInt(state, 'reward', remaining.length), 1);
-    if (pick) chips.push({ chipId: pick.id, price: constants.SHOP_CHIP_PRICE, sold: false });
+    if (pick)
+      chips.push({
+        chipId: pick.id,
+        price: shopPrice(state, constants.SHOP_CHIP_PRICE),
+        sold: false,
+      });
   }
   state.pending = {
     kind: 'shop',
-    cards: cards.map((c) => ({ defId: c.id, price: cardPrice(c.id), sold: false })),
+    cards: cards.map((c) => ({ defId: c.id, price: cardPrice(state, c.id), sold: false })),
     chips,
     removalUsed: false,
   };
@@ -40,7 +50,10 @@ export function requireShop(state: GameState): ShopPending {
 }
 
 export function removalPrice(state: GameState): number {
-  return constants.SHOP_REMOVE_BASE + constants.SHOP_REMOVE_STEP * requireRun(state).removalsBought;
+  return shopPrice(
+    state,
+    constants.SHOP_REMOVE_BASE + constants.SHOP_REMOVE_STEP * requireRun(state).removalsBought,
+  );
 }
 
 export function canBuyCard(state: GameState, index: number): boolean {

@@ -4,7 +4,9 @@ import type { Policy } from './types';
 
 export const randomPolicy: Policy = (state, legal, ctx) => {
   if (state.phase === 'title') {
-    const own = legal.find((a) => a.type === 'startRun' && a.tamerId === ctx.tamerId);
+    const own = legal.find(
+      (a) => a.type === 'startRun' && a.tamerId === ctx.tamerId && (a.hazard ?? 0) === ctx.hazard,
+    );
     if (own) return own;
   }
   const pool = state.phase === 'battle' ? legal.filter((a) => a.type !== 'endTurn') : legal;

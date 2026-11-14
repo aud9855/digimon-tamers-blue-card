@@ -1,5 +1,6 @@
 // 02 6절 지도 생성·이동
 import { constants, getEncounters, getEvents } from '../../data/index';
+import { hazardOn } from '../helpers';
 import { nextInt, shuffle, weightedPick } from '../rng';
 import type { ActMap, EncounterDef, GameState, MapNode, NodeType } from '../types';
 
@@ -20,6 +21,20 @@ function makeBag<T>(state: GameState, items: readonly T[]): () => T {
     const item = bag.shift();
     if (item === undefined) throw new Error('주머니가 비었습니다');
     return item;
+  };
+}
+
+/** 해저드 3: 정해진 행에서 강적 +15, 전투 -15 (0 아래로는 안 내려감, 02 13.6) */
+function rowWeights(
+  state: GameState,
+  row: number,
+  weights: Partial<Record<NodeType, number>>,
+): Partial<Record<NodeType, number>> {
+  if (!hazardOn(state, 'mapRows') || !constants.HAZARD_MAP_ROWS.includes(row)) return weights;
+  return {
+    ...weights,
+    battle: Math.max(0, (weights.battle ?? 0) + constants.HAZARD_MAP_BATTLE_DELTA),
+    elite: (weights.elite ?? 0) + constants.HAZARD_MAP_ELITE_DELTA,
   };
 }
 
@@ -64,9 +79,10 @@ export function generateMap(state: GameState, act: number): ActMap {
   rows.forEach((nodes, r) => {
     const rule = constants.MAP_ROW_RULES[r];
     if (!rule) throw new Error(`${r + 1}행의 규칙이 없습니다`);
+    const weights = rowWeights(state, r, rule.weights);
     nodes.forEach((node, i) => {
       const fixed = rule.fixed?.[i];
-      node.type = fixed ?? weightedPick(state, 'map', weightEntries<NodeType>(rule.weights));
+      node.type = fixed ?? weightedPick(state, 'map', weightEntries<NodeType>(weights));
     });
   });
 

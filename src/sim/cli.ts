@@ -26,6 +26,7 @@ interface Args {
   runs: number;
   seedStart: number;
   evolve: EvolveMode;
+  hazard: number;
   report: 'm0' | 'm2' | null;
   json: boolean;
 }
@@ -37,6 +38,7 @@ function parseArgs(argv: string[]): Args {
     runs: 1000,
     seedStart: 1,
     evolve: 'asap',
+    hazard: 0,
     report: null,
     json: false,
   };
@@ -76,6 +78,9 @@ function parseArgs(argv: string[]): Args {
         args.report = v;
         break;
       }
+      case '--hazard':
+        args.hazard = Number(take());
+        break;
       case '--json':
         args.json = true;
         break;
@@ -85,11 +90,18 @@ function parseArgs(argv: string[]): Args {
   }
   if (!Number.isInteger(args.runs) || args.runs <= 0) throw new Error('--runs는 양의 정수');
   if (!Number.isInteger(args.seedStart)) throw new Error('--seed-start는 정수');
+  if (!Number.isInteger(args.hazard) || args.hazard < 0)
+    throw new Error('--hazard는 0 이상의 정수');
   return args;
 }
 
 function single(args: Args): void {
-  const config: RunConfig = { policy: args.policy, tamerId: args.tamer, evolve: args.evolve };
+  const config: RunConfig = {
+    policy: args.policy,
+    tamerId: args.tamer,
+    evolve: args.evolve,
+    hazard: args.hazard,
+  };
   const records = runMany(config, args.runs, args.seedStart);
   const summary = summarize(records);
   const encounters = encounterTable(records);
@@ -98,7 +110,7 @@ function single(args: Args): void {
     console.log(JSON.stringify({ config, summary, encounters, picks }, null, 2));
     return;
   }
-  const label = `${args.policy}${args.policy === 'greedy' ? ` (진화 ${args.evolve})` : ''}`;
+  const label = `${args.policy}${args.policy === 'greedy' ? ` (진화 ${args.evolve})` : ''}${args.hazard > 0 ? ` · 해저드 ${args.hazard}` : ''}`;
   console.log(formatSummary(label, summary));
   console.log('\n## 조우별\n');
   console.log(formatEncounters(encounters));

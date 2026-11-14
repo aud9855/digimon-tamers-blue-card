@@ -12,6 +12,7 @@ import type {
 } from '../core/types';
 import { acts, type ActDef } from './acts';
 import { cards } from './cards';
+import { aiMakoCards } from './cards-ai-mako';
 import { henryCards } from './cards-henry';
 import { rikaCards } from './cards-rika';
 import { chips } from './chips';
@@ -20,10 +21,11 @@ import { encounters } from './encounters';
 import { enemies } from './enemies';
 import { events } from './events';
 import { forms } from './forms';
+import { meta, type MetaDef } from './meta';
 import { tamers } from './tamers';
 
-export { constants };
-export type { Constants };
+export { constants, meta };
+export type { Constants, MetaDef };
 
 interface Registry {
   cards: CardDef[];
@@ -36,7 +38,7 @@ interface Registry {
 }
 
 const registry: Registry = {
-  cards: [...cards, ...rikaCards, ...henryCards],
+  cards: [...cards, ...rikaCards, ...henryCards, ...aiMakoCards],
   forms: [...forms],
   enemies: [...enemies],
   encounters: [...encounters],
@@ -82,9 +84,27 @@ export function getCards(): readonly CardDef[] {
 /** 계열(line)과 단계로 형태를 찾습니다. */
 export function getForm(line: string, stage: Stage): FormDef {
   return must(
-    registry.forms.find((f) => f.line === line && f.stage === stage),
+    registry.forms.find((f) => f.line === line && f.stage === stage && !f.rampage),
     '형태',
     `${line}/${stage}`,
+  );
+}
+
+/** 계열에 그 단계의 (폭주가 아닌) 형태가 있는지 (02 13.3) */
+export function hasForm(line: string, stage: Stage): boolean {
+  return registry.forms.some((f) => f.line === line && f.stage === stage && !f.rampage);
+}
+
+/** 계열의 폭주 형태 (없으면 null, 02 13.2) */
+export function getRampageForm(line: string): FormDef | null {
+  return registry.forms.find((f) => f.line === line && f.rampage) ?? null;
+}
+
+export function getFormById(id: string): FormDef {
+  return must(
+    registry.forms.find((f) => f.id === id),
+    '형태',
+    id,
   );
 }
 export function getForms(): readonly FormDef[] {

@@ -1,14 +1,25 @@
 // 개발용 주소 옵션 (개발 서버에서만, main.tsx에서 import.meta.env.DEV일 때만 불러옴)
 //   ?debug=battle&seed=N&steps=K : 봇이 만든 전투 상태 (전투 행동 K번 뒤)
 //   ?debug=bot&seed=N&actions=K&phase=map : 봇이 K번 행동한 뒤, phase를 주면 그 국면이 될 때까지 더 진행
-import { applyAction, createInitialState, getLegalActions, type GameState } from '../core/index';
+import {
+  applyAction,
+  createInitialState,
+  fullUnlocks,
+  getLegalActions,
+  type GameState,
+} from '../core/index';
 import { greedyPolicy } from '../sim/policies/greedy';
 import { createSimRng } from '../sim/rng';
 
 /** 시드 seed의 greedy 판에서 steps번째 전투 행동 뒤의 상태 */
 export function botBattleState(seed: number, steps: number): GameState {
-  const ctx = { rng: createSimRng(seed), tamerId: 'takato' as const, evolve: 'asap' as const };
-  let state = createInitialState(seed);
+  const ctx = {
+    rng: createSimRng(seed),
+    tamerId: 'takato' as const,
+    evolve: 'asap' as const,
+    hazard: 0,
+  };
+  let state = createInitialState(seed, fullUnlocks());
   let battleSteps = 0;
   for (let i = 0; i < 5000; i++) {
     if (state.phase === 'battle' && battleSteps >= steps) return state;
@@ -22,8 +33,13 @@ export function botBattleState(seed: number, steps: number): GameState {
 
 /** 시드 seed의 greedy 판에서 actions번 행동한 뒤, phase가 있으면 그 국면이 될 때까지 */
 export function botRunState(seed: number, actions: number, phase?: GameState['phase']): GameState {
-  const ctx = { rng: createSimRng(seed), tamerId: 'takato' as const, evolve: 'asap' as const };
-  let state = createInitialState(seed);
+  const ctx = {
+    rng: createSimRng(seed),
+    tamerId: 'takato' as const,
+    evolve: 'asap' as const,
+    hazard: 0,
+  };
+  let state = createInitialState(seed, fullUnlocks());
   for (let i = 0; i < 5000; i++) {
     if (i >= actions && (!phase || state.phase === phase)) return state;
     const legal = getLegalActions(state);
@@ -51,6 +67,7 @@ export function botAction(state: GameState) {
     rng: createSimRng(state.seed),
     tamerId: 'takato' as const,
     evolve: 'asap' as const,
+    hazard: 0,
   };
   const legal = getLegalActions(state);
   return legal.length > 0 ? greedyPolicy(state, legal, ctx) : null;

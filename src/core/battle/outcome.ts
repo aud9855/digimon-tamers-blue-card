@@ -1,6 +1,7 @@
 // 02 3.11 승패
 import { requireBattle, requireRun } from '../helpers';
-import { enterBattleReward } from '../run/reward';
+import { constants } from '../../data/index';
+import { addCardToDeck, enterBattleReward } from '../run/reward';
 import { setPhase } from '../phase';
 import type { GameEvent, GameState } from '../types';
 
@@ -37,6 +38,17 @@ export function allEnemiesDead(state: GameState): boolean {
 }
 
 /**
+ * 카드 밖(칩, 동료, 진화)에서 마지막 적이 쓰러져도 곧바로 승리합니다 (02 3.7).
+ * 전투가 끝났으면(승리든 패배든) true.
+ */
+export function winIfCleared(state: GameState, events: GameEvent[]): boolean {
+  if (battleStopped(state)) return true;
+  if (!allEnemiesDead(state)) return false;
+  winBattle(state, events);
+  return true;
+}
+
+/**
  * 승리: 전투 상태를 지우고 보상으로 갑니다.
  * stage, tempHp, shield, 상태 효과, 임시 카드는 battle과 함께 사라지고 hp만 런에 남습니다 (02 3.7).
  */
@@ -54,5 +66,7 @@ export function winBattle(state: GameState, events: GameEvent[]): void {
     evolveCount: battle.evolveCount,
   });
   state.battle = null;
+  // 폭주의 대가: 저주 카드 (보상보다 먼저, 02 13.2)
+  if (battle.rampage) addCardToDeck(state, events, constants.RAMPAGE_CURSE_ID, false);
   enterBattleReward(state, events, battle.kind);
 }

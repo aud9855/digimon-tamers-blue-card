@@ -1,15 +1,25 @@
 // IndexedDB 저장·불러오기 (03 9.1). 라이브러리 없이 브라우저 기본 API만 씀.
-import { SAVE_VERSION, type GameState } from '../core/index';
+import {
+  createProfile,
+  defaultUnlocks,
+  PROFILE_VERSION,
+  SAVE_VERSION,
+  type GameState,
+  type Profile,
+} from '../core/index';
 import type { PlaybackSpeed } from './playback';
 
 const DB_NAME = 'digimon-blue-card';
 const STORE = 'save';
 const GAME_KEY = 'game';
 const SETTINGS_KEY = 'settings';
+const PROFILE_KEY = 'profile';
 
 export interface Settings {
   speed: PlaybackSpeed;
   seenGuide: boolean;
+  /** 효과음 (02 13.7) */
+  sound: boolean;
 }
 
 const SPEEDS: PlaybackSpeed[] = ['normal', 'fast', 'off'];
@@ -56,8 +66,12 @@ export function parseSavedGame(raw: unknown): GameState | null {
   if (typeof raw !== 'string') return null;
   try {
     const value = JSON.parse(raw) as Partial<GameState>;
-    if (value.version !== SAVE_VERSION || typeof value.phase !== 'string') return null;
+    if (typeof value.phase !== 'string') return null;
     if (typeof value.seed !== 'number' || !value.rng) return null;
+    // 버전 1 → 2: 해금 정보가 생김 (02 13.5). 1단계·2단계의 판은 처음 해금 상태로 이어 함
+    if (value.version === 1)
+      return { ...value, version: SAVE_VERSION, unlocks: defaultUnlocks() } as GameState;
+    if (value.version !== SAVE_VERSION || !value.unlocks) return null;
     return value as GameState;
   } catch {
     return null;
@@ -71,7 +85,37 @@ export function parseSettings(raw: unknown): Settings {
       ? (value.speed as PlaybackSpeed)
       : 'normal',
     seenGuide: value.seenGuide === true,
+    sound: value.sound !== false,
   };
+}
+
+/** 저장된 프로필. 깨졌거나 없으면 새 프로필 (빠진 칸은 새 프로필의 값으로 채움) */
+export function parseProfile(raw: unknown): Profile {
+  const fresh = createProfile();
+  if (typeof raw !== 'string') return fresh;
+  try {
+    const value = JSON.parse(raw) as Partial<Profile>;
+    if (value.version !== PROFILE_VERSION) return fresh;
+    const unlocks = { ...fresh.unlocks, ...(value.unlocks ?? {}) };
+    const codex = { ...fresh.codex, ...(value.codex ?? {}) };
+    if (!Array.isArray(unlocks.tamers) || !Array.isArray(unlocks.startChips)) return fresh;
+    if (!Array.isArray(codex.forms) || !Array.isArray(codex.enemies)) return fresh;
+    return { version: PROFILE_VERSION, runs: value.runs ?? {}, unlocks, codex };
+  } catch {
+    return fresh;
+  }
+}
+
+export async function saveProfile(profile: Profile): Promise<void> {
+  await put(PROFILE_KEY, JSON.stringify(profile));
+}
+
+export async function loadProfile(): Promise<Profile> {
+  try {
+    return parseProfile(await get(PROFILE_KEY));
+  } catch {
+    return createProfile();
+  }
 }
 
 /** 저장 형식은 JSON 문자열 (03 5절 약속 5: JSON으로 되살릴 수 있어야 함) */

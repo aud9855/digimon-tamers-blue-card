@@ -45,6 +45,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  ├─ types.ts            모든 타입 (4절)
 │  │  ├─ rng.ts              시드 난수
 │  │  ├─ state.ts            createInitialState
+│  │  ├─ meta.ts             프로필·해금·도감 (02 13.5, 판 밖)
 │  │  ├─ engine.ts           applyAction, getLegalActions (행동을 아래 모듈로 넘김)
 │  │  ├─ battle/
 │  │  │  ├─ start.ts         전투 시작 (02 3.2)
@@ -55,6 +56,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  │  ├─ effects.ts       효과 op 실행 (02 4.3)
 │  │  │  ├─ damage.ts        피해 계산·적용 (02 3.8)
 │  │  │  ├─ evolve.ts        진화 (02 3.7)
+│  │  │  ├─ rampage.ts       폭주 진화 (02 13.2)
 │  │  │  └─ enemy.ts         적 행동·인텐트 (02 3.10)
 │  │  ├─ run/
 │  │  │  ├─ start.ts         startRun, 테이머 특성 (02 8)
@@ -70,8 +72,9 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
-│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  enemies.ts  encounters.ts
+│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  enemies.ts  encounters.ts
 │  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
+│  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
 │  │  ├─ policies/random.ts  policies/greedy.ts
@@ -279,7 +282,10 @@ export type GameEvent =
 ## 5. core가 밖에 내보내는 것 (src/core/index.ts)
 
 ```ts
-createInitialState(seed: number): GameState          // phase 'title'
+createInitialState(seed: number, unlocks?: Unlocks): GameState   // phase 'title', unlocks가 없으면 처음 해금 상태
+createProfile(): Profile   defaultUnlocks(): Unlocks   fullUnlocks(): Unlocks   // 02 13.5 (fullUnlocks는 시뮬레이터)
+applyRunResult(profile, finalState, events): Profile   // 판이 끝났을 때 판 수·해금·도감 갱신 (순수 함수)
+recordCodex(profile, events): Profile   // 도감만 (새로 본 것이 없으면 같은 객체)
 getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 모든 행동
 applyAction(state: GameState, action: Action): { state: GameState; events: GameEvent[] }
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
@@ -349,7 +355,7 @@ interface IntentView {
 
 **`greedy`** (전투, 위에서부터 처음 맞는 것을 고름):
 1. **끝낼 수 있으면 끝냄**: 공격 카드를 피해가 큰 순으로 당겨쓰기까지 써서 모든 적을 죽일 수 있는지 복사한 상태에서 시험해 보고, 되면 그 순서의 첫 행동.
-2. **진화**: 당겨쓰지 않고 진화할 수 있으면 진화. 진화 방식 설정에 따라 다릅니다: `asap`(기본, 할 수 있으면 바로), `turn2`(2턴째부터), `never`(안 함).
+2. **진화**: 폭주 진화를 할 수 있으면 폭주(02 13.2, HP가 위험할 때만 조건이 맞음). 아니면 당겨쓰지 않고 진화할 수 있으면 진화. 진화 방식 설정에 따라 다릅니다: `asap`(기본, 할 수 있으면 바로), `turn2`(2턴째부터), `never`(안 함).
 3. **막기**: 이번 적 턴에 받을 피해(인텐트 합 - 실드 - 임시 HP)가 0보다 크고, 낼 수 있는 실드 카드가 있으면 실드가 가장 큰 것. 받을 피해가 지금 HP의 30% 이상이면 당겨써서라도 내고, 아니면 당겨쓰지 않는 카드만 냅니다.
 4. **준비 카드**: 비용 0 카드, 뽑기 카드, 힘 카드, 동료 카드를 당겨쓰지 않고 낼 수 있으면 냄.
 5. **공격**: 당겨쓰지 않고 낼 수 있는 공격 카드 중 (예상 피해 ÷ max(비용, 1))이 가장 큰 것. 대상은 이번에 죽일 수 있는 적, 없으면 공격 인텐트 피해가 가장 큰 적, 없으면 HP가 가장 적은 적.
@@ -363,6 +369,7 @@ interface IntentView {
 - 휴식: HP 60% 미만이면 회복, 아니면 점수가 가장 높은 카드 강화.
 - 이벤트: HP 30% 미만이면 HP를 잃지 않는 선택지, 아니면 첫 선택지.
 - 시작 칩: 첫 번째(카드 리더). 형태 특성: 날카로운 이빨(공격력 +1). (T2-7에서 추가)
+- 두 사람의 카드(다영·진): 카드 점수 합이 큰 묶음. (T3-4에서 추가)
 - 카드 비용은 core의 `previewCardCost`로 셉니다 (처음 내는 카드 할인 포함).
 
 카드 점수표는 봇 파일 안에 두고, 게임 데이터에는 넣지 않습니다.
@@ -372,8 +379,10 @@ interface IntentView {
 npm run sim -- --policy greedy --tamer takato --runs 1000 --seed-start 1
 npm run sim -- --policy greedy --evolve turn2 --tamer takato --runs 1000
 npm run sim -- --report m0
+npm run sim -- --policy greedy --tamer takato --runs 1000 --hazard 10
 ```
 - `--evolve asap|turn2|never` (기본 `asap`)로 `greedy`의 진화 방식을 바꿉니다.
+- `--hazard N` (기본 0)으로 디지털 해저드 단계를 정합니다 (02 13.6). 시뮬레이터는 모든 해금이 열린 상태로 판을 시작합니다 (02 13.5).
 - `--report m0`은 02 10절에 필요한 측정(`greedy` 세 가지 진화 방식과 `random`)을 모두 돌려 지표 10개를 한 표로 냅니다.
 - 판마다 시드 `seed-start`부터 1씩 올립니다. 한 판은 행동 5,000번을 넘으면 실패로 처리합니다.
 - 출력: 02 10절의 지표 표, 지표마다 목표 범위와 `통과`/`벗어남`, 조우별 승률·평균 턴 수·평균 HP 손실, 카드별 고른 횟수.
@@ -422,9 +431,10 @@ src/ui/
 ├─ store.ts                   GameState 보관, dispatch(action), 일어난 일 재생 줄
 ├─ playback.ts                GameEvent를 차례로 재생 (종류마다 걸리는 시간)
 ├─ screens/                   Title, Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
-├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton…
+├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton, Codex(도감)…
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
-├─ save.ts                    IndexedDB 저장·불러오기
+├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
+├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
 ├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
 └─ assets/                    직접 만든 그림만
 public/                       아이콘(직접 그린 SVG와 PNG), manifest.webmanifest

@@ -21,6 +21,8 @@ import { getChips, getTamer } from '../../src/data/index';
 export type CardSpec = string;
 
 export interface BattleOptions {
+  /** 디지털 해저드 단계 (02 13.6) */
+  hazard?: number;
   seed?: number;
   enemies?: string[];
   enemyOverrides?: Partial<EnemyState>[];
@@ -77,6 +79,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     nodeId: null,
     path: [],
     removalsBought: 0,
+    hazard: opts.hazard ?? 0,
     formTraits: opts.formTraits ?? {},
   };
   state.run.deck = makeCards(state, opts.deck ?? []);
@@ -98,6 +101,8 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     evolvedThisTurn: false,
     freeEvolve: false,
     cardsPlayedThisTurn: opts.cardsPlayedThisTurn ?? 0,
+    rampage: false,
+    handChoice: null,
     drawPile: makeCards(state, opts.drawPile ?? []),
     hand: makeCards(state, opts.hand ?? []),
     discardPile: makeCards(state, opts.discardPile ?? []),

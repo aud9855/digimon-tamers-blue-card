@@ -1,7 +1,8 @@
 import { constants, getEvent, getTamers } from '../data/index';
 import { canEvolve, evolve } from './battle/evolve';
+import { canRampage, rampage } from './battle/rampage';
 import { cardNeedsTarget, isCardPlayable, playCard } from './battle/cards';
-import { endTurn } from './battle/turn';
+import { chooseHandGroup, endTurn } from './battle/turn';
 import { isUpgradable, livingEnemyIndexes } from './helpers';
 import { chooseFormTrait, startNextAct } from './run/act';
 import { reachableNodeIds } from './run/map';
@@ -33,7 +34,17 @@ export function getLegalActions(state: GameState): Action[] {
   const run = state.run;
   switch (state.phase) {
     case 'title':
-      return getTamers().map((t) => ({ type: 'startRun', tamerId: t.id }));
+      // 열린 테이머마다 해저드 0(필드 없음)부터 열린 최고 단계까지 (02 13.6)
+      return getTamers()
+        .filter((t) => state.unlocks.tamers.includes(t.id))
+        .flatMap((t) => [
+          { type: 'startRun', tamerId: t.id } as Action,
+          ...Array.from({ length: state.unlocks.hazard }, (_, i): Action => ({
+            type: 'startRun',
+            tamerId: t.id,
+            hazard: i + 1,
+          })),
+        ]);
 
     case 'map':
       return reachableNodeIds(state).map((nodeId) => ({ type: 'chooseNode', nodeId }));
@@ -41,6 +52,10 @@ export function getLegalActions(state: GameState): Action[] {
     case 'battle': {
       const battle = state.battle;
       if (!battle) return [];
+      // 두 사람의 카드: 묶음을 고르기 전에는 고르기만 (02 13.3)
+      if (battle.handChoice) {
+        return battle.handChoice.map((_, index) => ({ type: 'chooseHandGroup', index }));
+      }
       const actions: Action[] = [];
       for (const card of battle.hand) {
         if (!isCardPlayable(state, card)) continue;
@@ -53,6 +68,7 @@ export function getLegalActions(state: GameState): Action[] {
         }
       }
       if (canEvolve(state)) actions.push({ type: 'evolve' });
+      if (canRampage(state)) actions.push({ type: 'rampage' });
       actions.push({ type: 'endTurn' });
       return actions;
     }
@@ -139,13 +155,17 @@ export function isLegalAction(state: GameState, action: Action): boolean {
 function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
   switch (action.type) {
     case 'startRun':
-      return startRun(draft, events, action.tamerId);
+      return startRun(draft, events, action.tamerId, action.hazard ?? 0);
     case 'chooseNode':
       return chooseNode(draft, events, action.nodeId);
     case 'playCard':
       return playCard(draft, events, action.cardUid, action.targetIndex);
     case 'evolve':
       return evolve(draft, events);
+    case 'rampage':
+      return rampage(draft, events);
+    case 'chooseHandGroup':
+      return chooseHandGroup(draft, events, action.index);
     case 'endTurn':
       return endTurn(draft, events);
     case 'pickCard':

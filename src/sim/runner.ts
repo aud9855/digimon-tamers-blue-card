@@ -2,6 +2,7 @@
 import {
   applyAction,
   createInitialState,
+  fullUnlocks,
   getLegalActions,
   type GameEvent,
   type GameState,
@@ -26,6 +27,8 @@ export interface RunConfig {
   policy: PolicyName;
   tamerId: TamerId;
   evolve: EvolveMode;
+  /** 디지털 해저드 단계 (없으면 0) */
+  hazard?: number;
 }
 
 /** 전투 결과와 그 전투가 있던 막 */
@@ -49,8 +52,14 @@ export interface RunRecord {
 
 export function runOne(seed: number, config: RunConfig): RunRecord {
   const policy = POLICIES[config.policy];
-  const ctx = { rng: createSimRng(seed), tamerId: config.tamerId, evolve: config.evolve };
-  let state = createInitialState(seed);
+  const ctx = {
+    rng: createSimRng(seed),
+    tamerId: config.tamerId,
+    evolve: config.evolve,
+    hazard: config.hazard ?? 0,
+  };
+  // 시뮬레이터는 모든 것이 열린 상태로 (02 13.5)
+  let state = createInitialState(seed, fullUnlocks());
   const record: RunRecord = {
     seed,
     won: false,

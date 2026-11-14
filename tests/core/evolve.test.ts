@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { getLegalActions } from '../../src/core/engine';
+import { applyAction, getLegalActions } from '../../src/core/engine';
 import { baseEvolveCost, evolveCost } from '../../src/core/battle/evolve';
 import { previewEvolveCost } from '../../src/core/describe';
-import { overrideRegistry } from '../../src/data/index';
+import { constants, getRampageForm, overrideRegistry } from '../../src/data/index';
+import { fullUnlocks } from '../../src/core/meta';
+import { createInitialState } from '../../src/core/state';
 import { act, battleOf, eventsOf, makeBattle, play } from '../helpers/battle';
 import { baseFixtures } from '../helpers/fixtures';
 
@@ -54,6 +56,7 @@ describe('진화 처리 (02 3.7)', () => {
       to: 'champion',
       cost: 3,
       tempHpGained: 5,
+      formId: 'growlmon',
     });
   });
 
@@ -129,5 +132,199 @@ describe('진화 처리 (02 3.7)', () => {
     // 공격 10, 임시 HP 5 → HP 5 감소
     expect(battleOf(next).tempHp).toBe(0);
     expect(next.run?.hp).toBe(45);
+  });
+});
+
+describe('매트릭스 에볼루션 (02 13.1)', () => {
+  const DRAW = Array.from({ length: 20 }, () => 'guard');
+
+  it('궁극체가 되면 다음 턴부터 뽑는 장수 +2, 메모리 +1', () => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      stage: 'ultimate',
+      memory: 4,
+      maxMemory: 5,
+      drawPile: DRAW,
+    });
+    const evolved = act(state, { type: 'evolve' }).state;
+    expect(battleOf(evolved).stage).toBe('mega');
+    const next = act(evolved, { type: 'endTurn' }).state;
+    expect(battleOf(next).hand.filter((c) => c.defId === 'guard')).toHaveLength(5 + 2);
+    expect(battleOf(next).memory).toBe(5 + 1);
+  });
+
+  it('완전체까지는 그대로', () => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      stage: 'champion',
+      memory: 5,
+      maxMemory: 5,
+      drawPile: DRAW,
+    });
+    const evolved = act(state, { type: 'evolve' }).state;
+    const next = act(evolved, { type: 'endTurn' }).state;
+    expect(battleOf(next).hand.filter((c) => c.defId === 'guard')).toHaveLength(5);
+    expect(battleOf(next).memory).toBe(5);
+  });
+
+  it('매트릭스 중에는 동료 효과가 꺼짐', () => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      stage: 'mega',
+      companions: ['kenta', 'calumon'],
+      drawPile: DRAW,
+    });
+    const { state: next, events } = act(state, { type: 'endTurn' });
+    expect(events.some((e) => e.type === 'companionTriggered')).toBe(false);
+    expect(battleOf(next).shield).toBe(0);
+  });
+});
+
+describe('폭주 진화 (02 13.2)', () => {
+  const DRAW = Array.from({ length: 20 }, () => 'guard');
+  const lowHp = (opts = {}) =>
+    makeBattle({ stage: 'champion', hp: 25, maxHp: 100, drawPile: DRAW, ...opts });
+
+  it('오유민, 성숙기·완전체, HP 25% 이하일 때만 고를 수 있음', () => {
+    expect(getLegalActions(lowHp())).toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(lowHp({ hp: 26 }))).not.toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(lowHp({ stage: 'rookie' }))).not.toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(lowHp({ stage: 'mega' }))).not.toContainEqual({ type: 'rampage' });
+  });
+
+  it('메기드라몬: 비용 0, 임시 HP, 필살기, 궁극체로 셈, 매트릭스는 아님', () => {
+    const state = lowHp({ memory: 0 });
+    const { state: next, events } = act(state, { type: 'rampage' });
+    const battle = battleOf(next);
+    expect(battle.memory).toBe(0);
+    expect(battle.stage).toBe('mega');
+    expect(battle.rampage).toBe(true);
+    expect(battle.tempHp).toBe(MEGIDRAMON.tempHp);
+    expect(battle.hand.some((c) => c.defId === 'megido_flame')).toBe(true);
+    expect(eventsOf(events, 'evolved')[0]?.formId).toBe('megidramon');
+    expect(getLegalActions(next)).not.toContainEqual({ type: 'rampage' });
+    expect(getLegalActions(next)).not.toContainEqual({ type: 'evolve' });
+    // 형태 공격력
+    const strikeState = lowHp({ hand: ['strike'] });
+    const raged = act(strikeState, { type: 'rampage' }).state;
+    const hit = play(raged, 'strike', 0).state;
+    expect(battleOf(hit).enemies[0]?.hp).toBe(100 - (6 + MEGIDRAMON.power));
+  });
+
+  it('다음 턴부터 턴 시작마다 HP RAMPAGE_HP_LOSS만큼 잃음 (실드·임시 HP 무시)', () => {
+    const raged = act(lowHp(), { type: 'rampage' }).state;
+    const next = act(raged, { type: 'endTurn' }).state;
+    expect(next.run?.hp).toBe(25 - constants.RAMPAGE_HP_LOSS);
+  });
+
+  it('이기면 폭주의 흔적이 덱에', () => {
+    const state = lowHp({ hand: ['strike'], deck: ['strike'], enemyOverrides: [{ hp: 1 }] });
+    const raged = act(state, { type: 'rampage' }).state;
+    const won = play(raged, 'strike', 0).state;
+    expect(won.run?.deck.map((c) => c.defId)).toEqual(['strike', 'rampage_scar']);
+  });
+
+  it('다른 테이머는 폭주 진화가 없음', () => {
+    const state = lowHp();
+    if (state.run) state.run.tamerId = 'rika';
+    expect(getLegalActions(state)).not.toContainEqual({ type: 'rampage' });
+  });
+});
+
+const MEGIDRAMON = (() => {
+  const form = getRampageForm('guilmon');
+  if (!form) throw new Error('메기드라몬 없음');
+  return form;
+})();
+
+describe('다영·진 (02 13.3)', () => {
+  const DRAW = Array.from({ length: 30 }, () => 'guard');
+  const aiMako = (opts = {}) => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      drawPile: DRAW,
+      chips: ['trait_two_tamers'],
+      ...opts,
+    });
+    if (state.run) state.run.tamerId = 'ai_mako';
+    return state;
+  };
+
+  it('건너뛴 단계 수만큼 SKIP_EVOLVE_COST가 붙음 (값을 바꿔 확인)', () => {
+    const before = constants.SKIP_EVOLVE_COST;
+    constants.SKIP_EVOLVE_COST = 1;
+    try {
+      expect(previewEvolveCost(aiMako({ memory: 3 }))).toBe(
+        (constants.EVOLVE_BASE_COST.mega ?? 0) + 2,
+      );
+    } finally {
+      constants.SKIP_EVOLVE_COST = before;
+    }
+  });
+
+  it('임프몬은 성장기에서 곧바로 베르몬(궁극체)으로, 건너뛴 단계마다 비용 SKIP_EVOLVE_COST', () => {
+    const state = aiMako({ memory: 3 });
+    const cost = (constants.EVOLVE_BASE_COST.mega ?? 0) + 2 * constants.SKIP_EVOLVE_COST;
+    expect(previewEvolveCost(state)).toBe(cost);
+    const next = act(state, { type: 'evolve' }).state;
+    expect(battleOf(next).stage).toBe('mega');
+    expect(battleOf(next).memory).toBe(3 - cost);
+    expect(battleOf(next).hand.some((c) => c.defId === 'death_slinger')).toBe(true);
+  });
+
+  it('두 사람의 카드: 턴 시작에 두 묶음, 고르기 전에는 고르기만', () => {
+    const state = aiMako({ hand: ['strike'] });
+    const { state: next, events } = act(state, { type: 'endTurn' });
+    const battle = battleOf(next);
+    expect(battle.handChoice).toHaveLength(2);
+    expect(battle.handChoice?.[0]).toHaveLength(5);
+    expect(battle.handChoice?.[1]).toHaveLength(5);
+    expect(getLegalActions(next)).toEqual([
+      { type: 'chooseHandGroup', index: 0 },
+      { type: 'chooseHandGroup', index: 1 },
+    ]);
+    expect(eventsOf(events, 'handGroupsDrawn')).toHaveLength(1);
+
+    const chosen = act(next, { type: 'chooseHandGroup', index: 1 }).state;
+    const b2 = battleOf(chosen);
+    expect(b2.handChoice).toBeNull();
+    expect(b2.hand.map((c) => c.uid).sort()).toEqual(
+      battle.handChoice?.[1]?.map((c) => c.uid).sort(),
+    );
+    for (const c of battle.handChoice?.[0] ?? [])
+      expect(b2.discardPile.some((d) => d.uid === c.uid)).toBe(true);
+  });
+
+  it('턴 시작 칩은 고른 뒤에 발동', () => {
+    const state = aiMako({ chips: ['trait_two_tamers', 'cube_shield'] });
+    const restore = overrideRegistry({
+      chips: [
+        {
+          id: 'test_ts',
+          name: '시험',
+          trigger: 'onTurnStart',
+          effects: [{ op: 'shield', amount: 1 }],
+        },
+      ],
+    });
+    try {
+      if (state.run) state.run.chips.push('test_ts');
+      const next = act(state, { type: 'endTurn' }).state;
+      expect(battleOf(next).shield).toBe(0);
+      const chosen = act(next, { type: 'chooseHandGroup', index: 0 }).state;
+      expect(battleOf(chosen).shield).toBe(1);
+    } finally {
+      restore();
+    }
+  });
+
+  it('형태 특성은 고르지 않음 (처음부터 궁극체까지 열림)', () => {
+    const s0 = applyAction(createInitialState(1, fullUnlocks()), {
+      type: 'startRun',
+      tamerId: 'ai_mako',
+    }).state;
+    const s1 = applyAction(s0, { type: 'chooseStartChip', index: 0 }).state;
+    expect(s1.run?.maxStage).toBe('mega');
+    expect(s1.run?.chips).toContain('trait_two_tamers');
   });
 });

@@ -13,7 +13,9 @@ import {
   getEvents,
   getForm,
   getForms,
+  getTamer,
   getTamers,
+  meta,
   overrideRegistry,
 } from '../../src/data/index';
 
@@ -44,27 +46,27 @@ const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
 describe('콘텐츠 개수 (02 9절, 12절)', () => {
-  it('카드: 기본 5, 일반 21, 고급 17, 희귀 10, 필살기 9, 저주 1 (동료 4장 포함)', () => {
+  it('카드: 기본 6, 일반 27, 고급 21, 희귀 13, 필살기 11, 저주 2 (동료 4장 포함)', () => {
     const all = getCards();
-    expect(all).toHaveLength(63);
+    expect(all).toHaveLength(80);
     expect(countBy(all, (c) => c.rarity)).toEqual({
-      basic: 5,
-      common: 21,
-      uncommon: 17,
-      rare: 10,
-      special: 10,
+      basic: 6,
+      common: 27,
+      uncommon: 21,
+      rare: 13,
+      special: 13,
     });
-    expect(all.filter((c) => c.type === 'signature')).toHaveLength(9);
-    expect(all.filter((c) => c.type === 'curse')).toHaveLength(1);
+    expect(all.filter((c) => c.type === 'signature')).toHaveLength(11);
+    expect(all.filter((c) => c.type === 'curse')).toHaveLength(2);
   });
 
-  it('형태 12, 적 24, 조우 39, 칩 11, 이벤트 8, 테이머 3', () => {
-    expect(getForms()).toHaveLength(12);
+  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 15, 이벤트 8, 테이머 4', () => {
+    expect(getForms()).toHaveLength(15);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
-    expect(getChips()).toHaveLength(11);
+    expect(getChips()).toHaveLength(15);
     expect(getEvents()).toHaveLength(8);
-    expect(getTamers()).toHaveLength(3);
+    expect(getTamers()).toHaveLength(4);
   });
 
   it('막마다 조우: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4, 12.10)', () => {
@@ -109,7 +111,9 @@ describe('id (03 6절)', () => {
   });
 
   it('계열과 단계마다 형태가 하나뿐', () => {
-    const keys = getForms().map((f) => `${f.line}/${f.stage}`);
+    const keys = getForms()
+      .filter((f) => !f.rampage)
+      .map((f) => `${f.line}/${f.stage}`);
     expect(new Set(keys).size).toBe(keys.length);
   });
 });
@@ -292,9 +296,9 @@ describe('카드', () => {
     }
   });
 
-  it('테이머마다 자기 계열의 형태가 네 단계 모두 있음', () => {
+  it('테이머마다 자기 계열의 성장기와 궁극체 형태가 있음 (임프몬 계열은 이 둘뿐, 02 13.3)', () => {
     for (const tamer of getTamers()) {
-      for (const stage of ['rookie', 'champion', 'ultimate', 'mega'] as const) {
+      for (const stage of ['rookie', 'mega'] as const) {
         expect(() => getForm(tamer.line, stage)).not.toThrow();
       }
     }
@@ -334,12 +338,19 @@ describe('칩', () => {
     }
   });
 
-  it('시작 칩 3개 (02 12.7)', () => {
+  it('시작 칩: 처음 3개 + 해금 3개 (02 12.7, 13.5)', () => {
     expect(
       getChips()
         .filter((c) => c.start)
         .map((c) => c.id),
-    ).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
+    ).toEqual([...meta.baseStartChips, ...meta.startChipUnlockOrder]);
+    expect(meta.baseStartChips).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
+  });
+
+  it('메타 데이터의 id가 모두 있음 (02 13.5)', () => {
+    for (const id of [...meta.baseTamers, ...meta.firstWinTamers])
+      expect(() => getTamer(id)).not.toThrow();
+    expect(new Set([...meta.baseTamers, ...meta.firstWinTamers]).size).toBe(getTamers().length);
   });
 
   it("칩 효과는 target 'enemy'를 쓰지 않는다 (02 5절)", () => {

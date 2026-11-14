@@ -68,6 +68,8 @@ export interface FormDef {
   tempHp: number;
   power: number;
   signatureCardId?: string;
+  /** 폭주 형태 (02 13.2): 보통 진화로는 되지 않음 */
+  rampage?: boolean;
 }
 export type EnemyEffect =
   | { op: 'attack'; amount: number; hits?: number }
@@ -114,6 +116,8 @@ export interface ChipDef {
     evolveCostDelta?: number;
     /** 그 턴에 처음 내는 카드의 비용에 더함 (02 12.11) */
     firstCardCostDelta?: number;
+    /** 2면 턴 시작에 두 묶음을 뽑아 하나를 고름 (02 13.3) */
+    handGroups?: number;
     battleBitsBonus?: number;
     handSizeBonus?: number;
     maxHpBonus?: number;
@@ -183,6 +187,10 @@ export interface BattleState {
   statuses: Statuses;
   evolvedThisTurn: boolean;
   freeEvolve: boolean;
+  /** 폭주 진화 중 (02 13.2) */
+  rampage: boolean;
+  /** 두 사람의 카드: 고를 두 묶음 (고르기 전까지, 02 13.3) */
+  handChoice: CardInstance[][] | null;
   /** 이번 턴에 낸 카드 수. 카드를 옮긴 뒤 올림 (02 12.3) */
   cardsPlayedThisTurn: number;
   drawPile: CardInstance[];
@@ -221,6 +229,8 @@ export interface RunState {
   nodeId: string | null; // 지금 있는 칸 (막 시작 전에는 null)
   path: string[]; // 이번 막에서 지나온 칸 id (지금 칸 포함)
   removalsBought: number;
+  /** 디지털 해저드 단계 (02 13.6) */
+  hazard: number;
   /** 단계별로 고른 형태 특성 (02 12.5) */
   formTraits: Partial<Record<Stage, FormTraitId>>;
 }
@@ -257,9 +267,26 @@ export type Phase =
   | 'runWon'
   | 'runLost';
 export type RngStream = 'map' | 'battle' | 'reward' | 'event';
+/** 판 시작에 받는 해금 정보 (02 13.5) */
+export interface Unlocks {
+  tamers: TamerId[];
+  startChips: string[];
+  /** 열린 디지털 해저드 최고 단계 */
+  hazard: number;
+}
+
+/** 판 밖의 기록 (02 13.5). GameState와 따로 저장 */
+export interface Profile {
+  version: number;
+  runs: Partial<Record<TamerId, { played: number; won: number }>>;
+  unlocks: Unlocks;
+  codex: { forms: string[]; enemies: string[] };
+}
+
 export interface GameState {
   version: number; // 저장 형식 버전
   seed: number;
+  unlocks: Unlocks;
   rng: Record<RngStream, number>;
   phase: Phase;
   run: RunState | null;
@@ -270,7 +297,7 @@ export interface GameState {
 
 // ── 행동 ──
 export type Action =
-  | { type: 'startRun'; tamerId: TamerId }
+  | { type: 'startRun'; tamerId: TamerId; hazard?: number }
   | { type: 'chooseNode'; nodeId: string }
   | { type: 'playCard'; cardUid: number; targetIndex?: number }
   | { type: 'evolve' }
@@ -285,7 +312,9 @@ export type Action =
   | { type: 'eventChoose'; index: number }
   | { type: 'proceed' }
   | { type: 'chooseStartChip'; index: number }
-  | { type: 'chooseFormTrait'; index: number };
+  | { type: 'chooseFormTrait'; index: number }
+  | { type: 'rampage' }
+  | { type: 'chooseHandGroup'; index: number };
 
 // ── 일어난 일 목록 (03 4.1) ──
 export type Who = 'player' | number; // number: 적의 위치(index)
@@ -304,6 +333,8 @@ export type GameEvent =
       to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' | 'companion';
     }
   | { type: 'companionTriggered'; cardUid: number }
+  | { type: 'handGroupsDrawn'; groups: number[][] }
+  | { type: 'handGroupChosen'; index: number }
   | { type: 'formTraitChosen'; stage: Stage; traitId: FormTraitId }
   | { type: 'cardCreated'; cardUid: number; defId: string; to: 'hand' | 'draw' | 'discard' }
   | { type: 'memoryChanged'; memory: number }
@@ -322,7 +353,15 @@ export type GameEvent =
   | { type: 'shieldGained'; target: Who; amount: number }
   | { type: 'statusApplied'; target: Who; status: StatusId; amount: number }
   | { type: 'accelChanged'; enemyIndex: number; accel: number } // 얻었을 때와 0이 됐을 때
-  | { type: 'evolved'; from: Stage; to: Stage; cost: number; tempHpGained: number }
+  | {
+      type: 'evolved';
+      from: Stage;
+      to: Stage;
+      cost: number;
+      tempHpGained: number;
+      /** 된 형태 (폭주면 폭주 형태) */
+      formId: string;
+    }
   | { type: 'enemyPhaseChanged'; enemyIndex: number; phaseIndex: number }
   | { type: 'enemyMoved'; enemyIndex: number; moveId: string }
   | { type: 'enemyIntent'; enemyIndex: number; moveId: string }

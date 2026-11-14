@@ -2,7 +2,7 @@
 import { constants } from '../../data/index';
 import { heal } from '../battle/damage';
 import { setPhase } from '../phase';
-import { isUpgradable, requireRun } from '../helpers';
+import { hazardOn, isUpgradable, requireRun } from '../helpers';
 import type { GameEvent, GameState } from '../types';
 
 export function enterRest(state: GameState, events: GameEvent[]): void {
@@ -17,7 +17,10 @@ function leaveRest(state: GameState, events: GameEvent[]): void {
 
 export function restHeal(state: GameState, events: GameEvent[]): void {
   const run = requireRun(state);
-  heal(state, events, Math.floor(run.maxHp * constants.REST_HEAL_PCT));
+  const pct = hazardOn(state, 'restHeal')
+    ? constants.HAZARD_REST_HEAL_PCT
+    : constants.REST_HEAL_PCT;
+  heal(state, events, Math.floor(run.maxHp * pct));
   leaveRest(state, events);
 }
 
