@@ -36,7 +36,15 @@ export default tseslint.config(
   {
     // 개발용 Node 스크립트
     files: ['scripts/**/*.mjs'],
-    languageOptions: { globals: { process: 'readonly' } },
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        fetch: 'readonly',
+        WebSocket: 'readonly',
+      },
+    },
   },
   {
     files: ['src/core/**/*.ts', 'src/data/**/*.ts'],

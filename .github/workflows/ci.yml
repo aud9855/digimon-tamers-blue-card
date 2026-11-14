@@ -18,4 +18,6 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      # 360px 화면에서 전투 하나를 화면 조작으로 끝까지 (ubuntu에 있는 Chrome 사용)
+      - run: npm run e2e
       - run: npm run sim -- --policy random --runs 100

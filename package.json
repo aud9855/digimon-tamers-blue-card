@@ -18,7 +18,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "card-texts": "tsx scripts/card-texts.ts",
-    "sim": "tsx src/sim/cli.ts"
+    "sim": "tsx src/sim/cli.ts",
+    "e2e": "node scripts/e2e/battle.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

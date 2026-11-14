@@ -456,6 +456,7 @@ pwa/sw.js                     서비스 워커 템플릿 (빌드 때 vite.config
 | `npm test` | Vitest 전체 |
 | `npm run sim -- …` | 봇 측정 (7.2) |
 | `npm run card-texts` | 카드·칩 설명 글 출력 (`docs/balance/card-texts.md`) |
+| `npm run e2e` | 360px 화면에서 전투 하나를 화면 조작만으로 끝까지 (`scripts/e2e/`, Chrome DevTools Protocol을 Node 내장 WebSocket으로 직접 다룸. 새 라이브러리 없음) |
 | `npm run dev` / `npm run build` | (1단계) 개발 서버 / 빌드 |
 
 - **작업을 끝냈다고 하기 전에** `npm run typecheck`, `npm run lint`, `npm test`가 모두 통과해야 합니다.

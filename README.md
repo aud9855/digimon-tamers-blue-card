@@ -24,6 +24,7 @@ npm run sim -- --report m0                                  # 밸런스 지표 1
 npm run card-texts  # 카드·칩 설명 글을 docs/balance/card-texts.md로
 npm run dev         # 개발 서버 (휴대폰에서 같은 와이파이로 접속 가능)
 npm run build       # 배포 빌드 (dist/, 서비스 워커 포함)
+npm run e2e         # 360px 화면에서 전투 하나를 자동으로 (Chrome·Edge 필요)
 ```
 
 ## 문서
