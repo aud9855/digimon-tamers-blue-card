@@ -12,7 +12,7 @@ import { TitleScreen } from './screens/TitleScreen';
 import { TreasureScreen } from './screens/TreasureScreen';
 import { useGame } from './store';
 
-const SCREENS: Record<Phase, () => React.JSX.Element> = {
+const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
   title: TitleScreen,
   map: MapScreen,
   battle: BattleScreen,
