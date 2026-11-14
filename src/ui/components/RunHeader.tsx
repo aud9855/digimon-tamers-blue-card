@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { describeChip, type GameState } from '../../core/index';
 import { getChip, getTamer } from '../../data/index';
+import { SettingsButton } from './Settings';
 
 export function RunHeader({ state }: { state: GameState }) {
   const run = state.run;
@@ -17,6 +18,7 @@ export function RunHeader({ state }: { state: GameState }) {
         <span className="text-amber-300">{run.bits} 비트</span>
         <span className="text-slate-300">덱 {run.deck.length}</span>
         <span className="text-slate-400">{run.act}막</span>
+        <SettingsButton />
       </div>
       {run.chips.length > 0 && (
         <button

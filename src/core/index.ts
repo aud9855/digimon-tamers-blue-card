@@ -1,5 +1,5 @@
 // core가 밖에 내보내는 것 (03 5절)
-export { createInitialState } from './state';
+export { createInitialState, SAVE_VERSION } from './state';
 export { applyAction, getLegalActions, IllegalActionError } from './engine';
 export {
   describeCard,

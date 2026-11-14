@@ -29,6 +29,9 @@ export interface GameStore {
   queue: GameEvent[];
   current: PlaybackItem | null;
   speed: PlaybackSpeed;
+  /** 설정 창이 열려 있는지 */
+  settingsOpen: boolean;
+  setSettingsOpen: (open: boolean) => void;
   dispatch: (action: Action) => void;
   /** 남은 재생을 건너뜀 */
   skipPlayback: () => void;
@@ -85,6 +88,8 @@ export const useGame = create<GameStore>((set, get) => {
     queue: [],
     current: null,
     speed: 'normal',
+    settingsOpen: false,
+    setSettingsOpen: (open) => set({ settingsOpen: open }),
     dispatch: (action) => {
       if (get().view) return; // 재생 중에는 입력을 받지 않음
       const before = get().state;
@@ -115,6 +120,7 @@ export const useGame = create<GameStore>((set, get) => {
         view: null,
         queue: [],
         current: null,
+        settingsOpen: false,
       });
     },
   };

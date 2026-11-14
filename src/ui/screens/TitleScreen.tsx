@@ -1,11 +1,15 @@
 import { getTamers } from '../../data/index';
 import { Screen } from '../components/Screen';
+import { SettingsButton } from '../components/Settings';
 import { useGame } from '../store';
 
 export function TitleScreen() {
   const dispatch = useGame((s) => s.dispatch);
   return (
     <Screen>
+      <div className="flex justify-end px-4 pt-3">
+        <SettingsButton />
+      </div>
       <div className="flex flex-1 flex-col items-center justify-center gap-10 px-6 text-center">
         <div>
           <p className="text-sm tracking-widest text-sky-300">DIGIMON TAMERS</p>

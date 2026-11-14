@@ -13,6 +13,7 @@ import { Hand } from '../components/Hand';
 import { MemoryGauge } from '../components/MemoryGauge';
 import { PartnerView } from '../components/PartnerView';
 import { Screen } from '../components/Screen';
+import { SettingsButton } from '../components/Settings';
 import { enemyIndexAt, useCardPointer } from '../input/drag';
 import { useDisplayState, useGame } from '../store';
 import type { PlaybackSpeed } from '../playback';
@@ -36,6 +37,7 @@ export interface BattleViewProps {
   footer?: ReactNode;
   /** 맨 위 오른쪽 (재생 속도) */
   headerRight?: ReactNode;
+  headerRightExtra?: ReactNode;
   handRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -51,6 +53,7 @@ export function BattleView({
   middle,
   footer,
   headerRight,
+  headerRightExtra,
   handRef,
 }: BattleViewProps) {
   const battle = state.battle;
@@ -67,6 +70,7 @@ export function BattleView({
         <span className="flex items-center gap-2">
           턴 {battle.turn}
           {headerRight}
+          {headerRightExtra}
         </span>
       </div>
 
@@ -275,6 +279,7 @@ export function BattleScreen() {
             {SPEED_LABEL[speed]}
           </button>
         }
+        headerRightExtra={<SettingsButton />}
         footer={
           <button
             type="button"
