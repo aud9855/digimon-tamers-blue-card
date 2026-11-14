@@ -1,5 +1,6 @@
 // 도트 그림 검사 (04 7절): 규격, 팔레트, 빠진 그림
 import { describe, expect, it } from 'vitest';
+import { getForms } from '../../src/data/index';
 import { CHIP_ART, ENEMY_ART, FORM_ART, NODE_ART, TAMER_ART } from '../../src/ui/art/index';
 import { ART_SIZE, type PixelArt } from '../../src/ui/art/types';
 import { pixelRuns } from '../../src/ui/components/PixelArtView';
@@ -35,5 +36,11 @@ describe('도트 그림 규격 (04 7절)', () => {
       { x: 2, y: 0, w: 1, color: '#00f' },
       { x: 1, y: 1, w: 3, color: '#00f' },
     ]);
+  });
+});
+
+describe('빠진 그림 없음', () => {
+  it('파트너 형태마다 도트 (G2)', () => {
+    for (const f of getForms()) expect(FORM_ART[f.id], f.id).toBeDefined();
   });
 });

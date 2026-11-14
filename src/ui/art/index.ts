@@ -1,8 +1,9 @@
 // 도트 그림 목록 (04 7절). 그림이 없으면 undefined → 화면은 자리표시(속성 색 상자)로 그림.
 import type { NodeType } from '../../core/index';
+import { PARTNER_ART } from './partners';
 import type { PixelArt } from './types';
 
-export const FORM_ART: Record<string, PixelArt> = {};
+export const FORM_ART: Record<string, PixelArt> = PARTNER_ART;
 export const ENEMY_ART: Record<string, PixelArt> = {};
 export const TAMER_ART: Record<string, PixelArt> = {};
 export const CHIP_ART: Record<string, PixelArt> = {};

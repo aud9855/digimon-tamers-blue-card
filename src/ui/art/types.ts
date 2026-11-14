@@ -26,3 +26,18 @@ export const BASE = {
 export function art(palette: Record<string, string>, rows: string[]): PixelArt {
   return { palette: { ...BASE, ...palette }, rows };
 }
+
+/**
+ * size×size 칸에 맞춤: 가장 긴 줄에 맞춰 오른쪽을 채운 뒤 가로 가운데, 세로는 바닥(발)에 붙임.
+ * 그릴 때 줄 길이를 일일이 맞추지 않아도 되게 하는 도우미. 크면 오류.
+ */
+export function fit(size: number, palette: Record<string, string>, rows: string[]): PixelArt {
+  const width = Math.max(...rows.map((r) => r.length));
+  if (width > size || rows.length > size) {
+    throw new Error(`그림이 ${size}칸보다 큼: ${width}×${rows.length}`);
+  }
+  const left = Math.floor((size - width) / 2);
+  const body = rows.map((r) => '.'.repeat(left) + r.padEnd(width, '.').padEnd(size - left, '.'));
+  const top = Array.from({ length: size - rows.length }, () => '.'.repeat(size));
+  return art(palette, [...top, ...body]);
+}
