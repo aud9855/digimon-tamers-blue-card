@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+/* 속성 색 (자리표시 그림에 씀, 04 4절) */
+@theme {
+  --color-vaccine: #3b82f6;
+  --color-data: #22c55e;
+  --color-virus: #a855f7;
+  --color-none: #64748b;
+  --color-memory: #38bdf8;
+  --color-shield: #94a3b8;
+  --color-temp-hp: #fbbf24;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #0b1220;
+  color: #e2e8f0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Apple SD Gothic Neo',
+    'Noto Sans KR',
+    sans-serif;
+  /* 모바일: 끌어서 새로 고침·확대·글자 선택을 막음 */
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
