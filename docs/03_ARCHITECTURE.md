@@ -29,6 +29,7 @@ flowchart LR
 | React 19, Zustand (1단계) | 화면, 화면 상태 | MIT |
 | Tailwind CSS (1단계) | 스타일 | MIT |
 | Capacitor (2단계) | APK | MIT |
+| pixelfx (코드 복사, `src/ui/fx/pixelfx/`) | 전투 도트 효과 (04 7절) | MIT |
 
 - 버전은 설치하는 날의 최신 안정판을 쓰고 `package-lock.json`으로 고정합니다.
 - **위 표에 없는 라이브러리를 넣으려면 먼저 사용자에게 묻습니다.** `core`와 `data`에는 실행 시 필요한 외부 라이브러리를 넣지 않습니다.

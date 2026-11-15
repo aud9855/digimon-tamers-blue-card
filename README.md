@@ -4,7 +4,7 @@
 
 ## 지금 상태
 
-**3단계(깊이)까지 끝났습니다.** 3막, 테이머 4명(다영·진은 해금), 매트릭스·폭주 진화, 디지털 해저드 1~10, 도감, 효과음이 들어 있습니다. 밸런스 기록은 [M3](docs/balance/M3.md), 작업 목록은 [04 문서](docs/04_ROADMAP.md)에 있습니다. 그림은 모두 직접 그린 도트입니다 (글자 격자, `src/ui/art`).
+**3단계(깊이)까지 끝났습니다.** 3막, 테이머 4명(다영·진은 해금), 매트릭스·폭주 진화, 디지털 해저드 1~10, 도감, 효과음이 들어 있습니다. 밸런스 기록은 [M3](docs/balance/M3.md), 작업 목록은 [04 문서](docs/04_ROADMAP.md)에 있습니다. 그림은 모두 직접 그린 도트입니다 (글자 격자, `src/ui/art`). 전투 효과는 [pixelfx](https://github.com/patch-gg/pixelfx) (MIT, Copyright (c) 2026 Patch, Hugo Duprez)의 코드를 `src/ui/fx/pixelfx/`에 복사해 씁니다.
 
 ## 해 보기
 
