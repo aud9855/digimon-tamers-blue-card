@@ -7,17 +7,40 @@ import type { PixelArt } from '../art/types';
 import { PixelArtView } from './PixelArtView';
 import { useSpritePack } from '../spritePack';
 import { OFFICIAL_SPRITE } from '../art/official';
+import { spriteHeightFrac } from '../art/spriteScale';
 
-/** 그림 파일 도트 (도트 팩·원작 도트): 칸에 맞추되 비율 유지, 바닥에 붙임, 도트가 흐려지지 않게 */
-function SpriteImage({ url, className, label }: { url: string; className: string; label: string }) {
-  return (
+/** 그림 파일 도트 (도트 팩·원작 도트): 칸에 맞추되 비율 유지, 바닥에 붙임, 도트가 흐려지지 않게.
+ *  heightFrac < 1 이면 칸 높이의 그만큼만 쓰고 바닥 가운데에 세움 (디지몬별 크기) */
+function SpriteImage({
+  url,
+  className,
+  label,
+  heightFrac = 1,
+}: {
+  url: string;
+  className: string;
+  label: string;
+  heightFrac?: number;
+}) {
+  const img = (
     <img
       src={url}
       alt={label}
       draggable={false}
-      className={`object-contain object-bottom [image-rendering:pixelated] ${className}`}
+      className={`object-contain object-bottom [image-rendering:pixelated] ${heightFrac < 1 ? 'w-full' : className}`}
+      style={heightFrac < 1 ? { height: `${heightFrac * 100}%` } : undefined}
     />
   );
+  if (heightFrac >= 1) return img;
+  return <div className={`flex items-end justify-center ${className}`}>{img}</div>;
+}
+
+/** 내 기기 도트 팩이 있으면 그것(칸을 채움), 없으면 원작 도트. scaled면 디지몬별 크기(전투·진화 화면) */
+function useSpriteSource(id: string, scaled: boolean): { url: string; heightFrac: number } | null {
+  const packUrl = useSpritePack((s) => s.urls[id]);
+  if (packUrl) return { url: packUrl, heightFrac: 1 };
+  const official = OFFICIAL_SPRITE[id];
+  return official ? { url: official, heightFrac: scaled ? spriteHeightFrac(id) : 1 } : null;
 }
 
 function Placeholder({
@@ -41,15 +64,17 @@ function Placeholder({
 export function FormSprite({
   formId,
   className = 'h-16 w-16',
+  scaled = false,
 }: {
   formId: string;
   className?: string;
+  /** 디지몬별 크기로 그림 (전투·진화 화면). 도감·아이콘은 칸을 채움 */
+  scaled?: boolean;
 }) {
   const art = FORM_ART[formId];
   const form = getFormById(formId);
-  // 고르는 순서: 내 기기 도트 팩 → 원작 도트 → 직접 그린 도트
-  const url = useSpritePack((s) => s.urls[formId]) ?? OFFICIAL_SPRITE[formId];
-  if (url) return <SpriteImage url={url} className={className} label={form.name} />;
+  const src = useSpriteSource(formId, scaled);
+  if (src) return <SpriteImage {...src} className={className} label={form.name} />;
   if (!art)
     return (
       <Placeholder
@@ -64,14 +89,17 @@ export function FormSprite({
 export function EnemySprite({
   enemyId,
   className = 'h-16 w-16',
+  scaled = false,
 }: {
   enemyId: string;
   className?: string;
+  /** 디지몬별 크기로 그림 (전투 화면). 도감은 칸을 채움 */
+  scaled?: boolean;
 }) {
   const art = ENEMY_ART[enemyId];
   const enemy = getEnemy(enemyId);
-  const url = useSpritePack((s) => s.urls[enemyId]) ?? OFFICIAL_SPRITE[enemyId];
-  if (url) return <SpriteImage url={url} className={className} label={enemy.name} />;
+  const src = useSpriteSource(enemyId, scaled);
+  if (src) return <SpriteImage {...src} className={className} label={enemy.name} />;
   if (!art)
     return (
       <Placeholder

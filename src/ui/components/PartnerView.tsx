@@ -36,7 +36,7 @@ export function PartnerView({
         data-form={form.id}
       >
         <BattleSprite className="h-16 w-16">
-          <FormSprite formId={form.id} className="h-full w-full" />
+          <FormSprite formId={form.id} className="h-full w-full" scaled />
         </BattleSprite>
       </div>
       <div className="min-w-0 flex-1">
