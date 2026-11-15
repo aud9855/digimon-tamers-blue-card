@@ -186,9 +186,9 @@ function Effect({ item, view, ms }: { item: PlaybackItem; view: GameState; ms: n
           >
             <div className="text-xs tracking-[0.4em] opacity-80">{label}</div>
             <div className="mt-1 flex items-center justify-center gap-3">
-              <FormSprite formId={from.id} className="h-12 w-12 opacity-70" />
+              <FormSprite formId={from.id} className="h-12 w-12 opacity-70" scaled />
               <span className="text-xl">▶</span>
-              <FormSprite formId={to.id} className="h-16 w-16" />
+              <FormSprite formId={to.id} className="h-16 w-16" scaled />
             </div>
             <div
               className={`mt-1 text-2xl font-black ${kind === 'matrix' ? 'text-slate-900' : ''}`}

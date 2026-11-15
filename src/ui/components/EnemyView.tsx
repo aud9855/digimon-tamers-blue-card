@@ -68,7 +68,7 @@ export function EnemyView({
         data-enemy-sprite
       >
         <BattleSprite className="h-full w-full" phase={index + 1}>
-          <EnemySprite enemyId={def.id} className="h-full w-full" />
+          <EnemySprite enemyId={def.id} className="h-full w-full" scaled />
         </BattleSprite>
       </div>
       <div className="max-w-full truncate text-xs text-slate-300">
