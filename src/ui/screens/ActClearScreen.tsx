@@ -1,7 +1,7 @@
 // 막 클리어 (02 7.6), 형태 특성 고르기 (02 12.5)
 import type { FormTraitId } from '../../core/index';
 import { constants, getForm, getTamer } from '../../data/index';
-import { PrimaryButton } from '../components/common';
+import { displayFormId, Hero, PrimaryButton, ScreenTitle } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { STAGE_LABEL } from '../components/labels';
@@ -20,12 +20,28 @@ export function ActClearScreen() {
   if (!run || !pending) return null;
   const traitStage = pending.traitStage;
   const form = traitStage ? getForm(getTamer(run.tamerId).line, traitStage) : null;
+  // 새로 열린 단계의 모습을 크게
+  const heroId = form?.id ?? displayFormId(run.tamerId, run.maxStage);
 
   return (
-    <Screen>
+    <Screen backdrop={run.act}>
       <RunHeader state={state} />
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="text-2xl font-black">{run.act}막 클리어!</h1>
+      <div className="flex flex-1 flex-col items-center justify-center-safe gap-4 overflow-y-auto px-6 py-4 text-center">
+        <ScreenTitle kicker="ACT CLEAR" accent="#fbbf24" center>
+          {run.act}막 클리어!
+        </ScreenTitle>
+        <Hero formId={heroId} size={120} ray="252 211 77" />
+        <div className="grid w-full max-w-xs grid-cols-3 gap-2">
+          <div className="ui-stat">
+            HP<b>회복</b>
+          </div>
+          <div className="ui-stat">
+            진화<b>{STAGE_LABEL[run.maxStage]}</b>
+          </div>
+          <div className="ui-stat">
+            최대 메모리<b>{run.maxMemory}</b>
+          </div>
+        </div>
         <p className="text-sm text-slate-300">
           HP를 회복했고, {STAGE_LABEL[run.maxStage]}까지 진화할 수 있으며, 최대 메모리는{' '}
           {run.maxMemory}입니다.
@@ -42,9 +58,9 @@ export function ActClearScreen() {
                   type="button"
                   data-trait={index}
                   onClick={() => dispatch({ type: 'chooseFormTrait', index })}
-                  className="min-h-14 rounded-xl bg-indigo-700 px-4 py-2 text-left active:bg-indigo-600"
+                  className="ui-choice [--accent:#818cf8]"
                 >
-                  <b>{TRAIT_TEXT[id].name}</b>
+                  <b className="block text-white">{TRAIT_TEXT[id].name}</b>
                   <span className="block text-sm text-indigo-200">{TRAIT_TEXT[id].text}</span>
                 </button>
               ))}

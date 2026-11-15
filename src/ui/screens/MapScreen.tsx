@@ -62,10 +62,10 @@ export function MapScreen() {
   const pathEdges = new Set(run.path.slice(1).map((id, i) => `${run.path[i]}>${id}`));
 
   return (
-    <Screen>
+    <Screen backdrop={run.act}>
       <RunHeader state={state} />
       {run.nodeId === null ? (
-        <div className="mx-4 mt-2 rounded-xl bg-slate-900 px-3 py-2" data-testid="act-intro">
+        <div className="ui-panel mx-4 mt-2 px-3 py-2" data-testid="act-intro">
           <p className="text-sm font-bold text-sky-200">
             {run.act}막 · {getAct(run.act).name}
           </p>
@@ -78,7 +78,10 @@ export function MapScreen() {
         </p>
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto" data-testid="map">
-        <div className="relative mx-auto" style={{ width, height }}>
+        <div
+          className="relative mx-auto bg-[linear-gradient(rgb(56_189_248/0.07)_1px,transparent_1px),linear-gradient(90deg,rgb(56_189_248/0.07)_1px,transparent_1px)] bg-[size:24px_24px]"
+          style={{ width, height }}
+        >
           <svg className="absolute inset-0" width={width} height={height} aria-hidden>
             {run.map.nodes.flatMap((node) =>
               node.next.map((nextId) => {
@@ -117,7 +120,7 @@ export function MapScreen() {
                 data-reachable={canGo}
                 disabled={!canGo}
                 onClick={() => dispatch({ type: 'chooseNode', nodeId: node.id })}
-                className={`absolute flex flex-col items-center justify-center rounded-full text-white ${label.color} ${
+                className={`absolute flex flex-col items-center justify-center rounded-full text-white shadow-[inset_0_2px_0_rgb(255_255_255/0.25),0_3px_0_rgb(0_0_0/0.5)] ${label.color} ${
                   canGo
                     ? 'animate-pulse ring-4 ring-sky-400'
                     : visited

@@ -175,3 +175,160 @@ body {
     animation: none;
   }
 }
+
+/* ── 화면 공통 디자인 (04 B2). 전투 무대·TCG 카드와 같은 느낌: 디아크풍 판, 비스듬한 제목 띠, 입체 버튼 ── */
+@layer components {
+  /* 판: 어두운 유리, 하늘색 얇은 테두리, 엇갈린 둥근 모서리 */
+  .ui-panel {
+    position: relative;
+    border: 1px solid rgb(56 189 248 / 0.35);
+    border-radius: 4px 14px 4px 14px;
+    background: linear-gradient(180deg, rgb(16 26 48 / 0.9), rgb(9 14 28 / 0.92));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.06),
+      0 4px 0 rgb(0 0 0 / 0.35);
+  }
+  /* 고르는 판(선택지): 왼쪽 강조 띠 색은 --accent */
+  .ui-choice {
+    --accent: #38bdf8;
+    position: relative;
+    min-height: 3.5rem;
+    border: 1px solid rgb(148 163 184 / 0.25);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px 14px 4px 14px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent) 18%, rgb(9 14 28 / 0.92)),
+      rgb(9 14 28 / 0.88) 70%
+    );
+    box-shadow: 0 3px 0 rgb(0 0 0 / 0.35);
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    transition:
+      transform 80ms,
+      border-color 120ms;
+  }
+  .ui-choice:not(:disabled):active {
+    transform: translateY(2px);
+    border-color: var(--accent);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+  }
+  .ui-choice:disabled {
+    opacity: 0.4;
+  }
+  /* 입체 버튼 */
+  .ui-btn {
+    --top: #38bdf8;
+    --bottom: #0284c7;
+    --edge: #075985;
+    min-height: 3rem;
+    width: 100%;
+    border-radius: 12px;
+    padding: 0 1rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+    background: linear-gradient(180deg, var(--top), var(--bottom));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 3px 0 var(--edge),
+      0 6px 12px rgb(0 0 0 / 0.35);
+    transition: transform 80ms;
+  }
+  .ui-btn:not(:disabled):active {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 1px 0 var(--edge);
+  }
+  .ui-btn:disabled {
+    --top: #334155;
+    --bottom: #1e293b;
+    --edge: #0f172a;
+    color: #64748b;
+    text-shadow: none;
+  }
+  .ui-btn-amber {
+    --top: #fbbf24;
+    --bottom: #d97706;
+    --edge: #92400e;
+  }
+  .ui-btn-slate {
+    --top: #475569;
+    --bottom: #334155;
+    --edge: #1e293b;
+  }
+  /* 비스듬한 제목 띠 (카드 이름 띠와 같은 모양). 강조 색은 --accent */
+  .ui-title {
+    --accent: #38bdf8;
+    display: inline-block;
+    transform: skewX(-12deg);
+    border-left: 4px solid var(--accent);
+    background: linear-gradient(90deg, rgb(5 7 13 / 0.92), rgb(5 7 13 / 0.5));
+    box-shadow: 3px 3px 0 rgb(0 0 0 / 0.45);
+    padding: 0.2rem 1.4rem 0.25rem 0.8rem;
+  }
+  .ui-title > * {
+    display: inline-block;
+    transform: skewX(12deg);
+  }
+  .ui-kicker {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent, #7dd3fc);
+    text-shadow:
+      0 1px 0 #000,
+      0 0 6px rgb(0 0 0 / 0.9);
+  }
+  /* 주인공 그림 뒤 빛줄기. 색은 --ray (r g b) */
+  .ui-rays {
+    --ray: 125 211 252;
+    position: absolute;
+    inset: -30%;
+    background: repeating-conic-gradient(
+      from 0deg,
+      rgb(var(--ray) / 0.3) 0 7deg,
+      transparent 7deg 18deg
+    );
+    -webkit-mask: radial-gradient(circle, #000 18%, transparent 62%);
+    mask: radial-gradient(circle, #000 18%, transparent 62%);
+    animation: ui-spin 40s linear infinite;
+    pointer-events: none;
+  }
+  /* 작은 수치 칸 */
+  .ui-stat {
+    border-radius: 8px;
+    background: rgb(15 23 42 / 0.85);
+    border: 1px solid rgb(148 163 184 / 0.2);
+    padding: 0.35rem 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+  .ui-stat b {
+    display: block;
+    font-size: 1rem;
+    color: #f1f5f9;
+  }
+}
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ui-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-rays,
+  .ui-flicker {
+    animation: none;
+  }
+}

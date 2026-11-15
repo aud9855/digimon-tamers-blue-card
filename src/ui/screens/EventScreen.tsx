@@ -1,6 +1,7 @@
 // 이벤트 (02 7.5)
 import { describeEventChoice } from '../../core/index';
 import { getEvent } from '../../data/index';
+import { ScreenTitle } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
@@ -13,11 +14,13 @@ export function EventScreen() {
   const event = getEvent(pending.eventId);
 
   return (
-    <Screen>
+    <Screen backdrop={state.run?.act}>
       <RunHeader state={state} />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-6 pb-4">
-        <h1 className="text-xl font-black">{event.title}</h1>
-        <p className="leading-relaxed text-slate-200">{event.text}</p>
+        <ScreenTitle kicker="DIGITAL FIELD" accent="#a78bfa">
+          {event.title}
+        </ScreenTitle>
+        <p className="ui-panel p-4 leading-relaxed text-slate-200">{event.text}</p>
         <div className="mt-auto flex flex-col gap-3">
           {event.choices.map((choice, index) => (
             <button
@@ -25,10 +28,10 @@ export function EventScreen() {
               type="button"
               data-choice={index}
               onClick={() => dispatch({ type: 'eventChoose', index })}
-              className="min-h-14 rounded-xl bg-indigo-700 px-4 py-2 text-left active:bg-indigo-600"
+              className="ui-choice [--accent:#a78bfa]"
             >
-              <b>{choice.label}</b>
-              <span className="block text-sm text-indigo-200">
+              <b className="block text-white">{choice.label}</b>
+              <span className="block text-sm text-violet-200">
                 {describeEventChoice(event.id, index)}
               </span>
             </button>

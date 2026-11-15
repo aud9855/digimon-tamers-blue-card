@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { describeChip, getLegalActions } from '../../core/index';
 import { getChip } from '../../data/index';
 import { CardView } from '../components/CardView';
-import { DeckPicker, PrimaryButton } from '../components/common';
+import { DeckPicker, PrimaryButton, ScreenTitle } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
@@ -24,13 +24,15 @@ export function ShopScreen() {
   const removable = new Set(legal.flatMap((a) => (a.type === 'shopRemoveCard' ? [a.cardUid] : [])));
 
   return (
-    <Screen>
+    <Screen backdrop={run.act}>
       <RunHeader state={state} />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-3 pb-4">
-        <h1 className="text-xl font-black">상점</h1>
+        <ScreenTitle kicker="SHOP" accent="#f59e0b">
+          상점
+        </ScreenTitle>
 
         <section>
-          <h2 className="mb-3 text-sm text-slate-400">카드</h2>
+          <h2 className="ui-kicker mb-3 [--accent:#fcd34d]">카드</h2>
           <div className="grid grid-cols-3 gap-x-3 gap-y-4">
             {shop.cards.map((item, index) => (
               <button
@@ -42,13 +44,15 @@ export function ShopScreen() {
                 className="flex flex-col items-center gap-1 disabled:opacity-40"
               >
                 {item.sold ? (
-                  <div className="flex h-[100px] w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-700 text-xs text-slate-500">
+                  <div className="flex h-[100px] w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-950/60 text-xs text-slate-400">
                     판매됨
                   </div>
                 ) : (
                   <CardView defId={item.defId} upgraded={false} />
                 )}
-                <span className="text-sm text-amber-300">{item.price} 비트</span>
+                <span className="rounded-full bg-amber-950/80 px-2 text-sm font-bold text-amber-300 ring-1 ring-amber-500/50">
+                  {item.price} 비트
+                </span>
               </button>
             ))}
           </div>
@@ -56,7 +60,7 @@ export function ShopScreen() {
 
         {shop.chips.length > 0 && (
           <section>
-            <h2 className="mb-2 text-sm text-slate-400">디아크 칩</h2>
+            <h2 className="ui-kicker mb-2 [--accent:#fcd34d]">디아크 칩</h2>
             <div className="flex flex-col gap-2">
               {shop.chips.map((item, index) => (
                 <button
@@ -65,18 +69,20 @@ export function ShopScreen() {
                   data-shop-chip={index}
                   disabled={!canBuyChip(index)}
                   onClick={() => dispatch({ type: 'shopBuyChip', index })}
-                  className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-slate-800 px-3 py-2 text-left disabled:opacity-40"
+                  className="ui-choice flex min-h-12 items-center justify-between gap-3 [--accent:#f59e0b]"
                 >
                   <span className="min-w-0">
                     <b className="flex items-center gap-1 text-sky-200">
-                      <ChipIcon chipId={item.chipId} className="h-5 w-5" />
+                      <ChipIcon chipId={item.chipId} className="h-6 w-6" />
                       {getChip(item.chipId).name}
                     </b>
                     <span className="block text-xs text-slate-300">
                       {item.sold ? '판매됨' : describeChip(item.chipId)}
                     </span>
                   </span>
-                  <span className="shrink-0 text-sm text-amber-300">{item.price} 비트</span>
+                  <span className="shrink-0 rounded-full bg-amber-950/80 px-2 text-sm font-bold text-amber-300 ring-1 ring-amber-500/50">
+                    {item.price} 비트
+                  </span>
                 </button>
               ))}
             </div>
@@ -84,7 +90,7 @@ export function ShopScreen() {
         )}
 
         <section>
-          <h2 className="mb-2 text-sm text-slate-400">카드 지우기</h2>
+          <h2 className="ui-kicker mb-2 [--accent:#fcd34d]">카드 지우기</h2>
           <PrimaryButton
             tone="slate"
             testId="shop-remove"
