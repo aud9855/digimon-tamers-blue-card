@@ -16,6 +16,7 @@ import {
   saveSettings,
 } from './save';
 import { useGame } from './store';
+import { restoreSpritePack } from './spritePack';
 
 const params = new URLSearchParams(location.search);
 /** 개발 서버에서 주소로 상태를 정했으면 저장을 불러오지 않음 */
@@ -37,6 +38,7 @@ try {
 } catch (error) {
   console.error('저장 불러오기 실패', error);
 }
+restoreSpritePack().catch((error) => console.error('도트 팩 불러오기 실패', error));
 
 if (import.meta.env.DEV) {
   // 개발 서버에서만: 자동 확인 스크립트가 지금 상태와 봇의 다음 행동을 읽을 수 있게 함

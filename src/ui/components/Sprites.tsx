@@ -5,6 +5,19 @@ import { CHIP_ART, ENEMY_ART, FORM_ART, NODE_ART, TAMER_ART } from '../art/index
 import { ATTRIBUTE_BG } from './labels';
 import type { PixelArt } from '../art/types';
 import { PixelArtView } from './PixelArtView';
+import { useSpritePack } from '../spritePack';
+
+/** 도트 팩 그림 (04 P1): 칸에 맞추되 비율 유지, 바닥에 붙임, 도트가 흐려지지 않게 */
+function PackImage({ url, className, label }: { url: string; className: string; label: string }) {
+  return (
+    <img
+      src={url}
+      alt={label}
+      draggable={false}
+      className={`object-contain object-bottom [image-rendering:pixelated] ${className}`}
+    />
+  );
+}
 
 function Placeholder({
   name,
@@ -33,6 +46,8 @@ export function FormSprite({
 }) {
   const art = FORM_ART[formId];
   const form = getFormById(formId);
+  const packUrl = useSpritePack((s) => s.urls[formId]);
+  if (packUrl) return <PackImage url={packUrl} className={className} label={form.name} />;
   if (!art)
     return (
       <Placeholder
@@ -53,6 +68,8 @@ export function EnemySprite({
 }) {
   const art = ENEMY_ART[enemyId];
   const enemy = getEnemy(enemyId);
+  const packUrl = useSpritePack((s) => s.urls[enemyId]);
+  if (packUrl) return <PackImage url={packUrl} className={className} label={enemy.name} />;
   if (!art)
     return (
       <Placeholder
