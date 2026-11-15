@@ -12,7 +12,8 @@ import {
   type FxFrame,
   type FxInstance,
 } from '../fx/library';
-import { vfxFor, type VfxCue } from '../fx/vfx';
+import { FEEL, motionFor, vfxFor, type FeelTier, type VfxCue } from '../fx/vfx';
+import { playBodyMotion } from './bodyMotion';
 import { useGame } from '../store';
 
 /** 효과 1칸 = 화면 2px (도트 그림 24칸 ≈ 56px과 비슷한 크기) */
@@ -27,20 +28,39 @@ function targetElement(who: Who): Element | null {
   return document.querySelector(`${slot} [data-enemy-sprite]`) ?? document.querySelector(slot);
 }
 
-function shakeScreen() {
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-  document
-    .getElementById('root')
-    ?.animate?.(
-      [
-        { transform: 'translate(0, 0)' },
-        { transform: 'translate(-4px, 2px)' },
-        { transform: 'translate(4px, -2px)' },
-        { transform: 'translate(-2px, 1px)' },
-        { transform: 'translate(0, 0)' },
-      ],
-      { duration: 220, easing: 'ease-out' },
-    );
+function reducedMotion(): boolean {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+}
+
+/**
+ * 손맛 (game-feel): 흔들림은 쌓이는 trauma로, 세기는 trauma²이고 실제 시간으로 줄어듭니다.
+ * 매 프레임 무작위가 아니라 서로 다른 빠르기의 사인을 더해 부드럽게 흔듭니다 (덜덜 떨림 방지).
+ * 타격 정지는 효과만 잠깐 멈춥니다 (규칙·재생 순서에는 손대지 않음).
+ */
+const feel = { trauma: 0, stop: 0, t: 0 };
+const SHAKE_PX = { x: 7, y: 5 };
+const TRAUMA_DECAY = 2.2; // 1초에 줄어드는 양
+
+function addFeel(tier: FeelTier) {
+  const f = FEEL[tier];
+  if (!reducedMotion()) feel.trauma = Math.min(1, feel.trauma + f.trauma);
+  // 겹친 정지는 더 긴 쪽만 남김 (새 정지가 이전 정지를 끊지 않음)
+  feel.stop = Math.max(feel.stop, f.stop);
+}
+
+function applyShake(realDt: number) {
+  const root = document.getElementById('root');
+  if (!root) return;
+  feel.trauma = Math.max(0, feel.trauma - TRAUMA_DECAY * realDt);
+  if (feel.trauma === 0) {
+    root.style.transform = '';
+    return;
+  }
+  feel.t += realDt * 30;
+  const k = feel.trauma * feel.trauma;
+  const x = Math.round(SHAKE_PX.x * k * Math.sin(feel.t * 1.7));
+  const y = Math.round(SHAKE_PX.y * k * Math.sin(feel.t * 2.3));
+  root.style.transform = `translate(${x}px, ${y}px)`;
 }
 
 let seed = 1;
@@ -52,7 +72,7 @@ function spawn(cue: VfxCue): FxInstance | null {
   const r = el.getBoundingClientRect();
   const mod = FX_MODULES[cue.fx];
   const palette = cue.palette ? PAL[cue.palette] : undefined;
-  if (cue.shake) shakeScreen();
+  if (cue.tier) addFeel(cue.tier);
   seed = (seed * 48271) % 2147483647;
   return createFx(mod, {
     x: (r.left + r.width / 2) / FX_SCALE,
@@ -94,8 +114,13 @@ export function FxLayer() {
     };
 
     const tick = (now: number) => {
-      const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
+      const realDt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
       last = now;
+      applyShake(realDt);
+      // 타격 정지 중에는 효과 시간이 흐르지 않음
+      const frozen = feel.stop > 0;
+      feel.stop = Math.max(0, feel.stop - realDt);
+      const dt = frozen ? 0 : realDt;
       fitCanvas();
       if (!frame || !image) return;
       clearFrame(frame);
@@ -106,7 +131,7 @@ export function FxLayer() {
       live.current = live.current.filter((fx) => !fx.done());
       composite(frame, image.data, null);
       ctx.putImageData(image, 0, 0);
-      if (live.current.length > 0) raf = requestAnimationFrame(tick);
+      if (live.current.length > 0 || feel.trauma > 0) raf = requestAnimationFrame(tick);
       else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         raf = 0;
@@ -119,6 +144,8 @@ export function FxLayer() {
     };
     return () => {
       cancelAnimationFrame(raf);
+      feel.trauma = 0;
+      applyShake(0);
       kick.current = () => {};
     };
   }, []);
@@ -126,6 +153,7 @@ export function FxLayer() {
   // 재생 중인 일이 바뀔 때마다 그 일의 효과를 띄움
   useEffect(() => {
     if (!current) return;
+    for (const m of motionFor(current.event)) playBodyMotion(m.who, m.motion, rate.current);
     let added = false;
     for (const cue of vfxFor(current.event)) {
       const fx = spawn(cue);

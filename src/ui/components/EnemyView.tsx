@@ -2,7 +2,7 @@ import { describeIntent, type GameState, type IntentView } from '../../core/inde
 import { getEnemy } from '../../data/index';
 import { HpBar, StatusRow } from './Bars';
 import { ATTRIBUTE_LABEL, ATTRIBUTE_RING } from './labels';
-import { EnemySprite } from './Sprites';
+import { BattleSprite, EnemySprite } from './Sprites';
 
 const INTENT_ICON: Record<IntentView['kind'], string> = {
   attack: '⚔',
@@ -67,7 +67,9 @@ export function EnemyView({
         className={`flex aspect-square w-full max-w-20 items-center justify-center rounded-xl bg-slate-800/70 ring-2 ${ATTRIBUTE_RING[def.attribute]}`}
         data-enemy-sprite
       >
-        <EnemySprite enemyId={def.id} className="h-full w-full" />
+        <BattleSprite className="h-full w-full" phase={index + 1}>
+          <EnemySprite enemyId={def.id} className="h-full w-full" />
+        </BattleSprite>
       </div>
       <div className="max-w-full truncate text-xs text-slate-300">
         {def.name} <span className="text-slate-500">{ATTRIBUTE_LABEL[def.attribute]}</span>
