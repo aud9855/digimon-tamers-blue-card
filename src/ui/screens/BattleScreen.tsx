@@ -1,4 +1,5 @@
-// 전투 화면 (03 9.2 배치: 적·인텐트 → 파트너·진화 → 메모리 → 손패 → 턴 끝·더미)
+// 전투 화면 (03 9.2). 위쪽 무대에 막별 배경을 깔고 적은 오른쪽 위, 파트너는 왼쪽 아래에서 마주 봄 (04 B1 배치 B).
+// 그 아래 메모리 → 손패 → 턴 끝·더미
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   getLegalActions,
@@ -17,6 +18,7 @@ import { Screen } from '../components/Screen';
 import { SettingsButton } from '../components/Settings';
 import { enemyIndexAt, useCardPointer } from '../input/drag';
 import { useDisplayState, useGame } from '../store';
+import { battleBackground } from '../art/stage';
 import type { PlaybackSpeed } from '../playback';
 
 type PlayAction = Extract<Action, { type: 'playCard' }>;
@@ -63,70 +65,95 @@ export function BattleView({
   const run = state.run;
   if (!battle || !run) return null;
 
+  const enemyCount = battle.enemies.length;
+  // 적이 적을수록 크게
+  const enemySize = enemyCount <= 1 ? 104 : enemyCount === 2 ? 92 : 80;
   return (
     <Screen>
-      <div className="flex items-center justify-between px-4 pt-2 text-xs text-slate-400">
-        <span>
-          {run.act}막 ·{' '}
-          {battle.kind === 'boss' ? '보스' : battle.kind === 'elite' ? '강적' : '전투'}
-        </span>
-        <span className="flex items-center gap-2">
-          턴 {battle.turn}
-          {headerRight}
-          {headerRightExtra}
-        </span>
-      </div>
-
-      {/* 적과 인텐트 */}
-      <div className="flex justify-center gap-1 px-2 pt-2" data-testid="enemies">
-        {battle.enemies.map((_, i) => (
-          <EnemyView
-            key={i}
-            state={state}
-            index={i}
-            targetable={targetable?.has(i) ?? false}
-            onSelect={targetable?.has(i) && onEnemySelect ? () => onEnemySelect(i) : undefined}
-          />
-        ))}
-      </div>
-
-      {/* 가운데 (내기 영역·경고): 자리가 모자라면 적 쪽으로 겹쳐 뜸 */}
-      <div className="relative min-h-2 flex-1">
-        <div className="pointer-events-none absolute inset-x-4 bottom-2 z-20 flex flex-col items-center [&_button]:pointer-events-auto">
-          {middle}
+      <div
+        className="flex min-h-0 flex-1 flex-col [image-rendering:pixelated]"
+        style={{
+          backgroundImage: `url(${battleBackground(run.act)})`,
+          backgroundSize: '100% auto',
+          backgroundRepeat: 'no-repeat',
+        }}
+        data-testid="stage"
+      >
+        <div className="flex items-center justify-between px-4 pt-2 text-xs text-slate-300 [text-shadow:0_1px_0_#000]">
+          <span>
+            {run.act}막 ·{' '}
+            {battle.kind === 'boss' ? '보스' : battle.kind === 'elite' ? '강적' : '전투'}
+          </span>
+          <span className="flex items-center gap-2">
+            턴 {battle.turn}
+            {headerRight}
+            {headerRightExtra}
+          </span>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-2">
-        {battle.companions.length > 0 && (
-          <div className="flex gap-2 px-4" data-testid="companions">
-            {battle.companions.map((c) => (
-              <span
-                key={c.uid}
-                className="rounded-full border border-lime-400 bg-lime-950 px-2 py-0.5 text-xs text-lime-200"
+        {/* 무대: 적은 오른쪽 위(왼쪽 적일수록 조금 아래로, 대각선), 파트너는 왼쪽 아래 */}
+        <div className="relative min-h-[300px] flex-1" data-testid="field">
+          <div
+            className="absolute top-1 right-1 left-[20%] flex items-start justify-end gap-1"
+            data-testid="enemies"
+          >
+            {battle.enemies.map((_, i) => (
+              <div
+                key={i}
+                className="max-w-[120px] min-w-0 flex-1"
+                style={{ transform: `translateY(${(enemyCount - 1 - i) * 14}px)` }}
               >
-                {getCard(c.defId).name}
-              </span>
+                <EnemyView
+                  state={state}
+                  index={i}
+                  size={enemySize}
+                  targetable={targetable?.has(i) ?? false}
+                  onSelect={
+                    targetable?.has(i) && onEnemySelect ? () => onEnemySelect(i) : undefined
+                  }
+                />
+              </div>
             ))}
           </div>
-        )}
-        <PartnerView state={state} onEvolve={onEvolve} onRampage={onRampage} />
-        <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
-        <div ref={handRef}>
-          <Hand
-            state={state}
-            cards={battle.hand}
-            playable={playable}
-            selectedUid={selectedUid}
-            onCardPointerDown={onCardPointerDown}
-          />
+          <div className="absolute inset-x-0 bottom-0">
+            <PartnerView state={state} onEvolve={onEvolve} onRampage={onRampage} />
+          </div>
+          {/* 가운데 (내기 영역·경고): 무대 위에 겹쳐 뜸 */}
+          <div className="pointer-events-none absolute inset-x-4 top-[42%] z-20 flex flex-col items-center [&_button]:pointer-events-auto">
+            {middle}
+          </div>
         </div>
-        <div className="flex items-center justify-between gap-2 px-4 pb-3 text-xs text-slate-400">
-          <span data-testid="piles">
-            뽑을 {battle.drawPile.length} · 버림 {battle.discardPile.length}
-            {battle.exhaustPile.length > 0 ? ` · 소멸 ${battle.exhaustPile.length}` : ''}
-          </span>
-          {footer}
+
+        <div className="flex flex-col gap-2">
+          {battle.companions.length > 0 && (
+            <div className="flex gap-2 px-4" data-testid="companions">
+              {battle.companions.map((c) => (
+                <span
+                  key={c.uid}
+                  className="rounded-full border border-lime-400 bg-lime-950 px-2 py-0.5 text-xs text-lime-200"
+                >
+                  {getCard(c.defId).name}
+                </span>
+              ))}
+            </div>
+          )}
+          <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
+          <div ref={handRef}>
+            <Hand
+              state={state}
+              cards={battle.hand}
+              playable={playable}
+              selectedUid={selectedUid}
+              onCardPointerDown={onCardPointerDown}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2 px-4 pb-3 text-xs text-slate-400">
+            <span data-testid="piles">
+              뽑을 {battle.drawPile.length} · 버림 {battle.discardPile.length}
+              {battle.exhaustPile.length > 0 ? ` · 소멸 ${battle.exhaustPile.length}` : ''}
+            </span>
+            {footer}
+          </div>
         </div>
       </div>
     </Screen>
