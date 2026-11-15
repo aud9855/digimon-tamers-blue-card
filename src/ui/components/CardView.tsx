@@ -1,14 +1,54 @@
 import { describeCard, previewCardCost, type GameState } from '../../core/index';
+import type { CardType, Rarity } from '../../core/index';
 import { getCard } from '../../data/index';
-import type { CardType } from '../../core/index';
+import { cardArt } from '../art/cardArt';
+import { FormSprite } from './Sprites';
+import './CardView.css';
 
-const TYPE_STYLE: Record<CardType, string> = {
-  attack: 'border-rose-400 bg-rose-950',
-  skill: 'border-sky-400 bg-sky-950',
-  signature: 'border-amber-300 bg-amber-950',
-  curse: 'border-slate-500 bg-slate-900',
-  companion: 'border-lime-400 bg-lime-950',
+const TYPE_LABEL: Record<CardType, string> = {
+  attack: '공격',
+  skill: '스킬',
+  signature: '필살기',
+  curse: '저주',
+  companion: '동료',
 };
+const RARITY_LABEL: Record<Rarity, string> = {
+  basic: '기본',
+  common: '일반',
+  uncommon: '고급',
+  rare: '희귀',
+  special: '전용',
+};
+const RARITY_COLOR: Record<Rarity, string> = {
+  basic: '#5b6478',
+  common: '#aab4c8',
+  uncommon: '#4fb3ff',
+  rare: '#ffc94a',
+  special: '#ff7ad9',
+};
+
+/** 7×7 도트 아이콘 (1 = 칠함). 직접 그림 */
+const ICON: Record<CardType, string[]> = {
+  attack: ['0000011', '0000111', '0001110', '1011100', '0111000', '0110000', '1001000'],
+  skill: ['1111111', '1000001', '1011101', '1011101', '0101010', '0011100', '0001000'],
+  signature: ['0001000', '0001000', '1111111', '0111110', '0011100', '0110110', '1000001'],
+  curse: ['0111110', '1111111', '1001001', '1111111', '0110110', '0111110', '0101010'],
+  companion: ['0100010', '1110111', '0100010', '0011100', '0111110', '0111110', '0011100'],
+};
+
+function TypeIcon({ type }: { type: CardType }) {
+  return (
+    <svg className="tcg-ico" viewBox="0 0 7 7" shapeRendering="crispEdges" aria-hidden="true">
+      {ICON[type].flatMap((row, y) =>
+        [...row].map((v, x) =>
+          v === '1' ? (
+            <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="#fff" />
+          ) : null,
+        ),
+      )}
+    </svg>
+  );
+}
 
 export interface CardViewProps {
   defId: string;
@@ -22,6 +62,7 @@ export interface CardViewProps {
   cardUid?: number;
 }
 
+/** 카드 한 장: 풀아트 TCG 디자인 (04 B1, 모양은 CardView.css) */
 export function CardView({
   defId,
   upgraded,
@@ -37,34 +78,44 @@ export function CardView({
     state && cardUid !== undefined ? (previewCardCost(state, cardUid) ?? face.cost) : face.cost;
   const text = describeCard(defId, upgraded, state ? { state } : undefined);
   const large = size === 'large';
+  const art = cardArt(defId);
   return (
     <div
-      className={`relative flex flex-col rounded-lg border-2 ${TYPE_STYLE[def.type]} ${
-        large ? 'h-72 w-52 p-3' : 'h-[100px] w-full p-1'
-      } ${dimmed ? 'opacity-40' : ''} ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
+      className={`tcg tcg-${def.type} ${large ? 'tcg-large h-72 w-52' : 'h-[100px] w-full'} ${
+        dimmed ? 'opacity-40' : ''
+      } ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
     >
-      <div
-        className={`absolute flex items-center justify-center rounded-full font-black text-slate-900 ${
-          cost < face.cost ? 'bg-lime-300' : 'bg-memory'
-        } ${large ? '-top-3 -left-3 h-9 w-9 text-lg' : '-top-1.5 -left-1.5 h-5 w-5 text-xs'}`}
-      >
-        {cost}
+      <div className="tcg-art">
+        {art.kind === 'form' ? (
+          <FormSprite formId={art.formId} className="tcg-spr" />
+        ) : (
+          <TypeIcon type={art.type} />
+        )}
+        <i className="tcg-fx" />
       </div>
+      {def.type === 'signature' && art.kind === 'form' && (
+        <div className="tcg-pop">
+          <FormSprite formId={art.formId} className="tcg-spr" />
+        </div>
+      )}
+      {def.rarity !== 'basic' && <i className="tcg-holo" />}
+      <div className={`tcg-cost ${cost < face.cost ? 'tcg-cost-down' : ''}`}>{cost}</div>
       <div
-        className={`line-clamp-2 text-center font-bold break-keep ${
-          large ? 'mt-1 text-lg' : 'mt-1 text-[12px] leading-tight'
-        } ${upgraded ? 'text-lime-300' : ''}`}
+        className={`tcg-name ${upgraded ? 'tcg-up' : ''} ${
+          def.name.length + (upgraded ? 1 : 0) >= 5 ? 'tcg-name-long' : ''
+        }`}
       >
         {def.name}
         {upgraded ? '+' : ''}
       </div>
-      <div
-        className={`mt-1 flex-1 overflow-hidden text-center leading-tight break-keep text-slate-200 ${
-          large ? 'text-sm' : 'text-[12px]'
-        }`}
-      >
-        {text}
+      <div className="tcg-line">
+        <span>{TYPE_LABEL[def.type]}</span>
+        <span>
+          <i className="tcg-gem" style={{ background: RARITY_COLOR[def.rarity] }} />
+          {large ? RARITY_LABEL[def.rarity] : ''}
+        </span>
       </div>
+      <div className="tcg-text">{text}</div>
     </div>
   );
 }
