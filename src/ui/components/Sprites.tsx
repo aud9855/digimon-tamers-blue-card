@@ -3,6 +3,7 @@ import type { NodeType, TamerId } from '../../core/index';
 import { getChip, getEnemy, getFormById, getTamer } from '../../data/index';
 import { CHIP_ART, ENEMY_ART, FORM_ART, NODE_ART, TAMER_ART } from '../art/index';
 import { ATTRIBUTE_BG } from './labels';
+import type { PixelArt } from '../art/types';
 import { PixelArtView } from './PixelArtView';
 
 function Placeholder({
@@ -89,4 +90,36 @@ export function ChipIcon({
 
 export function NodeIcon({ type, className = 'h-6 w-6' }: { type: NodeType; className?: string }) {
   return <PixelArtView art={NODE_ART[type]} className={className} />;
+}
+
+/** 바닥 그림자 (24칸 폭, 납작한 타원). 그림 뒤, 발밑에 깔림 */
+const GROUND_SHADOW: PixelArt = {
+  palette: { s: 'rgba(0, 0, 0, 0.45)' },
+  rows: ['.......ssssssssss.......', '....ssssssssssssssss....', '.......ssssssssss.......'],
+};
+
+/**
+ * 전투용 도트: 발밑 그림자 + 숨쉬기(1칸씩 오르내림, 04 V2).
+ * phase로 박자를 어긋나게 해 여럿이 함께 움직이지 않게 합니다.
+ */
+export function BattleSprite({
+  children,
+  className,
+  phase = 0,
+}: {
+  children: React.ReactNode;
+  className: string;
+  phase?: number;
+}) {
+  return (
+    <span className={`relative block ${className}`}>
+      <PixelArtView art={GROUND_SHADOW} className="absolute inset-x-0 bottom-0 w-full" />
+      <span
+        className="spr-idle absolute inset-0 block"
+        style={{ animationDelay: `${-phase * 0.37}s` }}
+      >
+        {children}
+      </span>
+    </span>
+  );
 }

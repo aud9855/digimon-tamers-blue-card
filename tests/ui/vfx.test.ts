@@ -9,7 +9,7 @@ import {
   createFx,
   type FxKey,
 } from '../../src/ui/fx/library';
-import { vfxFor } from '../../src/ui/fx/vfx';
+import { FEEL, motionFor, vfxFor } from '../../src/ui/fx/vfx';
 
 const damage = (over: Partial<Extract<GameEvent, { type: 'damage' }>>): GameEvent =>
   ({
@@ -24,9 +24,9 @@ const damage = (over: Partial<Extract<GameEvent, { type: 'damage' }>>): GameEven
 
 describe('vfxFor', () => {
   it('적 피해: 보통은 불꽃, 속성 유리는 큰 타격과 흔들림, 다 막으면 막음', () => {
-    expect(vfxFor(damage({ hpLost: 6 }))).toEqual([{ fx: 'hitSpark', who: 0 }]);
+    expect(vfxFor(damage({ hpLost: 6 }))).toEqual([{ fx: 'hitSpark', who: 0, tier: 'small' }]);
     expect(vfxFor(damage({ hpLost: 9, attrMult: 1.5 }))).toEqual([
-      { fx: 'critHit', who: 0, shake: true },
+      { fx: 'critHit', who: 0, tier: 'large' },
     ]);
     expect(vfxFor(damage({ blocked: 6 }))).toEqual([{ fx: 'parry', who: 0 }]);
     expect(vfxFor(damage({}))).toEqual([]);
@@ -36,7 +36,7 @@ describe('vfxFor', () => {
     expect(vfxFor(damage({ target: 'player', tempHpLost: 3 }))[0]).toMatchObject({
       fx: 'bluntHit',
       who: 'player',
-      shake: true,
+      tier: 'medium',
     });
   });
 
@@ -100,5 +100,31 @@ describe('들여온 pixelfx 효과', () => {
       return Array.from(frame.color);
     };
     expect(render()).toEqual(render());
+  });
+});
+
+describe('motionFor (04 V2)', () => {
+  it('적이 맞으면 파트너는 덤비고 적은 맞음, 피해가 0이면 움직이지 않음', () => {
+    expect(motionFor(damage({ hpLost: 4, target: 1 }))).toEqual([
+      { who: 'player', motion: 'lunge' },
+      { who: 1, motion: 'hurt' },
+    ]);
+    expect(motionFor(damage({ blocked: 4 }))).toEqual([]);
+  });
+
+  it('파트너가 맞음, 적이 행동하면 덤빔', () => {
+    expect(motionFor(damage({ target: 'player', hpLost: 2 }))).toEqual([
+      { who: 'player', motion: 'hurt' },
+    ]);
+    expect(motionFor({ type: 'enemyMoved', enemyIndex: 2, moveId: 'x' } as GameEvent)).toEqual([
+      { who: 2, motion: 'lunge' },
+    ]);
+  });
+
+  it('손맛 등급은 클수록 흔들림·정지가 큼', () => {
+    expect(FEEL.small.trauma).toBeLessThan(FEEL.medium.trauma);
+    expect(FEEL.medium.trauma).toBeLessThan(FEEL.large.trauma);
+    expect(FEEL.medium.stop).toBeLessThan(FEEL.large.stop);
+    expect(FEEL.large.stop).toBeLessThanOrEqual(0.15);
   });
 });

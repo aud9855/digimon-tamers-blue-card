@@ -1,7 +1,7 @@
 import { currentForm, isMatrix, previewEvolveCost, type GameState } from '../../core/index';
 import { getTamer } from '../../data/index';
 import { HpBar, StatusRow } from './Bars';
-import { FormSprite, TamerFace } from './Sprites';
+import { BattleSprite, FormSprite, TamerFace } from './Sprites';
 import { ATTRIBUTE_RING, STAGE_LABEL } from './labels';
 
 /** 파트너(HP·실드·임시 HP·단계)와 디아크 진화 버튼, 폭주 버튼 */
@@ -35,7 +35,9 @@ export function PartnerView({
         }`}
         data-form={form.id}
       >
-        <FormSprite formId={form.id} className="h-14 w-14" />
+        <BattleSprite className="h-14 w-14">
+          <FormSprite formId={form.id} className="h-full w-full" />
+        </BattleSprite>
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between text-xs">
