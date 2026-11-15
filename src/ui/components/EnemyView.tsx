@@ -65,6 +65,7 @@ export function EnemyView({
       <IntentBadge intent={intent} />
       <div
         className={`flex aspect-square w-full max-w-20 items-center justify-center rounded-xl bg-slate-800/70 ring-2 ${ATTRIBUTE_RING[def.attribute]}`}
+        data-enemy-sprite
       >
         <EnemySprite enemyId={def.id} className="h-full w-full" />
       </div>

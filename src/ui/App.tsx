@@ -12,6 +12,7 @@ import { StartChipScreen } from './screens/StartChipScreen';
 import { ShopScreen } from './screens/ShopScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { TreasureScreen } from './screens/TreasureScreen';
+import { FxLayer } from './components/FxLayer';
 import { PlaybackOverlay } from './components/PlaybackOverlay';
 import { ErrorScreen } from './components/ErrorBoundary';
 import { PanelHost } from './components/Settings';
@@ -55,6 +56,7 @@ export function App() {
   return (
     <>
       <Current />
+      <FxLayer />
       <PlaybackOverlay />
       <PanelHost />
     </>
