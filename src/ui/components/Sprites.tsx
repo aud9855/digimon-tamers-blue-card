@@ -6,9 +6,10 @@ import { ATTRIBUTE_BG } from './labels';
 import type { PixelArt } from '../art/types';
 import { PixelArtView } from './PixelArtView';
 import { useSpritePack } from '../spritePack';
+import { OFFICIAL_SPRITE } from '../art/official';
 
-/** 도트 팩 그림 (04 P1): 칸에 맞추되 비율 유지, 바닥에 붙임, 도트가 흐려지지 않게 */
-function PackImage({ url, className, label }: { url: string; className: string; label: string }) {
+/** 그림 파일 도트 (도트 팩·원작 도트): 칸에 맞추되 비율 유지, 바닥에 붙임, 도트가 흐려지지 않게 */
+function SpriteImage({ url, className, label }: { url: string; className: string; label: string }) {
   return (
     <img
       src={url}
@@ -46,8 +47,9 @@ export function FormSprite({
 }) {
   const art = FORM_ART[formId];
   const form = getFormById(formId);
-  const packUrl = useSpritePack((s) => s.urls[formId]);
-  if (packUrl) return <PackImage url={packUrl} className={className} label={form.name} />;
+  // 고르는 순서: 내 기기 도트 팩 → 원작 도트 → 직접 그린 도트
+  const url = useSpritePack((s) => s.urls[formId]) ?? OFFICIAL_SPRITE[formId];
+  if (url) return <SpriteImage url={url} className={className} label={form.name} />;
   if (!art)
     return (
       <Placeholder
@@ -68,8 +70,8 @@ export function EnemySprite({
 }) {
   const art = ENEMY_ART[enemyId];
   const enemy = getEnemy(enemyId);
-  const packUrl = useSpritePack((s) => s.urls[enemyId]);
-  if (packUrl) return <PackImage url={packUrl} className={className} label={enemy.name} />;
+  const url = useSpritePack((s) => s.urls[enemyId]) ?? OFFICIAL_SPRITE[enemyId];
+  if (url) return <SpriteImage url={url} className={className} label={enemy.name} />;
   if (!art)
     return (
       <Placeholder
