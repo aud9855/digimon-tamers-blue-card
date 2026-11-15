@@ -10,7 +10,7 @@ export interface PixelArt {
 
 /** 규격 (04 7절) */
 export const ART_SIZE = {
-  creature: 24,
+  creature: 32,
   face: 16,
   icon: 12,
 } as const;
@@ -40,4 +40,24 @@ export function fit(size: number, palette: Record<string, string>, rows: string[
   const body = rows.map((r) => '.'.repeat(left) + r.padEnd(width, '.').padEnd(size - left, '.'));
   const top = Array.from({ length: size - rows.length }, () => '.'.repeat(size));
   return art(palette, [...top, ...body]);
+}
+
+/** '#rgb'·'#rrggbb' → [r, g, b] */
+function toRgb(color: string): [number, number, number] | null {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
+  if (!m) return null;
+  const h =
+    (m[1] as string).length === 3
+      ? [...(m[1] as string)].map((c) => c + c).join('')
+      : (m[1] as string);
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
+}
+
+/** 외곽선 색: 맞닿은 색을 외곽선 기본색(K) 쪽으로 많이 섞은 어두운 톤 (selout) */
+export function outlineOf(color: string, k = 0.72): string {
+  const c = toRgb(color);
+  const base = toRgb(BASE.K) as [number, number, number];
+  if (!c) return BASE.K;
+  const mix = c.map((v, i) => Math.round(v * (1 - k) + (base[i] as number) * k));
+  return `#${mix.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
 }

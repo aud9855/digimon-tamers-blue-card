@@ -26,7 +26,7 @@ export function PartnerView({
   return (
     <div className="flex items-center gap-3 px-4" data-testid="partner">
       <div
-        className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-800 ${ATTRIBUTE_RING[form.attribute]} ${
+        className={`flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl bg-slate-800 ${ATTRIBUTE_RING[form.attribute]} ${
           battle.rampage
             ? 'ring-4 ring-rose-500'
             : isMatrix(state)
@@ -35,7 +35,7 @@ export function PartnerView({
         }`}
         data-form={form.id}
       >
-        <BattleSprite className="h-14 w-14">
+        <BattleSprite className="h-16 w-16">
           <FormSprite formId={form.id} className="h-full w-full" />
         </BattleSprite>
       </div>
