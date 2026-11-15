@@ -27,8 +27,8 @@ export function ActClearScreen() {
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-2xl font-black">{run.act}막 클리어!</h1>
         <p className="text-sm text-slate-300">
-          HP를 회복했고, {STAGE_LABEL[run.maxStage]}까지 진화할 수 있으며, 최대 메모리가{' '}
-          {run.maxMemory}이(가) 되었습니다.
+          HP를 회복했고, {STAGE_LABEL[run.maxStage]}까지 진화할 수 있으며, 최대 메모리는{' '}
+          {run.maxMemory}입니다.
         </p>
         {form ? (
           <div className="w-full max-w-xs" data-testid="form-traits">

@@ -22,7 +22,7 @@ export function PartnerView({
   const form = currentForm(state);
   const cost = previewEvolveCost(state);
   const stageLabel = `${form.name} · ${
-    battle.rampage ? '폭주' : isMatrix(state) ? '궁극체 · 매트릭스' : STAGE_LABEL[battle.stage]
+    battle.rampage ? '폭주' : isMatrix(state) ? '매트릭스' : STAGE_LABEL[battle.stage]
   }`;
   return (
     <div className="flex items-end gap-2 px-2" data-testid="partner">

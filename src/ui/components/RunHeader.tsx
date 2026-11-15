@@ -15,7 +15,7 @@ export function RunHeader({ state }: { state: GameState }) {
       <div className="flex items-center justify-between gap-2 text-sm">
         <button
           type="button"
-          className="-my-2 min-h-9 font-bold"
+          className="-my-2 min-h-11 font-bold"
           onClick={() => setOpen((v) => !v)}
         >
           {getTamer(run.tamerId).name}
@@ -32,7 +32,7 @@ export function RunHeader({ state }: { state: GameState }) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="mt-1 flex min-h-8 w-full flex-wrap items-center gap-1 text-left text-xs text-sky-200"
+          className="mt-1 flex min-h-11 w-full flex-wrap items-center gap-1 text-left text-xs text-sky-200"
         >
           {chips.map((id) => (
             <span key={id} className="flex items-center gap-1 rounded bg-sky-900/70 px-1.5 py-0.5">

@@ -39,6 +39,10 @@ export const SPRITE_SIZE: Record<string, number> = {
   reaper_horn_striker: 85,
   reaper_optimizer: 85,
   d_reaper: 130,
+  // 원작 그림이 없어 직접 그린 디 리퍼 요원 (2026-11-16 아트 점검에서 더함)
+  reaper_searcher: 60,
+  reaper_creeper: 60,
+  reaper_paranoia: 70,
 };
 
 const MIN_SIZE = 30;

@@ -438,7 +438,7 @@ src/ui/
 ├─ art/                       도트 그림 (글자 격자, 04 7절). PixelArt 부품이 SVG로 그림
 ├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
 ├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
-└─ assets/                    직접 만든 그림만
+└─ (그림 파일은 src/ui/art/ 아래: official/ 원작 도트, stage/ 막 배경. 04 7절)
 public/                       아이콘(직접 그린 SVG와 PNG), manifest.webmanifest
 pwa/sw.js                     서비스 워커 템플릿 (빌드 때 vite.config.ts가 파일 목록을 채워 dist/sw.js로)
 ```

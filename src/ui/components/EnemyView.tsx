@@ -48,6 +48,7 @@ export function EnemyView({
   /** 그림 칸 한 변 (px). 적이 적을수록 크게 (04 B1 배치) */
   size?: number;
 }) {
+  const compact = size <= 80;
   const enemy = state.battle?.enemies[index];
   if (!enemy) return null;
   const def = getEnemy(enemy.defId);
@@ -71,7 +72,7 @@ export function EnemyView({
     >
       <IntentBadge intent={intent} />
       <div
-        className="flex max-w-full items-end justify-center"
+        className="flex max-w-full items-end justify-center [filter:drop-shadow(0_0_1px_rgb(255_255_255/0.85))_drop-shadow(0_0_4px_rgb(255_255_255/0.3))]"
         style={{ width: size, height: size }}
         data-enemy-sprite
       >
@@ -79,11 +80,19 @@ export function EnemyView({
           <EnemySprite enemyId={def.id} className="h-full w-full" scaled />
         </BattleSprite>
       </div>
-      <div className="max-w-full truncate text-[11px] text-slate-100 [text-shadow:0_1px_0_#000]">
+      <div className="max-w-full truncate text-xs text-slate-100 [text-shadow:0_1px_0_#000]">
         {def.name}{' '}
-        <span className={`rounded px-0.5 ring-1 ${ATTRIBUTE_RING[def.attribute]} text-slate-300`}>
-          {ATTRIBUTE_LABEL[def.attribute]}
-        </span>
+        {def.attribute === 'none' ? null : compact ? (
+          <span
+            className={`ml-0.5 inline-block h-2 w-2 rounded-full ring-2 ${ATTRIBUTE_RING[def.attribute]}`}
+            title={ATTRIBUTE_LABEL[def.attribute]}
+            aria-label={ATTRIBUTE_LABEL[def.attribute]}
+          />
+        ) : (
+          <span className={`rounded px-0.5 ring-1 ${ATTRIBUTE_RING[def.attribute]} text-slate-300`}>
+            {ATTRIBUTE_LABEL[def.attribute]}
+          </span>
+        )}
       </div>
       <HpBar hp={enemy.hp} maxHp={enemy.maxHp} shield={enemy.shield} />
       <StatusRow statuses={enemy.statuses} accel={enemy.accel} />

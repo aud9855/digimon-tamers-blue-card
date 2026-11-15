@@ -9,7 +9,7 @@ import { FormSprite } from './Sprites';
 import { ATTRIBUTE_BG, STAGE_LABEL, STATUS_LABEL } from './labels';
 
 function targetSelector(who: Who): string {
-  return who === 'player' ? '[data-testid="partner"]' : `[data-enemy-index="${who}"]`;
+  return who === 'player' ? '[data-testid="partner"] [data-form]' : `[data-enemy-index="${who}"]`;
 }
 
 /** 대상 요소의 가운데 좌표 */
@@ -186,9 +186,13 @@ function Effect({ item, view, ms }: { item: PlaybackItem; view: GameState; ms: n
           >
             <div className="text-xs tracking-[0.4em] opacity-80">{label}</div>
             <div className="mt-1 flex items-center justify-center gap-3">
-              <FormSprite formId={from.id} className="h-12 w-12 opacity-70" scaled />
+              <FormSprite
+                formId={from.id}
+                className="h-16 w-16 [filter:drop-shadow(0_0_1px_#fff)]"
+                scaled
+              />
               <span className="text-xl">▶</span>
-              <FormSprite formId={to.id} className="h-16 w-16" scaled />
+              <FormSprite formId={to.id} className="h-28 w-28 [filter:drop-shadow(0_0_2px_#fff)]" />
             </div>
             <div
               className={`mt-1 text-2xl font-black ${kind === 'matrix' ? 'text-slate-900' : ''}`}
