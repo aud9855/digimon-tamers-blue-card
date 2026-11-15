@@ -27,6 +27,9 @@ tools/**/runs/
 *.key
 *.p12
 *.keystore
+*.jks
+*.b64
+.env.*
 credentials.json
 
 # 출처 확인 전 원화 (저장소에 올리지 않음)

@@ -21,7 +21,7 @@ export function TitleScreen() {
       <div className="flex justify-end px-4 pt-3">
         <SettingsButton />
       </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 overflow-y-auto px-6 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center-safe gap-6 overflow-y-auto px-6 text-center">
         <div>
           <p className="text-sm tracking-widest text-sky-300">DIGIMON TAMERS</p>
           <h1 className="mt-2 text-3xl font-black">블루 카드</h1>

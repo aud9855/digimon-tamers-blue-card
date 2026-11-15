@@ -1,6 +1,6 @@
 // 전투 화면 (03 9.2). 위쪽 무대에 막별 배경을 깔고 적은 오른쪽 위, 파트너는 왼쪽 아래에서 마주 봄 (04 B1 배치 B).
 // 그 아래 메모리 → 손패 → 턴 끝·더미
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   getLegalActions,
   previewOverdraw,
@@ -45,6 +45,32 @@ export interface BattleViewProps {
   handRef?: React.Ref<HTMLDivElement>;
 }
 
+/** 무대 높이를 아직 모를 때(서버 렌더·첫 그림) 쓰는 값 (360×640 기준) */
+const FIELD_DEFAULT_HEIGHT = 320;
+/** 적 칸에서 그림 말고 차지하는 높이 (인텐트·이름·HP·상태 줄, px) */
+const ENEMY_CHROME = 80;
+/** 무대 아래쪽 파트너 줄(진화 버튼) 높이 (px) */
+const PARTNER_ROW = 64;
+const ENEMY_MIN_SIZE = 56;
+/** 왼쪽 적일수록 이만큼씩 아래로 (대각선, px). 글 줄이 겹치지 않을 만큼 */
+const ENEMY_STAGGER = 20;
+
+/** 요소 높이를 재서 돌려줌 (크기가 바뀌면 다시 잼) */
+function useHeight(initial: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(initial);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => setHeight(el.clientHeight);
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    measure();
+    return () => ro.disconnect();
+  }, []);
+  return { ref, height };
+}
+
 /** 상태를 받아 그리기만 함 (테스트에서 바로 씀) */
 export function BattleView({
   state,
@@ -63,15 +89,21 @@ export function BattleView({
 }: BattleViewProps) {
   const battle = state.battle;
   const run = state.run;
+  const { ref: fieldRef, height: fieldHeight } = useHeight(FIELD_DEFAULT_HEIGHT);
   if (!battle || !run) return null;
 
   const enemyCount = battle.enemies.length;
-  // 적이 적을수록 크게
-  const enemySize = enemyCount <= 1 ? 104 : enemyCount === 2 ? 92 : 80;
+  // 적이 적을수록 크게. 무대가 낮으면(작은 화면) 파트너 줄(진화 버튼)과 겹치지 않게 줄임
+  const baseSize = enemyCount <= 1 ? 104 : enemyCount === 2 ? 92 : 80;
+  const stagger = (enemyCount - 1) * ENEMY_STAGGER;
+  const enemySize = Math.max(
+    ENEMY_MIN_SIZE,
+    Math.min(baseSize, fieldHeight - ENEMY_CHROME - PARTNER_ROW - stagger),
+  );
   return (
     <Screen>
       <div
-        className="flex min-h-0 flex-1 flex-col [image-rendering:pixelated]"
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto [image-rendering:pixelated]"
         style={{
           backgroundImage: `url(${battleBackground(run.act)})`,
           backgroundSize: '100% auto',
@@ -92,16 +124,17 @@ export function BattleView({
         </div>
 
         {/* 무대: 적은 오른쪽 위(왼쪽 적일수록 조금 아래로, 대각선), 파트너는 왼쪽 아래 */}
-        <div className="relative min-h-[300px] flex-1" data-testid="field">
+        {/* 무대 높이는 남는 만큼. 낮은 화면(568px 등)에서도 턴 끝 버튼이 화면 안에 있게 최소 높이는 작게 */}
+        <div ref={fieldRef} className="relative min-h-[220px] flex-1" data-testid="field">
           <div
-            className="absolute top-1 right-1 left-[20%] flex items-start justify-end gap-1"
+            className="absolute top-1 right-1 left-[20%] z-10 flex items-start justify-end gap-1"
             data-testid="enemies"
           >
             {battle.enemies.map((_, i) => (
               <div
                 key={i}
                 className="max-w-[120px] min-w-0 flex-1"
-                style={{ transform: `translateY(${(enemyCount - 1 - i) * 14}px)` }}
+                style={{ transform: `translateY(${(enemyCount - 1 - i) * ENEMY_STAGGER}px)` }}
               >
                 <EnemyView
                   state={state}
@@ -115,16 +148,17 @@ export function BattleView({
               </div>
             ))}
           </div>
-          <div className="absolute inset-x-0 bottom-0">
+          {/* 파트너 줄의 빈 곳은 누르기가 뒤(적)로 통과함 */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 [&_[data-testid=partner]>*]:pointer-events-auto">
             <PartnerView state={state} onEvolve={onEvolve} onRampage={onRampage} />
           </div>
-          {/* 가운데 (내기 영역·경고): 무대 위에 겹쳐 뜸 */}
-          <div className="pointer-events-none absolute inset-x-4 top-[42%] z-20 flex flex-col items-center [&_button]:pointer-events-auto">
+          {/* 내기 영역·경고: 적 HP를 가리지 않게 무대 아래쪽(파트너 줄 위)에 겹쳐 뜸 */}
+          <div className="pointer-events-none absolute inset-x-3 bottom-2 z-20 flex flex-col items-center rounded-xl [&:has(*)]:bg-slate-950/80 [&:has(*)]:p-2 [&_button]:pointer-events-auto">
             {middle}
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex shrink-0 flex-col gap-2">
           {battle.companions.length > 0 && (
             <div className="flex gap-2 px-4" data-testid="companions">
               {battle.companions.map((c) => (
@@ -138,7 +172,8 @@ export function BattleView({
             </div>
           )}
           <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
-          <div ref={handRef}>
+          {/* 손패 칸은 항상 두 줄 높이: 카드 수가 바뀌어도 무대가 출렁이지 않게 */}
+          <div ref={handRef} className="min-h-[224px]">
             <Hand
               state={state}
               cards={battle.hand}
@@ -349,7 +384,12 @@ export function BattleScreen() {
           className="pointer-events-none fixed z-30 w-16 -translate-x-1/2 -translate-y-1/2"
           style={{ left: drag.x, top: drag.y }}
         >
-          <CardView defId={drag.card.defId} upgraded={drag.card.upgraded} state={state} />
+          <CardView
+            defId={drag.card.defId}
+            upgraded={drag.card.upgraded}
+            state={state}
+            cardUid={drag.card.uid}
+          />
         </div>
       )}
       {battle.handChoice && (
@@ -381,7 +421,13 @@ export function BattleScreen() {
       )}
       {zoom && (
         <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/60">
-          <CardView defId={zoom.defId} upgraded={zoom.upgraded} state={state} size="large" />
+          <CardView
+            defId={zoom.defId}
+            upgraded={zoom.upgraded}
+            state={state}
+            size="large"
+            cardUid={zoom.uid}
+          />
         </div>
       )}
     </div>

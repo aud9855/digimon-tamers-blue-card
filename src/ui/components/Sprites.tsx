@@ -65,16 +65,20 @@ export function FormSprite({
   formId,
   className = 'h-16 w-16',
   scaled = false,
+  decorative = false,
 }: {
   formId: string;
   className?: string;
+  /** 장식 그림(카드 그림 창 등): 화면 읽기 프로그램이 이름을 읽지 않게 */
+  decorative?: boolean;
   /** 디지몬별 크기로 그림 (전투·진화 화면). 도감·아이콘은 칸을 채움 */
   scaled?: boolean;
 }) {
   const art = FORM_ART[formId];
   const form = getFormById(formId);
   const src = useSpriteSource(formId, scaled);
-  if (src) return <SpriteImage {...src} className={className} label={form.name} />;
+  const label = decorative ? '' : form.name;
+  if (src) return <SpriteImage {...src} className={className} label={label} />;
   if (!art)
     return (
       <Placeholder
@@ -83,7 +87,7 @@ export function FormSprite({
         className={className}
       />
     );
-  return <PixelArtView art={art} className={className} label={form.name} />;
+  return <PixelArtView art={art} className={className} label={label} />;
 }
 
 export function EnemySprite({
@@ -108,6 +112,17 @@ export function EnemySprite({
         className={className}
       />
     );
+  if (scaled) {
+    // 직접 그린 도트(원작 그림이 없는 디 리퍼 요원)도 디지몬별 크기로
+    const frac = spriteHeightFrac(enemyId);
+    return (
+      <div className={`flex items-end justify-center ${className}`}>
+        <div className="w-full" style={{ height: `${frac * 100}%` }}>
+          <PixelArtView art={art} className="h-full w-full" label={enemy.name} />
+        </div>
+      </div>
+    );
+  }
   return <PixelArtView art={art} className={className} label={enemy.name} />;
 }
 

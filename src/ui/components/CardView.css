@@ -2,367 +2,415 @@
    그림 창(위 --split만큼) → 비스듬한 이름 띠 → 종류·희귀도 줄 → 효과 상자.
    활동감: 기울인 디지몬, 종류별 효과(베기·방패·집중선), 홀로 반짝임, 필살기는 디지몬이 그림 창 밖으로 튀어나옴 */
 
-.tcg {
-  /* 그림 창 높이 (위에서부터). 손패는 글 칸을 넓게 */
-  --split: 44%;
-  position: relative;
-  display: block;
-  border-radius: 6px;
-  background: #0a0e18;
-  box-shadow:
-    0 0 0 1.5px var(--c),
-    0 0 0 2.5px #05070d,
-    0 2px 0 2px #05070d;
-  color: #e3e9f3;
-}
-.tcg-attack {
-  --c: #ff5d73;
-  --d: #3a0d18;
-}
-.tcg-skill {
-  --c: #4fb3ff;
-  --d: #0b2440;
-}
-.tcg-signature {
-  --c: #ffc94a;
-  --d: #3d2a05;
-}
-.tcg-curse {
-  --c: #9a8fb5;
-  --d: #1d1a28;
-}
-.tcg-companion {
-  --c: #8fe36a;
-  --d: #14300c;
-}
-.tcg-large {
-  --split: 56%;
-  border-radius: 12px;
-}
+/* Tailwind의 components 층에 둠: ring(고른 카드)·opacity 같은 유틸리티가 이 규칙을 이김 */
+@layer components {
+  .tcg {
+    /* 그림 창 높이 (위에서부터). 손패는 글 칸을 넓게 */
+    --split: 44%;
+    position: relative;
+    display: block;
+    border-radius: 6px;
+    background: #0a0e18;
+    box-shadow:
+      0 0 0 1.5px var(--c),
+      0 0 0 2.5px #05070d,
+      0 2px 0 2px #05070d;
+    color: #e3e9f3;
+  }
+  .tcg-attack {
+    --c: #ff5d73;
+    --d: #3a0d18;
+  }
+  .tcg-skill {
+    --c: #4fb3ff;
+    --d: #0b2440;
+  }
+  .tcg-signature {
+    --c: #ffc94a;
+    --d: #3d2a05;
+  }
+  .tcg-curse {
+    --c: #9a8fb5;
+    --d: #1d1a28;
+  }
+  .tcg-companion {
+    --c: #8fe36a;
+    --d: #14300c;
+  }
+  .tcg-large {
+    --split: 56%;
+    border-radius: 12px;
+  }
 
-/* 그림 창 */
-.tcg-art {
-  position: absolute;
-  inset: 2px 2px calc(100% - var(--split)) 2px;
-  overflow: hidden;
-  border-radius: 4px 4px 0 0;
-  display: grid;
-  place-items: center;
-  background:
-    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.07) 0 3px, transparent 3px 7px),
-    radial-gradient(
-      circle at 50% 60%,
-      color-mix(in srgb, var(--c) 75%, #fff),
-      var(--c) 35%,
-      var(--d) 90%
+  /* 그림 창 */
+  .tcg-art {
+    position: absolute;
+    inset: 2px 2px calc(100% - var(--split)) 2px;
+    overflow: hidden;
+    border-radius: 4px 4px 0 0;
+    display: grid;
+    place-items: center;
+    background:
+      repeating-linear-gradient(135deg, rgb(255 255 255 / 0.07) 0 3px, transparent 3px 7px),
+      radial-gradient(
+        circle at 50% 60%,
+        color-mix(in srgb, var(--c) 75%, #fff),
+        var(--c) 35%,
+        var(--d) 90%
+      );
+  }
+  .tcg-large .tcg-art {
+    inset: 4px 4px calc(100% - var(--split)) 4px;
+    border-radius: 9px 9px 0 0;
+  }
+  .tcg-art::before {
+    content: '';
+    position: absolute;
+    inset: -40%;
+  }
+  .tcg-attack .tcg-art::before {
+    background: repeating-conic-gradient(
+      from 0deg at 50% 65%,
+      rgb(255 255 255 / 0.22) 0 6deg,
+      transparent 6deg 18deg
     );
-}
-.tcg-large .tcg-art {
-  inset: 4px 4px calc(100% - var(--split)) 4px;
-  border-radius: 9px 9px 0 0;
-}
-.tcg-art::before {
-  content: '';
-  position: absolute;
-  inset: -40%;
-}
-.tcg-attack .tcg-art::before {
-  background: repeating-conic-gradient(
-    from 0deg at 50% 65%,
-    rgb(255 255 255 / 0.22) 0 6deg,
-    transparent 6deg 18deg
-  );
-}
-.tcg-skill .tcg-art::before {
-  background: repeating-radial-gradient(
-    circle at 50% 62%,
-    rgb(255 255 255 / 0.2) 0 2px,
-    transparent 2px 9px
-  );
-}
-.tcg-signature .tcg-art::before {
-  background: repeating-conic-gradient(
-    from 8deg at 50% 70%,
-    rgb(255 240 180 / 0.45) 0 4deg,
-    transparent 4deg 11deg
-  );
-  animation: tcg-spin 18s linear infinite;
-}
-.tcg-companion .tcg-art::before {
-  background:
-    radial-gradient(circle at 50% 60%, rgb(255 255 255 / 0.35), transparent 55%),
-    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 8px);
-}
-.tcg-curse .tcg-art::before {
-  background: repeating-conic-gradient(
-    from 0deg at 50% 55%,
-    rgb(0 0 0 / 0.35) 0 20deg,
-    transparent 20deg 40deg
-  );
-  animation: tcg-spin 30s linear infinite reverse;
-}
-/* 속도선 */
-.tcg-attack .tcg-art::after,
-.tcg-signature .tcg-art::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: repeating-linear-gradient(
-    -20deg,
-    transparent 0 9px,
-    rgb(255 255 255 / 0.35) 9px 10px,
-    transparent 10px 23px
-  );
-  mix-blend-mode: overlay;
-}
-/* 디지몬: 비스듬히 크게 */
-.tcg-spr {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 112%;
-  margin-top: 4px;
-  transform: rotate(-8deg) translateX(-6%);
-  transform-origin: 50% 100%;
-  filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.45));
-}
-.tcg-skill .tcg-spr {
-  transform: scale(0.95);
-}
-.tcg-signature .tcg-art .tcg-spr {
-  visibility: hidden;
-}
-.tcg-ico {
-  position: relative;
-  z-index: 1;
-  width: 50%;
-  aspect-ratio: 1;
-  margin-top: -6px;
-  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.6));
-}
-/* 종류 효과: 베기 자국 / 방패 고리 */
-.tcg-fx {
-  position: absolute;
-  z-index: 3;
-  pointer-events: none;
-}
-.tcg-attack .tcg-fx {
-  right: 6%;
-  top: 10%;
-  width: 46%;
-  height: 60%;
-  background:
-    linear-gradient(135deg, transparent 44%, #fff 46%, #fff 50%, transparent 52%),
-    linear-gradient(
-      135deg,
-      transparent 58%,
-      rgb(255 255 255 / 0.8) 60%,
-      rgb(255 255 255 / 0.8) 62%,
-      transparent 64%
+  }
+  .tcg-skill .tcg-art::before {
+    background: repeating-radial-gradient(
+      circle at 50% 62%,
+      rgb(255 255 255 / 0.2) 0 2px,
+      transparent 2px 9px
     );
-  filter: drop-shadow(0 0 2px var(--c));
-}
-.tcg-skill .tcg-fx {
-  left: 50%;
-  top: 58%;
-  width: 80%;
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid rgb(255 255 255 / 0.75);
-  box-shadow:
-    0 0 6px var(--c),
-    inset 0 0 6px var(--c);
-}
-/* 필살기: 디지몬이 그림 창 위로 튀어나옴 */
-.tcg-pop {
-  position: absolute;
-  z-index: 4;
-  left: 0;
-  right: 0;
-  bottom: calc(100% - var(--split));
-  height: 72%;
-  pointer-events: none;
-}
-.tcg-pop .tcg-spr {
-  height: 100%;
-  margin: 0;
-  transform: rotate(-6deg);
-  filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.5));
-}
-/* 홀로 반짝임 (기본 카드 제외) */
-.tcg-holo {
-  position: absolute;
-  inset: 2px;
-  z-index: 5;
-  border-radius: 4px;
-  overflow: hidden;
-  pointer-events: none;
-}
-.tcg-holo::after {
-  content: '';
-  position: absolute;
-  top: -20%;
-  bottom: -20%;
-  width: 40%;
-  left: -60%;
-  background: linear-gradient(
-    100deg,
-    transparent,
-    rgb(255 255 255 / 0) 30%,
-    rgb(255 255 255 / 0.35) 50%,
-    rgb(255 255 255 / 0) 70%,
-    transparent
-  );
-  animation: tcg-sheen 3.6s ease-in-out infinite;
-}
-.tcg-signature .tcg-holo::after {
-  background: linear-gradient(
-    100deg,
-    transparent,
-    rgb(255 120 220 / 0.25) 35%,
-    rgb(255 255 200 / 0.5) 50%,
-    rgb(120 220 255 / 0.25) 65%,
-    transparent
-  );
-  animation-duration: 2.6s;
-}
-/* 비용: 빛나는 보석 */
-.tcg-cost {
-  position: absolute;
-  z-index: 6;
-  left: -5px;
-  top: -5px;
-  width: 19px;
-  height: 19px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-size: 11px;
-  font-weight: 900;
-  color: #0b1120;
-  background: radial-gradient(circle at 35% 30%, #c8f0ff, var(--color-memory) 55%, #0b6aa0);
-  box-shadow:
-    0 0 0 1.5px #05070d,
-    0 0 6px rgb(56 189 248 / 0.8);
-}
-.tcg-cost-down {
-  background: radial-gradient(circle at 35% 30%, #f0ffd0, #bef264 55%, #4d7c0f);
-}
-/* 비스듬한 이름 띠 */
-.tcg-name {
-  position: absolute;
-  z-index: 7;
-  left: -3px;
-  right: 4px;
-  top: calc(var(--split) - 14px);
-  padding: 1px 2px 1px 12px;
-  transform: skewX(-12deg);
-  border-left: 3px solid var(--c);
-  background: linear-gradient(90deg, rgb(5 7 13 / 0.95), rgb(5 7 13 / 0.7));
-  box-shadow: 2px 2px 0 rgb(0 0 0 / 0.5);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-}
-/* 손패에서 다섯 글자 이상인 이름은 작게 */
-.tcg:not(.tcg-large) .tcg-name-long {
-  font-size: 8.5px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-.tcg-up {
-  color: #c9ff7a;
-}
-/* 종류·희귀도 줄 */
-.tcg-line {
-  position: absolute;
-  left: 2px;
-  right: 2px;
-  top: var(--split);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2px 3px;
-  font-size: 8px;
-  line-height: 1;
-  color: var(--c);
-  background: #121a2b;
-  border-top: 1px solid var(--c);
-}
-.tcg-gem {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 3px;
-  transform: rotate(45deg);
-}
-/* 효과 상자 */
-.tcg-text {
-  position: absolute;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
-  top: calc(var(--split) + 10px);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  padding: 0 1px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(180deg, #121a2b, #0c1220);
-  font-size: 10px;
-  line-height: 1.15;
-  text-align: center;
-}
+  }
+  .tcg-signature .tcg-art::before {
+    background: repeating-conic-gradient(
+      from 8deg at 50% 70%,
+      rgb(255 240 180 / 0.45) 0 4deg,
+      transparent 4deg 11deg
+    );
+    animation: tcg-spin 18s linear infinite;
+  }
+  .tcg-companion .tcg-art::before {
+    background:
+      radial-gradient(circle at 50% 60%, rgb(255 255 255 / 0.35), transparent 55%),
+      repeating-linear-gradient(90deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 8px);
+  }
+  .tcg-curse .tcg-art::before {
+    background: repeating-conic-gradient(
+      from 0deg at 50% 55%,
+      rgb(0 0 0 / 0.35) 0 20deg,
+      transparent 20deg 40deg
+    );
+    animation: tcg-spin 30s linear infinite reverse;
+  }
+  /* 속도선 */
+  .tcg-attack .tcg-art::after,
+  .tcg-signature .tcg-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: repeating-linear-gradient(
+      -20deg,
+      transparent 0 9px,
+      rgb(255 255 255 / 0.35) 9px 10px,
+      transparent 10px 23px
+    );
+    mix-blend-mode: overlay;
+  }
+  /* 디지몬: 비스듬히 크게 */
+  .tcg-spr {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 112%;
+    margin-top: 4px;
+    transform: rotate(-8deg) translateX(-6%);
+    transform-origin: 50% 100%;
+    filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.45));
+  }
+  .tcg-skill .tcg-spr {
+    transform: scale(0.95);
+  }
+  .tcg-signature .tcg-art .tcg-spr {
+    visibility: hidden;
+  }
+  .tcg-ico {
+    position: relative;
+    z-index: 1;
+    width: 50%;
+    aspect-ratio: 1;
+    margin-top: -6px;
+    filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.6));
+  }
+  /* 종류 효과: 베기 자국 / 방패 고리 */
+  .tcg-fx {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .tcg-attack .tcg-fx {
+    right: 6%;
+    top: 10%;
+    width: 46%;
+    height: 60%;
+    background:
+      linear-gradient(135deg, transparent 44%, #fff 46%, #fff 50%, transparent 52%),
+      linear-gradient(
+        135deg,
+        transparent 58%,
+        rgb(255 255 255 / 0.8) 60%,
+        rgb(255 255 255 / 0.8) 62%,
+        transparent 64%
+      );
+    filter: drop-shadow(0 0 2px var(--c));
+  }
+  .tcg-skill .tcg-fx {
+    left: 50%;
+    top: 58%;
+    width: 80%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgb(255 255 255 / 0.75);
+    box-shadow:
+      0 0 6px var(--c),
+      inset 0 0 6px var(--c);
+  }
+  /* 필살기: 디지몬이 그림 창 위로 튀어나옴 */
+  .tcg-pop {
+    position: absolute;
+    z-index: 4;
+    left: 0;
+    right: 0;
+    bottom: calc(100% - var(--split));
+    height: 72%;
+    pointer-events: none;
+  }
+  .tcg-pop .tcg-spr {
+    height: 100%;
+    margin: 0;
+    transform: rotate(-6deg);
+    filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.5));
+  }
+  /* 홀로 반짝임 (기본 카드 제외) */
+  .tcg-holo {
+    position: absolute;
+    inset: 2px;
+    z-index: 5;
+    border-radius: 4px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .tcg-holo::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    width: 40%;
+    left: -60%;
+    will-change: transform;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      rgb(255 255 255 / 0) 30%,
+      rgb(255 255 255 / 0.35) 50%,
+      rgb(255 255 255 / 0) 70%,
+      transparent
+    );
+    animation: tcg-sheen 3.6s ease-in-out infinite;
+  }
+  .tcg-signature .tcg-holo::after {
+    background: linear-gradient(
+      100deg,
+      transparent,
+      rgb(255 120 220 / 0.25) 35%,
+      rgb(255 255 200 / 0.5) 50%,
+      rgb(120 220 255 / 0.25) 65%,
+      transparent
+    );
+    animation-duration: 2.6s;
+  }
+  /* 비용: 빛나는 보석 */
+  .tcg-cost {
+    position: absolute;
+    z-index: 6;
+    left: -5px;
+    top: -5px;
+    width: 19px;
+    height: 19px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 900;
+    color: #0b1120;
+    background: radial-gradient(circle at 35% 30%, #c8f0ff, var(--color-memory) 55%, #0b6aa0);
+    box-shadow:
+      0 0 0 1.5px #05070d,
+      0 0 6px rgb(56 189 248 / 0.8);
+  }
+  .tcg-cost-down {
+    background: radial-gradient(circle at 35% 30%, #f0ffd0, #bef264 55%, #4d7c0f);
+  }
+  /* 비스듬한 이름 띠 */
+  .tcg-name {
+    position: absolute;
+    z-index: 7;
+    left: -3px;
+    right: 4px;
+    top: calc(var(--split) - 14px);
+    padding: 1px 2px 1px 12px;
+    transform: skewX(-12deg);
+    border-left: 3px solid var(--c);
+    background: linear-gradient(90deg, rgb(5 7 13 / 0.95), rgb(5 7 13 / 0.7));
+    box-shadow: 2px 2px 0 rgb(0 0 0 / 0.5);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .tcg-name-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tcg-plus {
+    flex: none;
+    color: #c9ff7a;
+  }
+  /* 손패에서 다섯 글자 이상인 이름은 작게 */
+  .tcg:not(.tcg-large) .tcg-name-long {
+    font-size: 8.5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+  .tcg-up {
+    color: #c9ff7a;
+  }
+  /* 종류·희귀도 줄 */
+  .tcg-line {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: var(--split);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 3px;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--c);
+    background: #121a2b;
+    border-top: 1px solid var(--c);
+  }
+  .tcg-gem {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 3px;
+    transform: rotate(45deg);
+  }
+  /* 효과 상자 */
+  .tcg-text {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    top: calc(var(--split) + 10px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+    padding-top: 2px;
+    padding: 0 1px;
+    border-radius: 0 0 4px 4px;
+    background: linear-gradient(180deg, #121a2b, #0c1220);
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: center;
+  }
 
-/* 큰 카드 (보상·상점) */
-.tcg-large .tcg-cost {
-  width: 40px;
-  height: 40px;
-  left: -10px;
-  top: -10px;
-  font-size: 22px;
-}
-.tcg-large .tcg-name {
-  left: -4px;
-  right: 8px;
-  top: calc(var(--split) - 34px);
-  padding: 5px 10px 5px 34px;
-  font-size: 20px;
-}
-.tcg-large .tcg-line {
-  left: 4px;
-  right: 4px;
-  padding: 5px 8px;
-  font-size: 13px;
-}
-.tcg-large .tcg-gem {
-  width: 10px;
-  height: 10px;
-  margin-right: 5px;
-}
-.tcg-large .tcg-text {
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
-  top: calc(var(--split) + 24px);
-  padding: 10px;
-  border-radius: 0 0 9px 9px;
-  font-size: 15px;
-  line-height: 1.35;
+  /* 큰 카드 (보상·상점) */
+  .tcg-large .tcg-cost {
+    width: 40px;
+    height: 40px;
+    left: -10px;
+    top: -10px;
+    font-size: 22px;
+  }
+  .tcg-large .tcg-name {
+    left: -4px;
+    right: 8px;
+    top: calc(var(--split) - 34px);
+    padding: 5px 10px 5px 34px;
+    font-size: 20px;
+  }
+  .tcg-large .tcg-line {
+    left: 4px;
+    right: 4px;
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+  .tcg-large .tcg-gem {
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+  }
+  .tcg-large .tcg-text {
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    top: calc(var(--split) + 24px);
+    padding: 10px;
+    border-radius: 0 0 9px 9px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  /* 손패 크기: 그림 창이 작아서 디지몬 머리·상반신을 크게 보여 줌 (아트 점검 2) */
+  .tcg:not(.tcg-large) .tcg-art .tcg-spr {
+    height: 165%;
+    margin-top: 0;
+    align-self: start;
+    object-position: 50% 0;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(2px 2px 0 rgb(0 0 0 / 0.45));
+  }
+  .tcg:not(.tcg-large).tcg-attack .tcg-fx {
+    z-index: 0;
+    width: 30%;
+    height: 40%;
+    right: 3%;
+    top: 4%;
+  }
+  /* 손패 크기: 필살기 튀어나오기는 위 카드 글을 덮지 않을 만큼만 */
+  .tcg:not(.tcg-large) .tcg-pop {
+    height: 56%;
+  }
+  .tcg:not(.tcg-large) .tcg-name-xlong {
+    font-size: 7.5px;
+    letter-spacing: -0.06em;
+  }
+
+  /* 손패 크기: 설명이 넘치면 셋째 줄 끝에 "…" (길게 누르면 크게 보기로 전체) */
+  .tcg:not(.tcg-large) .tcg-text-body {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
 }
 
 @keyframes tcg-sheen {
   0%,
   55% {
-    left: -60%;
+    transform: translateX(0);
   }
   100% {
-    left: 130%;
+    transform: translateX(475%);
   }
 }
 @keyframes tcg-spin {

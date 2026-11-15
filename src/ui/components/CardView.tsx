@@ -87,7 +87,7 @@ export function CardView({
     >
       <div className="tcg-art">
         {art.kind === 'form' ? (
-          <FormSprite formId={art.formId} className="tcg-spr" />
+          <FormSprite formId={art.formId} className="tcg-spr" decorative />
         ) : (
           <TypeIcon type={art.type} />
         )}
@@ -95,18 +95,18 @@ export function CardView({
       </div>
       {def.type === 'signature' && art.kind === 'form' && (
         <div className="tcg-pop">
-          <FormSprite formId={art.formId} className="tcg-spr" />
+          <FormSprite formId={art.formId} className="tcg-spr" decorative />
         </div>
       )}
       {def.rarity !== 'basic' && <i className="tcg-holo" />}
       <div className={`tcg-cost ${cost < face.cost ? 'tcg-cost-down' : ''}`}>{cost}</div>
       <div
         className={`tcg-name ${upgraded ? 'tcg-up' : ''} ${
-          def.name.length + (upgraded ? 1 : 0) >= 5 ? 'tcg-name-long' : ''
+          def.name.length >= 7 ? 'tcg-name-xlong' : def.name.length >= 5 ? 'tcg-name-long' : ''
         }`}
       >
-        {def.name}
-        {upgraded ? '+' : ''}
+        <span className="tcg-name-text">{def.name}</span>
+        {upgraded && <span className="tcg-plus">+</span>}
       </div>
       <div className="tcg-line">
         <span>{TYPE_LABEL[def.type]}</span>
@@ -115,7 +115,9 @@ export function CardView({
           {large ? RARITY_LABEL[def.rarity] : ''}
         </span>
       </div>
-      <div className="tcg-text">{text}</div>
+      <div className="tcg-text">
+        <span className="tcg-text-body">{text}</span>
+      </div>
     </div>
   );
 }
