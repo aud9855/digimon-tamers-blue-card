@@ -19,7 +19,7 @@ function checkArt(name: string, art: PixelArt, size: number) {
 }
 
 describe('도트 그림 규격 (04 7절)', () => {
-  it('디지몬 24×24, 얼굴 16×16, 아이콘 12×12, 쓰는 글자는 모두 팔레트에', () => {
+  it('디지몬 32×32, 얼굴 16×16, 아이콘 12×12, 쓰는 글자는 모두 팔레트에', () => {
     for (const [id, a] of Object.entries(FORM_ART)) checkArt(`형태 ${id}`, a, ART_SIZE.creature);
     for (const [id, a] of Object.entries(ENEMY_ART)) checkArt(`적 ${id}`, a, ART_SIZE.creature);
     for (const [id, a] of Object.entries(TAMER_ART)) checkArt(`테이머 ${id}`, a, ART_SIZE.face);
