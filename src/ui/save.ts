@@ -250,3 +250,28 @@ export async function loadSettings(): Promise<Settings> {
 export function isResumable(state: GameState): boolean {
   return state.phase !== 'title' && state.phase !== 'runWon' && state.phase !== 'runLost';
 }
+
+const SPRITE_PACK_KEY = 'spritePack';
+
+/** 도트 팩 (04 P1): id → 그림 파일. 이 기기에만 저장 */
+export async function saveSpritePack(pack: Record<string, Blob>): Promise<void> {
+  await put(SPRITE_PACK_KEY, pack);
+}
+
+export async function loadSpritePack(): Promise<Record<string, Blob>> {
+  try {
+    const raw = await get(SPRITE_PACK_KEY);
+    if (!raw || typeof raw !== 'object') return {};
+    const out: Record<string, Blob> = {};
+    for (const [id, blob] of Object.entries(raw as Record<string, unknown>)) {
+      if (typeof Blob !== 'undefined' && blob instanceof Blob) out[id] = blob;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export async function clearSpritePack(): Promise<void> {
+  await remove(SPRITE_PACK_KEY);
+}

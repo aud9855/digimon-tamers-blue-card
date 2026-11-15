@@ -1,5 +1,12 @@
 // 설정·하는 법·정보 창 (04 T1-7, T1-10)
 import { useState, type ReactNode } from 'react';
+import {
+  importSpritePack,
+  packableIds,
+  removeSpritePack,
+  useSpritePack,
+  type ImportResult,
+} from '../spritePack';
 import type { PlaybackSpeed } from '../playback';
 import { useGame, type Panel } from '../store';
 import { CodexContent } from './Codex';
@@ -107,6 +114,8 @@ function SettingsContent({ open }: { open: (panel: Panel) => void }) {
         ))}
       </div>
 
+      <SpritePackSection />
+
       <div className="mt-4 grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -144,6 +153,75 @@ function SettingsContent({ open }: { open: (panel: Panel) => void }) {
       )}
 
       <p className="mt-5 text-xs text-slate-500">진행 상황은 행동할 때마다 이 기기에 저장됩니다.</p>
+    </>
+  );
+}
+
+/** 도트 팩 (04 P1): 이 기기에만 저장되는 그림 파일로 디지몬 도트를 바꿈 */
+function SpritePackSection() {
+  const count = useSpritePack((s) => Object.keys(s.urls).length);
+  const [result, setResult] = useState<ImportResult | null>(null);
+  const [busy, setBusy] = useState(false);
+  const total = packableIds().length;
+  return (
+    <>
+      <p className="mt-4 mb-1 text-sm text-slate-400">도트 팩 (이 기기에만)</p>
+      <p className="mb-2 text-xs text-slate-500">
+        디지몬 id 이름의 PNG·GIF 파일(예: guilmon.png)을 고르면 그 디지몬을 그 그림으로 그립니다.
+        파일은 이 기기에만 저장되고 어디에도 올라가지 않습니다.
+      </p>
+      <label
+        className={`flex min-h-11 w-full cursor-pointer items-center justify-center rounded-lg text-sm font-bold ${
+          busy ? 'bg-slate-700 text-slate-400' : 'bg-sky-700 text-white active:bg-sky-600'
+        }`}
+      >
+        {busy ? '불러오는 중…' : '그림 파일 고르기'}
+        <input
+          id="sprite-pack-input"
+          data-testid="sprite-pack-input"
+          type="file"
+          accept="image/png,image/gif,image/webp"
+          multiple
+          className="sr-only"
+          disabled={busy}
+          onChange={async (e) => {
+            const files = [...(e.currentTarget.files ?? [])];
+            e.currentTarget.value = '';
+            if (files.length === 0) return;
+            setBusy(true);
+            try {
+              setResult(await importSpritePack(files));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      </label>
+      <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+        <span data-testid="sprite-pack-count">
+          적용됨 {count} / {total}
+        </span>
+        {count > 0 && (
+          <button
+            type="button"
+            data-testid="sprite-pack-clear"
+            onClick={async () => {
+              await removeSpritePack();
+              setResult(null);
+            }}
+            className="min-h-9 rounded-lg bg-slate-800 px-3 font-bold text-slate-300 active:bg-slate-700"
+          >
+            도트 팩 지우기
+          </button>
+        )}
+      </div>
+      {result && (
+        <p className="mt-1 text-xs text-slate-400" data-testid="sprite-pack-result">
+          {result.added.length}개 적용
+          {result.ignored.length > 0 &&
+            ` · 이름이 맞지 않거나 그림이 아니라 뺀 파일 ${result.ignored.length}개 (${result.ignored.slice(0, 3).join(', ')}${result.ignored.length > 3 ? ' …' : ''})`}
+        </p>
+      )}
     </>
   );
 }
