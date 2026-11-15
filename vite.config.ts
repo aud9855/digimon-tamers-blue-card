@@ -40,4 +40,6 @@ export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss(), serviceWorker()],
   server: { host: true },
+  // 도트 그림은 JS에 글자로 박지 않고 파일로 내보냄 (JS 크기 유지, 그림만 따로 캐시)
+  build: { assetsInlineLimit: 0 },
 });
