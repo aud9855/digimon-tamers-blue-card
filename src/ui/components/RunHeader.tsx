@@ -11,7 +11,10 @@ export function RunHeader({ state }: { state: GameState }) {
   if (!run) return null;
   const chips = run.chips.filter((id) => !getChip(id).hidden);
   return (
-    <div className="px-4 pt-3" data-testid="run-header">
+    <div
+      className="border-b border-sky-400/20 bg-slate-950/70 px-4 pt-3 pb-1 backdrop-blur-[2px]"
+      data-testid="run-header"
+    >
       <div className="flex items-center justify-between gap-2 text-sm">
         <button
           type="button"
@@ -43,7 +46,7 @@ export function RunHeader({ state }: { state: GameState }) {
         </button>
       )}
       {open && (
-        <div className="mt-1 rounded-lg bg-slate-900 p-2 text-xs text-slate-300">
+        <div className="ui-panel mt-1 p-2 text-xs text-slate-300">
           <p>
             <b className="text-sky-200">{getTamer(run.tamerId).trait}</b>{' '}
             {describeTamer(run.tamerId)}

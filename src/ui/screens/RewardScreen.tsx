@@ -2,7 +2,7 @@
 import { getLegalActions } from '../../core/index';
 import { getChip } from '../../data/index';
 import { CardView } from '../components/CardView';
-import { GainLine, PrimaryButton } from '../components/common';
+import { GainLine, PrimaryButton, ScreenTitle } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
@@ -21,10 +21,12 @@ export function RewardScreen() {
   const chips = lastEvents.flatMap((e) => (e.type === 'chipGained' ? [e.chipId] : []));
 
   return (
-    <Screen>
+    <Screen backdrop={state.run?.act}>
       <RunHeader state={state} />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-4">
-        <h1 className="text-xl font-black">{won ? '승리!' : '카드 고르기'}</h1>
+        <ScreenTitle kicker={won ? 'BATTLE CLEAR' : 'CARD'} accent={won ? '#fbbf24' : '#38bdf8'}>
+          {won ? '승리!' : '카드 고르기'}
+        </ScreenTitle>
         {(gotBits || chips.length > 0) && (
           <div className="flex flex-col gap-2" data-testid="gains">
             {gotBits && <GainLine>비트를 얻었습니다 · 지금 {state.run?.bits} 비트</GainLine>}
@@ -45,8 +47,9 @@ export function RewardScreen() {
               data-offer-index={index}
               disabled={!legal.some((a) => a.type === 'pickCard' && a.index === index)}
               onClick={() => dispatch({ type: 'pickCard', index })}
+              className="transition-transform active:-translate-y-1"
             >
-              <div className="[&>div]:h-36">
+              <div className="[&>div]:h-40">
                 <CardView defId={c.defId} upgraded={c.upgraded} />
               </div>
             </button>

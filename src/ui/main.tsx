@@ -1,3 +1,6 @@
+// CSS를 맨 먼저: Tailwind의 층 순서(theme, base, components, utilities)가 먼저 정해져야
+// 부품 CSS(CardView.css 등)의 components 층이 base 층을 이김
+import './index.css';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { StrictMode } from 'react';
@@ -5,7 +8,6 @@ import { createRoot } from 'react-dom/client';
 import type { Action } from '../core/index';
 import { App as GameApp } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import './index.css';
 import {
   isResumable,
   loadGame,

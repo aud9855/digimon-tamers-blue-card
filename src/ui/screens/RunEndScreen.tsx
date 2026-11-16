@@ -1,6 +1,6 @@
 // 결과 화면 (runWon / runLost)
 import { getChip, getTamer } from '../../data/index';
-import { PrimaryButton } from '../components/common';
+import { displayFormId, Hero, PrimaryButton, ScreenTitle } from '../components/common';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
 
@@ -11,23 +11,48 @@ export function RunEndScreen() {
   const run = state.run;
   const won = state.phase === 'runWon';
   return (
-    <Screen>
-      <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
-        <h1 className={`text-4xl font-black ${won ? 'text-amber-300' : 'text-rose-400'}`}>
-          {won ? '승리!' : '패배'}
-        </h1>
+    <Screen backdrop={run?.act}>
+      <div
+        className={`flex flex-1 flex-col items-center justify-center-safe gap-5 overflow-y-auto px-6 py-6 text-center ${
+          won ? '' : 'bg-rose-950/30'
+        }`}
+      >
+        <ScreenTitle
+          kicker={won ? 'RUN CLEAR' : 'GAME OVER'}
+          accent={won ? '#fbbf24' : '#fb7185'}
+          center
+        >
+          <span className={`text-4xl ${won ? 'text-amber-300' : 'text-rose-400'}`}>
+            {won ? '승리!' : '패배'}
+          </span>
+        </ScreenTitle>
         {run && (
-          <div className="w-full max-w-xs rounded-xl bg-slate-900 p-4 text-left text-sm text-slate-300">
+          <Hero
+            formId={displayFormId(run.tamerId, run.maxStage)}
+            size={112}
+            ray="252 211 77"
+            dim={!won}
+          />
+        )}
+        {run && (
+          <div className="ui-panel w-full max-w-xs p-4 text-left text-sm text-slate-300">
             <p>
               테이머: <b className="text-white">{getTamer(run.tamerId).name}</b>
             </p>
-            <p>
-              {run.act}막 · 지나온 칸 {run.path.length}개
-            </p>
+            <div className="my-2 grid grid-cols-3 gap-2">
+              <div className="ui-stat">
+                도달<b>{run.act}막</b>
+              </div>
+              <div className="ui-stat">
+                지나온 칸<b>{run.path.length}</b>
+              </div>
+              <div className="ui-stat">
+                덱<b>{run.deck.length}장</b>
+              </div>
+            </div>
             <p>
               HP {Math.max(0, run.hp)} / {run.maxHp} · {run.bits} 비트
             </p>
-            <p>덱 {run.deck.length}장</p>
             {run.chips.length > 0 && (
               <p>칩: {run.chips.map((id) => getChip(id).name).join(', ')}</p>
             )}
@@ -36,7 +61,7 @@ export function RunEndScreen() {
         )}
         {notice.length > 0 && (
           <div
-            className="w-full max-w-xs rounded-xl border border-amber-400 bg-amber-950/60 p-4 text-left text-sm"
+            className="ui-panel w-full max-w-xs border-amber-400 p-4 text-left text-sm"
             data-testid="unlock-notice"
           >
             <p className="mb-1 font-bold text-amber-300">새로 열렸습니다</p>
