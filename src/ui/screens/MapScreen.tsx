@@ -1,20 +1,24 @@
 // 지도 화면 (04 T1-5): 갈 수 있는 칸만 눌림. 지나온 길이 보임
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { getLegalActions, type MapNode, type NodeType } from '../../core/index';
-import { constants, getAct } from '../../data/index';
+import { constants, getAct, getEncounter, getForm, getTamer } from '../../data/index';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
-import { NodeIcon } from '../components/Sprites';
+import { EnemySprite, FormSprite, NodeIcon } from '../components/Sprites';
 
-export const NODE_LABEL: Record<NodeType, { icon: string; name: string; color: string }> = {
-  battle: { icon: '⚔', name: '전투', color: 'bg-slate-600' },
-  elite: { icon: '☠', name: '강적', color: 'bg-rose-700' },
-  event: { icon: '?', name: '이벤트', color: 'bg-indigo-600' },
-  shop: { icon: '¤', name: '상점', color: 'bg-amber-600' },
-  rest: { icon: '♨', name: '휴식', color: 'bg-emerald-700' },
-  treasure: { icon: '◆', name: '보물', color: 'bg-sky-600' },
-  boss: { icon: '♛', name: '보스', color: 'bg-fuchsia-700' },
+/** 칸 종류별 이름·색(밝은 쪽, 어두운 쪽)·모양 */
+export const NODE_LABEL: Record<
+  NodeType,
+  { name: string; c: string; c2: string; shape?: 'diamond' | 'card' }
+> = {
+  battle: { name: '전투', c: '#64748b', c2: '#1e293b' },
+  elite: { name: '강적', c: '#e11d48', c2: '#4c0519', shape: 'diamond' },
+  event: { name: '이벤트', c: '#6366f1', c2: '#1e1b4b', shape: 'card' },
+  shop: { name: '상점', c: '#f59e0b', c2: '#451a03' },
+  rest: { name: '휴식', c: '#10b981', c2: '#022c22' },
+  treasure: { name: '보물', c: '#0ea5e9', c2: '#082f49' },
+  boss: { name: '보스', c: '#c026d3', c2: '#3b0764' },
 };
 
 /** 한 행의 높이와 열 간격 (px) */
@@ -112,6 +116,10 @@ export function MapScreen() {
             const canGo = reachable.has(node.id);
             const visited = path.has(node.id);
             const here = node.id === run.nodeId;
+            const boss = node.type === 'boss';
+            const size = boss ? NODE + 20 : NODE;
+            const bossId =
+              boss && node.encounterId ? getEncounter(node.encounterId).enemies[0] : undefined;
             return (
               <button
                 key={node.id}
@@ -119,25 +127,38 @@ export function MapScreen() {
                 data-node-id={node.id}
                 data-reachable={canGo}
                 disabled={!canGo}
+                aria-label={label.name}
                 onClick={() => dispatch({ type: 'chooseNode', nodeId: node.id })}
-                className={`absolute flex flex-col items-center justify-center rounded-full text-white shadow-[inset_0_2px_0_rgb(255_255_255/0.25),0_3px_0_rgb(0_0_0/0.5)] ${label.color} ${
-                  canGo
-                    ? 'animate-pulse ring-4 ring-sky-400'
-                    : visited
-                      ? 'ring-4 ring-amber-400'
-                      : 'opacity-50'
-                } ${here ? 'scale-110' : ''}`}
-                style={{
-                  left: x - NODE / 2,
-                  top: y - NODE / 2,
-                  width: node.type === 'boss' ? NODE + 12 : NODE,
-                  height: node.type === 'boss' ? NODE + 12 : NODE,
-                  marginLeft: node.type === 'boss' ? -6 : 0,
-                  marginTop: node.type === 'boss' ? -6 : 0,
-                }}
+                className={`absolute ${canGo ? 'map-open' : visited ? 'map-done' : 'map-far'}`}
+                style={
+                  {
+                    left: x - size / 2,
+                    top: y - size / 2,
+                    width: size,
+                    height: size,
+                    '--c': label.c,
+                    '--c2': label.c2,
+                  } as CSSProperties
+                }
               >
-                <NodeIcon type={node.type} className="h-6 w-6" />
-                <span className="text-[12px] leading-tight">{label.name}</span>
+                {boss && (
+                  <span className="ui-rays" style={{ '--ray': '240 171 252' } as CSSProperties} />
+                )}
+                <span className="map-node" data-shape={label.shape}>
+                  {bossId ? (
+                    <EnemySprite enemyId={bossId} className="h-[85%] w-[85%]" />
+                  ) : (
+                    <NodeIcon type={node.type} className="h-7 w-7" />
+                  )}
+                </span>
+                <span className="map-tag">{label.name}</span>
+                {here && (
+                  <FormSprite
+                    formId={getForm(getTamer(run.tamerId).line, 'rookie').id}
+                    decorative
+                    className="absolute -top-7 -right-6 h-11 w-11 [filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_2px_0_#000)]"
+                  />
+                )}
               </button>
             );
           })}
