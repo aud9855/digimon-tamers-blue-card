@@ -15,8 +15,9 @@ export function GuideContent() {
   return (
     <div data-testid="guide">
       <Section title="목표">
-        카드를 모아 덱을 키우며 지도를 따라 올라가, 막 끝의 보스를 쓰러뜨리면 승리합니다. HP가 0이
-        되면 처음부터 다시 합니다.
+        카드를 모아 덱을 키우며 지도를 따라 올라갑니다. 막마다 끝에 보스가 있고,{' '}
+        {constants.ACT_COUNT}막의 보스까지 쓰러뜨리면 승리합니다. HP가 0이 되면 처음부터 다시
+        합니다.
       </Section>
       <Section title="카드 내기">
         카드를 <b>위로 끌어 올리면</b> 냅니다. 적을 고르는 카드는 <b>적 위에 놓습니다</b>. 끌기가
@@ -38,6 +39,20 @@ export function GuideContent() {
         채로 턴을 끝내면, 모자란 만큼 모든 적이 <b>가속</b>을 얻어 다음 공격이 1점당 +{accelPct}%
         세집니다. 당겨쓰기 전에 화면에 경고가 나옵니다.
       </Section>
+      <Section title="카드 용어">
+        <b>실드</b>: 피해를 먼저 막습니다. 내 턴이 다시 오면 사라집니다(첫 턴 제외).
+        <br />
+        <b>힘</b>: 공격 한 번마다 피해가 그만큼 늘어납니다. 그 전투 동안 남습니다.
+        <br />
+        <b>약화</b>: 걸린 쪽이 주는 공격 피해 ×{constants.WEAK_MULT}. <b>취약</b>: 걸린 쪽이 받는
+        공격 피해 ×{constants.VULNERABLE_MULT}. 숫자는 남은 턴 수입니다.
+        <br />
+        <b>소멸</b>: 내면 이번 전투에서 사라집니다. <b>보존</b>: 턴이 끝나도 손패에 남습니다.
+      </Section>
+      <Section title="동료">
+        동료 카드를 내면 무대 왼쪽 위 동료 자리(최대 {constants.COMPANION_SLOTS}명)에 남아, 전투가
+        끝날 때까지 정해진 때마다 도와줍니다.
+      </Section>
       <Section title="적의 인텐트">
         적 위의 표시가 다음 행동입니다. ⚔는 공격과 피해량, 🛡는 방어, ▲는 강해지기, ▼는 방해, ✦는
         여러 가지입니다.
@@ -47,8 +62,8 @@ export function GuideContent() {
         {constants.ATTR_STRONG}, 약한 쪽은 ×{constants.ATTR_WEAK}입니다.
       </Section>
       <Section title="지도">
-        빛나는 칸만 갈 수 있습니다. 전투, 강적(☠), 이벤트(?), 상점(¤), 휴식(♨), 보물(◆)이 있습니다.
-        휴식에서는 HP를 회복하거나 카드를 강화합니다.
+        점선 고리가 도는 칸만 갈 수 있습니다. 전투, 강적(붉은 마름모, 위에 적 속성), 이벤트, 상점,
+        휴식, 보물이 있고, 맨 위가 보스입니다. 휴식에서는 HP를 회복하거나 카드를 강화합니다.
       </Section>
     </div>
   );

@@ -66,7 +66,11 @@ function applyShake(realDt: number) {
 let seed = 1;
 
 /** 대상 요소의 바닥 가운데에 효과를 놓음 (효과의 (0,0)은 발·맞는 점) */
+/** 움직임 줄이기 설정에서는 띄우지 않는 큰 효과 (빛기둥·폭발·치명타 섬광) */
+const BIG_FX = new Set<VfxCue['fx']>(['holyPillar', 'darkExplosion', 'critHit']);
+
 function spawn(cue: VfxCue): FxInstance | null {
+  if (reducedMotion() && BIG_FX.has(cue.fx)) return null;
   const el = targetElement(cue.who);
   if (!el) return null;
   const r = el.getBoundingClientRect();

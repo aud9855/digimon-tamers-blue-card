@@ -16,7 +16,7 @@ import {
 } from '../../src/core/index';
 import { enterActClear } from '../../src/core/run/act';
 import { generateMap } from '../../src/core/run/map';
-import { enterRest, restHeal } from '../../src/core/run/rest';
+import { enterRest, restHeal, restHealPct } from '../../src/core/run/rest';
 import { enterBattleReward } from '../../src/core/run/reward';
 import { enterShop, removalPrice } from '../../src/core/run/shop';
 import { constants, getEnemy, getTamer } from '../../src/data/index';
@@ -111,6 +111,9 @@ describe('해저드 규칙 하나하나 (02 13.6)', () => {
     const maxHp = run(0).run?.maxHp ?? 0;
     expect(heal(1)).toBe(Math.floor(maxHp * constants.REST_HEAL_PCT));
     expect(heal(2)).toBe(Math.floor(maxHp * 0.2));
+    // 화면이 보여 주는 비율도 같음
+    expect(restHealPct(withHazard(run(0), 1))).toBe(constants.REST_HEAL_PCT);
+    expect(restHealPct(withHazard(run(0), 2))).toBe(constants.HAZARD_REST_HEAL_PCT);
   });
 
   it('3: 3·5행의 강적이 늘고 전투가 줆', () => {

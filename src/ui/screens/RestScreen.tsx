@@ -1,7 +1,7 @@
 // 휴식 (02 7.3)
 import { useState } from 'react';
-import { getLegalActions } from '../../core/index';
-import { constants, getForm, getTamer } from '../../data/index';
+import { getLegalActions, restHealPct } from '../../core/index';
+import { getForm, getTamer } from '../../data/index';
 import { DeckPicker, Hero, PixelFire, ScreenTitle } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
@@ -40,7 +40,7 @@ export function RestScreen() {
         >
           <b className="block text-amber-200">쉬기</b>
           <span className="block text-sm text-slate-300">
-            최대 HP의 {Math.round(constants.REST_HEAL_PCT * 100)}% 회복
+            최대 HP의 {Math.round(restHealPct(state) * 100)}% 회복
           </span>
         </button>
         <button

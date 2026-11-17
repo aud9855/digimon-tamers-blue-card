@@ -148,6 +148,23 @@ export function BattleView({
               </div>
             ))}
           </div>
+          {/* 동료: 무대 왼쪽 위 빈 곳 (따로 줄을 두면 낮은 화면에서 턴 끝 버튼이 밀려남) */}
+          {battle.companions.length > 0 && (
+            <div
+              className="absolute top-1 left-2 z-10 flex max-w-[22%] flex-col items-start gap-1"
+              data-testid="companions"
+            >
+              <span className="text-xs text-lime-300">동료</span>
+              {battle.companions.map((c) => (
+                <span
+                  key={c.uid}
+                  className="max-w-full truncate rounded-full border border-lime-400 bg-lime-950/90 px-2 py-0.5 text-xs text-lime-200"
+                >
+                  {getCard(c.defId).name}
+                </span>
+              ))}
+            </div>
+          )}
           {/* 파트너 줄의 빈 곳은 누르기가 뒤(적)로 통과함 */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 [&_[data-testid=partner]>*]:pointer-events-auto">
             <PartnerView state={state} onEvolve={onEvolve} onRampage={onRampage} />
@@ -159,18 +176,6 @@ export function BattleView({
         </div>
 
         <div className="flex shrink-0 flex-col gap-2">
-          {battle.companions.length > 0 && (
-            <div className="flex gap-2 px-4" data-testid="companions">
-              {battle.companions.map((c) => (
-                <span
-                  key={c.uid}
-                  className="rounded-full border border-lime-400 bg-lime-950 px-2 py-0.5 text-xs text-lime-200"
-                >
-                  {getCard(c.defId).name}
-                </span>
-              ))}
-            </div>
-          )}
           <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
           {/* 손패 칸은 항상 두 줄 높이: 카드 수가 바뀌어도 무대가 출렁이지 않게 */}
           <div ref={handRef} className="min-h-[224px]">
@@ -395,7 +400,7 @@ export function BattleScreen() {
       {battle.handChoice && (
         // 두 사람의 카드: 두 묶음 중 하나를 고름 (02 13.3)
         <div
-          className="fixed inset-0 z-30 flex flex-col justify-center gap-4 bg-slate-950/90 px-3"
+          className="fixed inset-0 z-30 flex flex-col justify-center-safe gap-4 overflow-y-auto bg-slate-950/90 px-3 py-4"
           data-testid="hand-choice"
         >
           <p className="text-center text-sm text-sky-200">이번 턴에 쓸 묶음을 고르세요</p>

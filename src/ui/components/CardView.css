@@ -405,6 +405,38 @@
     -webkit-line-clamp: 3;
     overflow: hidden;
   }
+
+  /* 고르기 크기 (보상·상점): 손패보다 크게, 효과 글 12px (팀 점검 아트 4) */
+  .tcg.tcg-offer .tcg-cost {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+  .tcg.tcg-offer .tcg-name {
+    top: calc(var(--split) - 17px);
+    padding: 2px 3px 2px 14px;
+    font-size: 12px;
+  }
+  .tcg.tcg-offer .tcg-name-long {
+    font-size: 11px;
+  }
+  .tcg.tcg-offer .tcg-name-xlong {
+    font-size: 10px;
+    letter-spacing: -0.04em;
+  }
+  .tcg.tcg-offer .tcg-line {
+    padding: 3px 4px;
+    font-size: 10px;
+  }
+  .tcg.tcg-offer .tcg-text {
+    top: calc(var(--split) + 14px);
+    padding: 2px 3px;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+  .tcg.tcg-offer .tcg-text-body {
+    -webkit-line-clamp: 6;
+  }
 }
 
 @keyframes tcg-sheen {

@@ -44,7 +44,7 @@ export function RunEndScreen() {
                 도달<b>{run.act}막</b>
               </div>
               <div className="ui-stat">
-                지나온 칸<b>{run.path.length}</b>
+                이번 막 칸<b>{run.path.length}</b>
               </div>
               <div className="ui-stat">
                 덱<b>{run.deck.length}장</b>

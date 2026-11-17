@@ -20,7 +20,7 @@ export function HpBar({
         <div className="h-full bg-rose-500" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-0.5 flex items-center justify-between gap-1 text-xs leading-tight">
-        <span>
+        <span className="rounded bg-slate-950/75 px-1">
           {Math.max(0, hp)}/{maxHp}
         </span>
         <span className="flex gap-1">

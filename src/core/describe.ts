@@ -127,9 +127,22 @@ function conditional(
   otherwise: readonly Effect[] | undefined,
   ctx: DescribeContext | undefined,
 ): string {
-  const thenText = joinEffects(then, ctx, '와 ');
-  if (!otherwise || otherwise.length === 0) return `${condition} ${thenText}`;
-  return `${condition} ${thenText}, 아니면 ${joinEffects(otherwise, ctx, '와 ')}`;
+  const thenText = joinWithAnd(then, ctx);
+  // '아니면'이 없는 조건은 앞 효과에 더해지는 것 (02 9절 "피해 6 더")
+  if (!otherwise || otherwise.length === 0) return `${condition} ${thenText} 더`;
+  return `${condition} ${thenText}, 아니면 ${joinWithAnd(otherwise, ctx)}`;
+}
+
+/** 숫자를 읽었을 때 받침이 있는지 (0 영, 1 일, 3 삼, 6 육, 7 칠, 8 팔은 받침 있음) */
+const DIGIT_HAS_FINAL = '1101001110';
+
+/** 앞 글자에 받침이 있으면 '과', 없으면 '와' */
+export function andParticle(text: string): '와' | '과' {
+  const last = text.trimEnd().slice(-1);
+  if (last >= '0' && last <= '9') return DIGIT_HAS_FINAL[Number(last)] === '1' ? '과' : '와';
+  const code = last.charCodeAt(0) - 0xac00;
+  if (code >= 0 && code < 11172) return code % 28 === 0 ? '와' : '과';
+  return '와';
 }
 
 function joinEffects(
@@ -138,6 +151,12 @@ function joinEffects(
   separator: string,
 ): string {
   return effects.map((e) => describeEffect(e, ctx)).join(separator);
+}
+
+function joinWithAnd(effects: readonly Effect[], ctx: DescribeContext | undefined): string {
+  return effects
+    .map((e) => describeEffect(e, ctx))
+    .reduce((acc, t) => (acc === '' ? t : `${acc}${andParticle(acc)} ${t}`), '');
 }
 
 function sentences(parts: string[]): string {

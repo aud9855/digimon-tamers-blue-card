@@ -43,7 +43,7 @@ export function PartnerView({
       <div
         className={`mb-1 min-w-0 flex-1 rounded-lg bg-slate-950/70 px-2 py-1 ring-1 ${ATTRIBUTE_RING[form.attribute]}`}
       >
-        <div className="flex min-w-0 items-center gap-1 text-[11px]">
+        <div className="flex min-w-0 items-center gap-1 text-xs">
           <span title={getTamer(run.tamerId).name} className="shrink-0">
             <TamerFace tamerId={run.tamerId} className="h-4 w-4" />
           </span>
@@ -61,7 +61,7 @@ export function PartnerView({
           type="button"
           data-testid="rampage"
           onClick={onRampage}
-          className="mb-1 flex h-14 w-14 shrink-0 animate-pulse flex-col items-center justify-center rounded-full bg-rose-700 text-xs font-bold"
+          className="mb-1 flex h-14 w-14 shrink-0 flex-col motion-safe:animate-pulse items-center justify-center rounded-full bg-rose-700 text-xs font-bold"
         >
           <span>폭주</span>
           <span>◆0</span>

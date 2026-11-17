@@ -68,6 +68,16 @@ describe('검산 예시 (02 3.8)', () => {
     expect(enemyHitDamage(state, 15, 0).damage).toBe(19);
   });
 
+  it('소수 곱셈 오차로 1 적게 내림하지 않음: 공격 10, 가속 4, 약화, 취약 → 27', () => {
+    const state = makeBattle({
+      enemies: ['goblimon'],
+      statuses: { vulnerable: 1 },
+      enemyOverrides: [{ accel: 4, statuses: { strength: 0, weak: 1, vulnerable: 0 } }],
+    });
+    // 10 × 2.4 × 0.75 × 1.5 = 27 (소수로 곱하면 26.999…)
+    expect(enemyHitDamage(state, 10, 0).damage).toBe(27);
+  });
+
   it('6. 고부리몬(바이러스) 공격 6, 힘 2, 취약 걸린 길몬이 맞음 → 12', () => {
     const state = makeBattle({
       enemies: ['goblimon'],

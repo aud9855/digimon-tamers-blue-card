@@ -57,7 +57,8 @@ export interface CardViewProps {
   state?: GameState;
   dimmed?: boolean;
   selected?: boolean;
-  size?: 'hand' | 'large';
+  /** hand: 손패, offer: 보상·상점에서 고르기, large: 크게 보기 */
+  size?: 'hand' | 'offer' | 'large';
   /** 손패의 카드면 지금 낼 때의 비용(처음 내는 카드 할인 등)을 보여 줌 */
   cardUid?: number;
 }
@@ -81,9 +82,13 @@ export function CardView({
   const art = cardArt(defId);
   return (
     <div
-      className={`tcg tcg-${def.type} ${large ? 'tcg-large h-72 w-52' : 'h-[100px] w-full'} ${
-        dimmed ? 'opacity-40' : ''
-      } ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
+      className={`tcg tcg-${def.type} ${
+        large
+          ? 'tcg-large h-72 w-52'
+          : size === 'offer'
+            ? 'tcg-offer h-48 w-full'
+            : 'h-[100px] w-full'
+      } ${dimmed ? 'opacity-40' : ''} ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
     >
       <div className="tcg-art">
         {art.kind === 'form' ? (

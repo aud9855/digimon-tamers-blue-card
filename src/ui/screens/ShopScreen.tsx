@@ -41,14 +41,14 @@ export function ShopScreen() {
                 data-shop-card={index}
                 disabled={!canBuyCard(index)}
                 onClick={() => dispatch({ type: 'shopBuyCard', index })}
-                className="flex flex-col items-center gap-1 disabled:opacity-40"
+                className="flex flex-col items-center gap-1 disabled:opacity-60 disabled:grayscale-[0.5]"
               >
                 {item.sold ? (
-                  <div className="flex h-[100px] w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-950/60 text-xs text-slate-400">
+                  <div className="flex h-48 w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-950/60 text-xs text-slate-400">
                     판매됨
                   </div>
                 ) : (
-                  <CardView defId={item.defId} upgraded={false} />
+                  <CardView defId={item.defId} upgraded={false} size="offer" />
                 )}
                 <span className="rounded-full bg-amber-950/80 px-2 text-sm font-bold text-amber-300 ring-1 ring-amber-500/50">
                   {item.price} 비트

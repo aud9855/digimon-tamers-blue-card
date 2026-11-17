@@ -15,12 +15,14 @@ function leaveRest(state: GameState, events: GameEvent[]): void {
   setPhase(state, events, 'map');
 }
 
+/** 휴식의 회복 비율 (해저드 반영). 화면도 이 값을 씀 */
+export function restHealPct(state: GameState): number {
+  return hazardOn(state, 'restHeal') ? constants.HAZARD_REST_HEAL_PCT : constants.REST_HEAL_PCT;
+}
+
 export function restHeal(state: GameState, events: GameEvent[]): void {
   const run = requireRun(state);
-  const pct = hazardOn(state, 'restHeal')
-    ? constants.HAZARD_REST_HEAL_PCT
-    : constants.REST_HEAL_PCT;
-  heal(state, events, Math.floor(run.maxHp * pct));
+  heal(state, events, Math.floor(run.maxHp * restHealPct(state)));
   leaveRest(state, events);
 }
 

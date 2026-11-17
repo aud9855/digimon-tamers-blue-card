@@ -72,15 +72,20 @@ export function EnemyView({
     >
       <IntentBadge intent={intent} />
       <div
-        className="flex max-w-full items-end justify-center [filter:drop-shadow(0_0_1px_rgb(255_255_255/0.85))_drop-shadow(0_0_4px_rgb(255_255_255/0.3))]"
+        className="flex max-w-full items-end justify-center"
         style={{ width: size, height: size }}
         data-enemy-sprite
       >
         <BattleSprite className="h-full w-full" phase={index + 1}>
-          <EnemySprite enemyId={def.id} className="h-full w-full" scaled />
+          {/* 흰 외곽 빛은 도트에만 (발밑 그림자까지 빛나면 회색 네모판처럼 보임) */}
+          <EnemySprite
+            enemyId={def.id}
+            className="h-full w-full [filter:drop-shadow(0_0_1px_rgb(255_255_255/0.85))_drop-shadow(0_0_4px_rgb(255_255_255/0.3))]"
+            scaled
+          />
         </BattleSprite>
       </div>
-      <div className="max-w-full truncate text-xs text-slate-100 [text-shadow:0_1px_0_#000]">
+      <div className="line-clamp-2 max-w-full text-center text-xs leading-tight break-keep text-slate-100 [text-shadow:0_1px_0_#000]">
         {def.name}{' '}
         {def.attribute === 'none' ? null : compact ? (
           <span
