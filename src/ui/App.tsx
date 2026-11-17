@@ -17,7 +17,8 @@ import { PlaybackOverlay } from './components/PlaybackOverlay';
 import { ErrorScreen } from './components/ErrorBoundary';
 import { PanelHost } from './components/Settings';
 import { isConsistentState } from './save';
-import { useDisplayState } from './store';
+import { installInputGuard, lockInput } from './inputGuard';
+import { useDisplayState, useGame } from './store';
 
 const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
   title: TitleScreen,
@@ -38,15 +39,29 @@ const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
 function useBackButtonGuard() {
   useEffect(() => {
     history.pushState({ guard: true }, '');
-    const onPop = () => history.pushState({ guard: true }, '');
+    const onPop = () => {
+      history.pushState({ guard: true }, '');
+      // 열린 창(설정·도감 등)이 있으면 뒤로가기로 닫음 (APK 뒤로 버튼과 같게)
+      const { panel, setPanel } = useGame.getState();
+      if (panel) setPanel(null);
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 }
 
+/** 국면·턴이 바뀐 직후의 연타가 새 화면 버튼에 닿지 않게 (팀 점검 QA 1·2) */
+function useInputGuard(phase: Phase, turn: number | undefined) {
+  useEffect(() => installInputGuard(), []);
+  useEffect(() => {
+    lockInput();
+  }, [phase, turn]);
+}
+
 export function App() {
   useBackButtonGuard();
   const state = useDisplayState();
+  useInputGuard(state.phase, state.battle?.turn);
   const Current = SCREENS[state.phase] as (typeof SCREENS)[Phase] | undefined;
   // 상태가 국면과 맞지 않으면 화면이 아무것도 그리지 못하므로 빈 화면 대신 안내
   if (!Current || !isConsistentState(state)) {

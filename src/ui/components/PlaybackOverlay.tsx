@@ -7,6 +7,7 @@ import { useGame, type PlaybackItem } from '../store';
 import { CardView } from './CardView';
 import { FormSprite } from './Sprites';
 import { ATTRIBUTE_BG, STAGE_LABEL, STATUS_LABEL } from './labels';
+import { lockInput } from '../inputGuard';
 
 function targetSelector(who: Who): string {
   return who === 'player' ? '[data-testid="partner"] [data-form]' : `[data-enemy-index="${who}"]`;
@@ -288,6 +289,8 @@ export function PlaybackOverlay() {
       onPointerDown={(e) => {
         e.preventDefault();
         skip();
+        // 건너뛴 그 누르기(와 바로 이은 누르기)가 아래 버튼에 닿지 않게
+        lockInput();
       }}
     >
       {current && (

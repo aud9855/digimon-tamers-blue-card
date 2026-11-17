@@ -9,6 +9,8 @@ const WIDTH = 360;
 const HEIGHTS = [640, 568];
 const SEEDS = [1, 7];
 const MAX_STEPS = 400;
+// 화면이 바뀐 직후 누르기를 잠깐 막는 시간(src/ui/inputGuard.ts의 INPUT_LOCK_MS)보다 조금 길게 기다림
+const SETTLE_MS = 450;
 
 function fail(message) {
   console.error(`실패: ${message}`);
@@ -46,6 +48,7 @@ for (const HEIGHT of HEIGHTS) {
         fail(`시드 ${seed}: 전투로 시작하지 않음`);
         continue;
       }
+      await sleep(SETTLE_MS);
       // 연출은 빠르게
       await browser.tap('[data-testid="speed"]');
 
@@ -58,6 +61,7 @@ for (const HEIGHT of HEIGHTS) {
           await sleep(50);
         }
         if ((await browser.eval('window.__game().phase')) !== 'battle') break;
+        await sleep(SETTLE_MS);
         // 가로로 넘치는 곳이 없어야 함 (03 9.2 기준 폭 360px)
         overflow = Math.max(overflow, await browser.eval('document.documentElement.scrollWidth'));
         const bad = await browser.eval(HIT_CHECK);
