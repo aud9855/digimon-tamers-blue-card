@@ -78,20 +78,30 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
-│  │  ├─ policies/random.ts  policies/greedy.ts
+│  │  ├─ policies/random.ts  policies/greedy.ts  policies/types.ts(정책 타입)
+│  │  ├─ rng.ts              봇 전용 시드 난수 (7.1, state.rng와 따로)
 │  │  ├─ runner.ts           한 판 돌리기, 여러 판 모으기
 │  │  ├─ report.ts           지표 계산·목표와 비교
 │  │  └─ cli.ts              npm run sim
-│  └─ ui/                    (1단계) 화면
+│  └─ ui/                    (1단계) 화면 (9.1)
 ├─ tests/
 │  ├─ core/                  규칙 테스트
 │  ├─ data/                  데이터 무결성 테스트
 │  ├─ sim/                   봇 스모크·결정성·골든 테스트
+│  ├─ ui/                    화면 쪽 테스트 (저장, 재생 줄, 도트, 효과, 소리 등)
 │  └─ helpers/               테스트용 전투 만들기 등
 ├─ scripts/
 │  ├─ upper-drive.mjs        dev·build·test·e2e 실행기 (Windows 소문자 드라이브 경로에서 vitest·Tailwind가 깨지는 문제를 피함)
-│  └─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
-└─ .github/workflows/ci.yml
+│  ├─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
+│  ├─ e2e/                   npm run e2e (battle.mjs 시나리오, browser.mjs 브라우저 조작)
+│  └─ art/battle-bg.mjs      막별 전투 배경 도트를 그려 src/ui/art/stage/에 저장
+├─ public/                   아이콘, manifest.webmanifest (9.1)
+├─ pwa/                      서비스 워커 템플릿 sw.js, 안드로이드 아이콘 앞면 그림(icon-foreground.svg)
+├─ android/                  (2단계) Capacitor 안드로이드 프로젝트. 설정은 capacitor.config.json
+└─ .github/workflows/
+   ├─ ci.yml                 검사 (10절)
+   ├─ pages.yml              GitHub Pages 배포 (9.1)
+   └─ android-apk.yml        APK 빌드 (v* 태그 또는 손으로 실행)
 ```
 
 ## 4. 타입 (src/core/types.ts)
@@ -103,7 +113,8 @@ export type Stage = 'rookie' | 'champion' | 'ultimate' | 'mega';
 export type Attribute = 'vaccine' | 'data' | 'virus' | 'none';
 export type StatusId = 'strength' | 'weak' | 'vulnerable';
 export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako';
-export type CardType = 'attack' | 'skill' | 'signature' | 'curse';
+export type CardType = 'attack' | 'skill' | 'signature' | 'curse' | 'companion';
+export type FormTraitId = 'tough' | 'sharp';   // 형태 특성 (02 12.5)
 export type Rarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
 export type Keyword = 'exhaust' | 'retain' | 'innate' | 'unplayable';
 
@@ -119,10 +130,17 @@ export type Effect =
   | { op: 'freeEvolve' }
   | { op: 'addCard'; cardId: string; to: 'hand' | 'discard' | 'draw'; count: number }
   | { op: 'ifStage'; min: Stage; then: Effect[]; else?: Effect[] }
-  | { op: 'ifEvolvedThisTurn'; then: Effect[]; else?: Effect[] };
+  | { op: 'ifEvolvedThisTurn'; then: Effect[]; else?: Effect[] }
+  | { op: 'ifPlayedThisTurn'; min: number; then: Effect[]; else?: Effect[] };   // 이 카드보다 먼저 이번 턴에 낸 카드가 min장 이상 (02 12.11)
 
 // ── 정의 (src/data가 채움, 바뀌지 않음) ──
-export interface CardFace { cost: number; effects: Effect[]; keywords?: Keyword[] }
+export interface CompanionEffect {   // 동료 효과 (02 12.6): 칩과 같은 구조
+  trigger?: ChipTrigger; effects?: Effect[]; modifiers?: { evolveCostDelta?: number };
+}
+export interface CardFace {
+  cost: number; effects: Effect[]; keywords?: Keyword[];
+  companion?: CompanionEffect;   // 동료 카드만: 동료 자리에 있는 동안의 효과
+}
 export interface CardDef {
   id: string; name: string; type: CardType; rarity: Rarity;
   pool: TamerId | 'neutral' | 'none';   // 'none': 보상·상점에 안 나옴
@@ -132,6 +150,7 @@ export interface FormDef {
   id: string; name: string; line: string;   // line: 계열 id (예: 'guilmon')
   stage: Stage; attribute: Attribute;
   tempHp: number; power: number; signatureCardId?: string;
+  rampage?: boolean;   // 폭주 형태 (02 13.2): 보통 진화로는 되지 않음
 }
 export type EnemyEffect =
   | { op: 'attack'; amount: number; hits?: number }
@@ -150,16 +169,26 @@ export type ChipTrigger = 'onBattleStart' | 'onFirstTurn' | 'onTurnStart' | 'onE
 export interface ChipDef {
   id: string; name: string;
   trigger?: ChipTrigger; effects?: Effect[];
-  modifiers?: { evolveCostDelta?: number; battleBitsBonus?: number; handSizeBonus?: number; maxHpBonus?: number };
+  hidden?: boolean;   // 테이머 특성용 숨은 칩: 보상·상점에 안 나오고 칩으로 보이지 않음 (02 12.3)
+  start?: boolean;    // 시작 칩: 판 시작에만 고름 (02 12.7)
+  modifiers?: {
+    evolveCostDelta?: number;
+    firstCardCostDelta?: number;   // 그 턴에 처음 내는 카드의 비용에 더함 (02 12.11)
+    handGroups?: number;           // 2면 턴 시작에 두 묶음을 뽑아 하나를 고름 (02 13.3)
+    battleBitsBonus?: number; handSizeBonus?: number; maxHpBonus?: number;
+  };
 }
 export type RunEffect =
   | { op: 'heal'; amount: number } | { op: 'loseHp'; amount: number } | { op: 'gainBits'; amount: number }
   | { op: 'addRandomCard'; rarity: Rarity }
   | { op: 'offerCards'; count: number; upgraded?: boolean; rarity?: Rarity }
   | { op: 'addRandomChip' } | { op: 'addCard'; cardId: string };
-export interface EventDef { id: string; title: string; text: string; choices: { label: string; effects: RunEffect[] }[] }
+export interface EventDef {
+  id: string; acts: number[];   // acts: 나오는 막 (02 12.1)
+  title: string; text: string; choices: { label: string; effects: RunEffect[] }[];
+}
 export interface TamerDef {
-  id: TamerId; name: string; trait: string; line: string; maxHp: number;
+  id: TamerId; name: string; trait: string; line: string; maxHp: number;   // trait: 테이머 특성 이름 (02 8, 12.3)
   startBits: number; startMaxStage: Stage; startMaxMemory: number;
   startDeck: string[]; startEffects: RunEffect[]; startChips: string[];
 }
@@ -182,7 +211,11 @@ export interface BattleState {
   turn: number; memory: number;
   stage: Stage; shield: number; tempHp: number; statuses: Statuses;
   evolvedThisTurn: boolean; freeEvolve: boolean;
+  rampage: boolean;                      // 폭주 진화 중 (02 13.2)
+  handChoice: CardInstance[][] | null;   // 두 사람의 카드: 고를 두 묶음 (고르기 전까지, 02 13.3)
+  cardsPlayedThisTurn: number;           // 이번 턴에 낸 카드 수. 카드를 옮긴 뒤 올림 (02 12.3)
   drawPile: CardInstance[]; hand: CardInstance[]; discardPile: CardInstance[]; exhaustPile: CardInstance[];
+  companions: CardInstance[];            // 동료 자리 (02 12.6)
   enemies: EnemyState[];
 }
 export type NodeType = 'battle' | 'elite' | 'event' | 'shop' | 'rest' | 'treasure' | 'boss';
@@ -201,22 +234,39 @@ export interface RunState {
   map: ActMap; nodeId: string | null;   // 지금 있는 칸 (막 시작 전에는 null)
   path: string[];                       // 이번 막에서 지나온 칸 id (지금 칸 포함)
   removalsBought: number;
+  hazard: number;                                    // 디지털 해저드 단계 (02 13.6)
+  formTraits: Partial<Record<Stage, FormTraitId>>;   // 단계별로 고른 형태 특성 (02 12.5)
 }
 // 플레이어 HP는 run.hp 하나뿐입니다. 전투 중에도 run.hp를 직접 고칩니다.
 // 지금 형태는 getForm(tamer.line, battle.stage)로 찾습니다. 전투 밖에서는 성장기입니다.
+// 폭주 형태까지 따지려면 core의 currentForm(state)를 씁니다 (5절).
 export interface CardOffer { cards: { defId: string; upgraded: boolean }[] }
 export type Pending =
   | { kind: 'reward'; offers: CardOffer[]; afterBoss: boolean }   // offers[0]이 지금 고르는 것
   | { kind: 'shop'; cards: { defId: string; price: number; sold: boolean }[];
       chips: { chipId: string; price: number; sold: boolean }[]; removalUsed: boolean }
   | { kind: 'rest' } | { kind: 'event'; eventId: string }
-  | { kind: 'treasure'; chipId: string | null } | { kind: 'actClear' };
-export type Phase = 'title' | 'map' | 'battle' | 'reward' | 'shop' | 'rest' | 'event'
+  | { kind: 'treasure'; chipId: string | null }
+  | { kind: 'startChip'; chipIds: string[] }          // 시작 칩 고르기 (02 12.7)
+  | { kind: 'actClear'; traitStage: Stage | null };   // traitStage: 특성을 고를 단계 (고르면 null)
+export type Phase = 'title' | 'startChip' | 'map' | 'battle' | 'reward' | 'shop' | 'rest' | 'event'
   | 'treasure' | 'actClear' | 'runWon' | 'runLost';
+export type RngStream = 'map' | 'battle' | 'reward' | 'event';
+export interface Unlocks {        // 판 시작에 받는 해금 정보 (02 13.5)
+  tamers: TamerId[]; startChips: string[];
+  hazard: number;                 // 열린 디지털 해저드 최고 단계
+}
+export interface Profile {        // 판 밖의 기록 (02 13.5). GameState와 따로 저장
+  version: number;                // PROFILE_VERSION
+  runs: Partial<Record<TamerId, { played: number; won: number }>>;
+  unlocks: Unlocks;
+  codex: { forms: string[]; enemies: string[] };
+}
 export interface GameState {
-  version: number;                 // 저장 형식 버전
+  version: number;                 // 저장 형식 버전 (SAVE_VERSION)
   seed: number;
-  rng: Record<RngStream, number>;  // RngStream = 'map' | 'battle' | 'reward' | 'event'
+  unlocks: Unlocks;                // 이 판에 쓸 해금 (createInitialState가 받음)
+  rng: Record<RngStream, number>;
   phase: Phase;
   run: RunState | null; battle: BattleState | null; pending: Pending | null;
   nextUid: number;                 // 다음 CardInstance uid
@@ -224,7 +274,7 @@ export interface GameState {
 
 // ── 행동 ──
 export type Action =
-  | { type: 'startRun'; tamerId: TamerId }
+  | { type: 'startRun'; tamerId: TamerId; hazard?: number }   // hazard: 디지털 해저드 단계
   | { type: 'chooseNode'; nodeId: string }
   | { type: 'playCard'; cardUid: number; targetIndex?: number }
   | { type: 'evolve' }
@@ -237,8 +287,14 @@ export type Action =
   | { type: 'restHeal' }
   | { type: 'restUpgrade'; cardUid: number }
   | { type: 'eventChoose'; index: number }
-  | { type: 'proceed' };
+  | { type: 'proceed' }
+  | { type: 'chooseStartChip'; index: number }   // 02 12.7
+  | { type: 'chooseFormTrait'; index: number }   // 02 12.5
+  | { type: 'rampage' }                          // 폭주 진화 (02 13.2)
+  | { type: 'chooseHandGroup'; index: number };  // 두 사람의 카드 (02 13.3)
 ```
+
+`src/data`에만 있는 타입: `ActDef`(acts.ts, 막 번호·이름·시작 글), `MetaDef`(meta.ts, 처음 열린 테이머·시작 칩, 해금 순서, 해저드 최고 단계), `Constants`(constants.ts의 `typeof constants`), 테스트용 `RegistryOverride`(index.ts, 8.1).
 
 ### 4.1 일어난 일 목록 (GameEvent)
 `applyAction`은 처리하면서 일어난 일을 순서대로 적어 돌려줍니다. 화면은 이것을 차례로 재생해 연출하고, 봇은 지표를 셉니다.
@@ -254,7 +310,11 @@ export type GameEvent =
   | { type: 'deckShuffled' }
   | { type: 'cardDrawn'; cardUid: number }
   | { type: 'cardPlayed'; cardUid: number; targetIndex?: number }
-  | { type: 'cardMoved'; cardUid: number; to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' }
+  | { type: 'cardMoved'; cardUid: number; to: 'hand' | 'draw' | 'discard' | 'exhaust' | 'removed' | 'companion' }
+  | { type: 'companionTriggered'; cardUid: number }         // 동료 효과 발동 (02 12.6)
+  | { type: 'handGroupsDrawn'; groups: number[][] }         // 두 사람의 카드: 뽑은 두 묶음의 uid (02 13.3)
+  | { type: 'handGroupChosen'; index: number }
+  | { type: 'formTraitChosen'; stage: Stage; traitId: FormTraitId }   // 02 12.5
   | { type: 'cardCreated'; cardUid: number; defId: string; to: 'hand' | 'draw' | 'discard' }
   | { type: 'memoryChanged'; memory: number }
   | { type: 'damage'; source: Who; target: Who; amount: number; blocked: number; tempHpLost: number; hpLost: number; attrMult: number }
@@ -263,7 +323,8 @@ export type GameEvent =
   | { type: 'shieldGained'; target: Who; amount: number }
   | { type: 'statusApplied'; target: Who; status: StatusId; amount: number }
   | { type: 'accelChanged'; enemyIndex: number; accel: number }   // 얻었을 때와 0이 됐을 때
-  | { type: 'evolved'; from: Stage; to: Stage; cost: number; tempHpGained: number }
+  | { type: 'evolved'; from: Stage; to: Stage; cost: number; tempHpGained: number;
+      formId: string }                                      // formId: 된 형태 (폭주면 폭주 형태)
   | { type: 'enemyPhaseChanged'; enemyIndex: number; phaseIndex: number }
   | { type: 'enemyMoved'; enemyIndex: number; moveId: string }
   | { type: 'enemyIntent'; enemyIndex: number; moveId: string }
@@ -284,15 +345,21 @@ export type GameEvent =
 
 ```ts
 createInitialState(seed: number, unlocks?: Unlocks): GameState   // phase 'title', unlocks가 없으면 처음 해금 상태
+SAVE_VERSION: number   // GameState.version에 넣는 저장 형식 버전
 createProfile(): Profile   defaultUnlocks(): Unlocks   fullUnlocks(): Unlocks   // 02 13.5 (fullUnlocks는 시뮬레이터)
+PROFILE_VERSION: number   // Profile.version
 applyRunResult(profile, finalState, events): Profile   // 판이 끝났을 때 판 수·해금·도감 갱신 (순수 함수)
 recordCodex(profile, events): Profile   // 도감만 (새로 본 것이 없으면 같은 객체)
+currentForm(state): FormDef   // 지금 형태 (폭주 중이면 폭주 형태, 전투 밖이면 성장기). 화면 표시용
+isMatrix(state): boolean   // 매트릭스 에볼루션 중인지 (전투 중 궁극체이고 폭주가 아님, 02 13.1). 화면 표시용
 getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 모든 행동
 applyAction(state: GameState, action: Action): { state: GameState; events: GameEvent[] }
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
 describeChip(chipId: string): string
 describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
 describeTamer(tamerId): string   // 테이머 특성 설명
+describeHazardRule(level: number): string   // 디지털 해저드 그 단계에서 더해지는 규칙 한 줄 (02 13.6)
+describeHazard(level: number): string[]   // 1단계부터 level까지의 규칙 글 목록
 describeIntent(state: GameState, enemyIndex: number): IntentView   // 화면에 보일 종류·피해량·횟수
 previewEvolveCost(state: GameState): number | null   // 지금 진화 비용 (못 하면 null)
 previewCardCost(state, cardUid): number | null   // 지금 낼 때의 비용 (처음 내는 카드 할인 포함)
@@ -358,8 +425,9 @@ interface IntentView {
 1. **끝낼 수 있으면 끝냄**: 공격 카드를 피해가 큰 순으로 당겨쓰기까지 써서 모든 적을 죽일 수 있는지 복사한 상태에서 시험해 보고, 되면 그 순서의 첫 행동.
 2. **진화**: 폭주 진화를 할 수 있으면 폭주(02 13.2, HP가 위험할 때만 조건이 맞음). 아니면 당겨쓰지 않고 진화할 수 있으면 진화. 진화 방식 설정에 따라 다릅니다: `asap`(기본, 할 수 있으면 바로), `turn2`(2턴째부터), `never`(안 함).
 3. **막기**: 이번 적 턴에 받을 피해(인텐트 합 - 실드 - 임시 HP)가 0보다 크고, 낼 수 있는 실드 카드가 있으면 실드가 가장 큰 것. 받을 피해가 지금 HP의 30% 이상이면 당겨써서라도 내고, 아니면 당겨쓰지 않는 카드만 냅니다.
-4. **준비 카드**: 비용 0 카드, 뽑기 카드, 힘 카드, 동료 카드를 당겨쓰지 않고 낼 수 있으면 냄.
+4. **준비 카드**: 비용 0 카드, 뽑기 카드, 힘 카드, 동료 카드, 비용보다 많은 메모리를 주는 카드, 적에게 약화·취약을 거는 카드를 당겨쓰지 않고 낼 수 있으면 냄. (메모리·약화·취약은 2026-11-17 팀 점검에서 추가: 그 전에는 힘 모으기·위협·장난을 한 번도 내지 않았음)
 5. **공격**: 당겨쓰지 않고 낼 수 있는 공격 카드 중 (예상 피해 ÷ max(비용, 1))이 가장 큰 것. 대상은 이번에 죽일 수 있는 적, 없으면 공격 인텐트 피해가 가장 큰 적, 없으면 HP가 가장 적은 적.
+5-1. **회복** (2026-11-17 추가): 잃은 HP가 회복량 이상이면 회복 카드를 당겨쓰지 않고 냄.
 6. **마무리** (T0-11에서 추가): 당겨써서라도 낸 공격 카드 하나로 적 하나를 쓰러뜨릴 수 있으면, 그런 카드 중 비용이 가장 적은 것. 쓰러뜨린 적은 가속을 받지 않으므로 사람이라면 할 만한 당겨쓰기입니다.
 7. 턴 끝.
 
@@ -431,14 +499,32 @@ src/ui/
 ├─ main.tsx  App.tsx          국면(phase)에 따라 화면을 바꿈
 ├─ store.ts                   GameState 보관, dispatch(action), 일어난 일 재생 줄
 ├─ playback.ts                GameEvent를 차례로 재생 (종류마다 걸리는 시간)
-├─ screens/                   Title, Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
-├─ components/                Card, Hand, EnemyView, PartnerView, MemoryGauge, IntentBadge, DArcButton, Codex(도감)…
-├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
-├─ art/                       도트 그림 (글자 격자, 04 7절). PixelArt 부품이 SVG로 그림
 ├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
-├─ save.ts  playback.ts  debug.ts(개발 서버 전용)
-└─ (그림 파일은 src/ui/art/ 아래: official/ 원작 도트, stage/ 막 배경. 04 7절)
+├─ spritePack.ts              도트 팩 (04 P1): 플레이어가 고른 그림 파일로 디지몬 도트를 바꿈. 이 기기의 IndexedDB에만 저장
+├─ debug.ts                   개발 서버 전용 주소 옵션 (?debug=battle 등)
+├─ index.css                  Tailwind와 공용 스타일
+├─ screens/                   Title, StartChip(시작 칩 고르기), Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
+├─ components/
+│  ├─ CardView(.css)  Hand  EnemyView  PartnerView  MemoryGauge  Bars(HP·상태)  RunHeader(런 정보 줄)
+│  ├─ PlaybackOverlay         재생 중인 일 연출, 누르면 건너뜀
+│  ├─ FxLayer  bodyMotion.ts  전투 도트 효과 층, 맞음·덤빔 몸 움직임 (04 V1, V2)
+│  ├─ Sprites  PixelArtView   이름으로 도트 꺼내 그리기, 도트를 SVG로 그리기
+│  ├─ common.tsx              여러 화면이 함께 쓰는 부품: PrimaryButton, DeckPicker, GainLine, ScreenTitle, Hero, PixelFire, displayFormId
+│  ├─ Screen  labels.ts       화면 틀(막별 배경), 화면에 쓰는 이름표 (규칙 계산 없음)
+│  └─ Codex(도감)  Settings  Guide(하는 법)  Info(정보·저작권 고지)  ErrorBoundary
+├─ input/drag.ts              끌어서 내기 (Pointer Events)
+├─ art/                       도트 그림 (04 7절). index.ts가 id → 그림 표를 모음
+│  ├─ build.ts  v2/           2판 도트 조립기와 그것으로 만든 디지몬 도트 (직접 그림)
+│  ├─ official.ts  official/  원작 도트 (원작 그림을 줄인 PNG, 출처는 official/SOURCES.md)
+│  ├─ spriteScale.ts          원작 도트의 화면 크기
+│  ├─ stage.ts  stage/        막별 전투 배경 (scripts/art/battle-bg.mjs로 그림)
+│  ├─ cardArt.ts              카드 그림 창에 넣을 그림
+│  └─ icons.ts  tamers.ts  types.ts   칩·지도 칸 아이콘, 테이머 얼굴 (글자 격자), PixelArt 타입
+└─ fx/                        전투 도트 효과
+   ├─ vfx.ts                  GameEvent → 띄울 효과 (이벤트에 적힌 값만 봄)
+   ├─ library.js(.d.ts)       쓰는 pixelfx 효과 모음
+   └─ pixelfx/                pixelfx 코드 복사본 (MIT, 손대지 않음, 2절)
 public/                       아이콘(직접 그린 SVG와 PNG), manifest.webmanifest
 pwa/sw.js                     서비스 워커 템플릿 (빌드 때 vite.config.ts가 파일 목록을 채워 dist/sw.js로)
 ```

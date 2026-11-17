@@ -321,7 +321,7 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
     if (best) return chooseTarget(state, best.card, best.options);
   }
 
-  // 4. 준비 카드: 비용 0, 뽑기, 힘, 동료 (당겨쓰지 않고)
+  // 4. 준비 카드: 비용 0, 뽑기, 힘, 동료, 비용보다 많은 메모리, 적 약화·취약 (당겨쓰지 않고)
   for (const [uid, options] of byCard) {
     const card = cardOf(state, uid);
     if (!card || !affordable(card)) continue;
@@ -329,7 +329,15 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
     const isPrep =
       getCard(card.defId).type === 'companion' ||
       costOf(state, card) === 0 ||
-      effects.some((e) => e.op === 'draw' || (e.op === 'applyStatus' && e.status === 'strength'));
+      effects.some(
+        (e) =>
+          e.op === 'draw' ||
+          (e.op === 'applyStatus' && e.status === 'strength') ||
+          (e.op === 'gainMemory' && e.amount > costOf(state, card)) ||
+          (e.op === 'applyStatus' &&
+            (e.target === 'enemy' || e.target === 'allEnemies') &&
+            (e.status === 'weak' || e.status === 'vulnerable')),
+      );
     if (isPrep) return chooseTarget(state, card, options);
   }
 
@@ -348,6 +356,14 @@ function battleAction(state: GameState, legal: Action[], ctx: PolicyContext): Ac
     }
   }
   if (bestAttack) return bestAttack;
+
+  // 5-1. 회복: 잃은 HP가 회복량 이상이면 당겨쓰지 않고 냄
+  for (const [uid, options] of byCard) {
+    const card = cardOf(state, uid);
+    if (!card || !affordable(card)) continue;
+    const heal = effectsOf(state, card).reduce((h, e) => h + (e.op === 'heal' ? e.amount : 0), 0);
+    if (heal > 0 && run.maxHp - run.hp >= heal) return chooseTarget(state, card, options);
+  }
 
   // 6. 마무리: 당겨써서라도 낸 공격 하나로 적 하나를 쓰러뜨릴 수 있으면 냄
   //      (쓰러뜨린 적은 가속을 받지 않음). 비용이 가장 적은 것
