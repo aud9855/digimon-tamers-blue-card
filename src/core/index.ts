@@ -11,6 +11,8 @@ export {
 /** 지금 형태 (폭주 중이면 폭주 형태)와 매트릭스 여부: 화면 표시용 */
 export { currentForm, isMatrix } from './helpers';
 export { applyAction, getLegalActions, IllegalActionError } from './engine';
+/** 휴식의 회복 비율 (해저드 반영) */
+export { restHealPct } from './run/rest';
 export {
   describeCard,
   describeChip,

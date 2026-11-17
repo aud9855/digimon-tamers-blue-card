@@ -116,5 +116,6 @@ export function isUpgradable(card: CardInstance): boolean {
 
 /** 0 이상 정수로 내림 (02 3.8: 곱셈을 모두 한 뒤 마지막에 한 번만) */
 export function floorNonNegative(value: number): number {
-  return Math.max(0, Math.floor(value));
+  // 소수 곱셈 오차(예: 26.999999…)로 1 적게 내림하지 않도록 아주 작은 값을 더함
+  return Math.max(0, Math.floor(value + 1e-9));
 }

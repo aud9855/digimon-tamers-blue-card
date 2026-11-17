@@ -395,7 +395,7 @@ export function BattleScreen() {
       {battle.handChoice && (
         // 두 사람의 카드: 두 묶음 중 하나를 고름 (02 13.3)
         <div
-          className="fixed inset-0 z-30 flex flex-col justify-center gap-4 bg-slate-950/90 px-3"
+          className="fixed inset-0 z-30 flex flex-col justify-center-safe gap-4 overflow-y-auto bg-slate-950/90 px-3 py-4"
           data-testid="hand-choice"
         >
           <p className="text-center text-sm text-sky-200">이번 턴에 쓸 묶음을 고르세요</p>

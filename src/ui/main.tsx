@@ -68,8 +68,13 @@ if (import.meta.env.DEV) {
 
 // 행동 하나가 끝날 때마다 저장 (재생 중인 화면이 아니라 진짜 상태를 저장)
 useGame.subscribe((s, prev) => {
-  if (s.state !== prev.state) void saveGame(s.state);
-  if (s.profile !== prev.profile) void saveProfile(s.profile);
+  if (s.state !== prev.state) {
+    // 저장 실패(저장 공간 부족 등)는 게임을 멈추지 않고 알리기만 함
+    saveGame(s.state).catch((e: unknown) => console.warn('저장 실패', e));
+  }
+  if (s.profile !== prev.profile) {
+    saveProfile(s.profile).catch((e: unknown) => console.warn('기록 저장 실패', e));
+  }
   if (s.speed !== prev.speed || s.seenGuide !== prev.seenGuide || s.sound !== prev.sound) {
     void saveSettings({ speed: s.speed, seenGuide: s.seenGuide, sound: s.sound });
   }

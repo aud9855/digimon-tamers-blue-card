@@ -41,5 +41,15 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), serviceWorker()],
   server: { host: true },
   // 도트 그림은 JS에 글자로 박지 않고 파일로 내보냄 (JS 크기 유지, 그림만 따로 캐시)
-  build: { assetsInlineLimit: 0 },
+  build: {
+    assetsInlineLimit: 0,
+    rolldownOptions: {
+      output: {
+        // React는 게임 코드와 따로 (게임만 바뀌면 React 파일은 캐시를 그대로 씀, 500KB 경고 해소)
+        codeSplitting: {
+          groups: [{ name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ }],
+        },
+      },
+    },
+  },
 });

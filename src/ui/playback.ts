@@ -2,6 +2,7 @@
 // 재생 중에는 "행동 전 상태"의 복사본에 이벤트에 적힌 값을 차례로 반영해 보여 줍니다.
 // 규칙을 다시 계산하지 않고, 이벤트가 알려 준 값(피해량, 메모리 등)만 옮겨 적습니다.
 import type { GameEvent, GameState, Who } from '../core/index';
+import { getFormById } from '../data/index';
 
 export type PlaybackSpeed = 'normal' | 'fast' | 'off';
 
@@ -94,6 +95,8 @@ export function applyEventToView(view: GameState, event: GameEvent): void {
     case 'evolved':
       battle.stage = event.to;
       battle.tempHp += event.tempHpGained;
+      // 폭주 형태로 바뀐 것도 옮겨 적음 (안 하면 연출 중 매트릭스 모습으로 보임)
+      battle.rampage = getFormById(event.formId).rampage === true;
       return;
     case 'enemyIntent': {
       const enemy = battle.enemies[event.enemyIndex];
