@@ -1,7 +1,8 @@
 // 지도 화면 (04 T1-5): 갈 수 있는 칸만 눌림. 지나온 길이 보임
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { getLegalActions, type MapNode, type NodeType } from '../../core/index';
-import { constants, getAct, getEncounter, getForm, getTamer } from '../../data/index';
+import { constants, getAct, getEncounter, getEnemy, getForm, getTamer } from '../../data/index';
+import { ATTRIBUTE_BG, ATTRIBUTE_LABEL } from '../components/labels';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
@@ -120,6 +121,23 @@ export function MapScreen() {
             const size = boss ? NODE + 20 : NODE;
             const bossId =
               boss && node.encounterId ? getEncounter(node.encounterId).enemies[0] : undefined;
+            // 강적은 속성을 미리 보여 줌: 상성으로 길을 고를 수 있게 (팀 점검 기획 3)
+            const eliteAttrs =
+              node.type === 'elite' && node.encounterId
+                ? [
+                    ...new Set(
+                      getEncounter(node.encounterId).enemies.map((id) => getEnemy(id).attribute),
+                    ),
+                  ].filter((a) => a !== 'none')
+                : [];
+            const status = here
+              ? '지금 있는 곳'
+              : canGo
+                ? '갈 수 있음'
+                : visited
+                  ? '지나옴'
+                  : '아직 못 감';
+            const attrText = eliteAttrs.map((a) => ATTRIBUTE_LABEL[a]).join('·');
             return (
               <button
                 key={node.id}
@@ -127,7 +145,7 @@ export function MapScreen() {
                 data-node-id={node.id}
                 data-reachable={canGo}
                 disabled={!canGo}
-                aria-label={label.name}
+                aria-label={`${label.name}${attrText ? ` (${attrText})` : ''}, ${status}`}
                 onClick={() => dispatch({ type: 'chooseNode', nodeId: node.id })}
                 className={`absolute ${canGo ? 'map-open' : visited ? 'map-done' : 'map-far'}`}
                 style={
@@ -152,6 +170,21 @@ export function MapScreen() {
                   )}
                 </span>
                 <span className="map-tag">{label.name}</span>
+                {eliteAttrs.length > 0 && (
+                  <span
+                    className="absolute -top-2 left-1/2 flex -translate-x-1/2 gap-0.5"
+                    aria-hidden
+                  >
+                    {eliteAttrs.map((a) => (
+                      <span
+                        key={a}
+                        className={`rounded-full px-1 text-[12px] leading-4 font-bold whitespace-nowrap text-white ring-1 ring-black/60 ${ATTRIBUTE_BG[a]}`}
+                      >
+                        {ATTRIBUTE_LABEL[a]}
+                      </span>
+                    ))}
+                  </span>
+                )}
                 {here && (
                   <FormSprite
                     formId={getForm(getTamer(run.tamerId).line, 'rookie').id}

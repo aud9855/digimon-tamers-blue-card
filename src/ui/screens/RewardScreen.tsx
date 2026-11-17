@@ -49,9 +49,7 @@ export function RewardScreen() {
               onClick={() => dispatch({ type: 'pickCard', index })}
               className="transition-transform active:-translate-y-1"
             >
-              <div className="[&>div]:h-40">
-                <CardView defId={c.defId} upgraded={c.upgraded} />
-              </div>
+              <CardView defId={c.defId} upgraded={c.upgraded} size="offer" />
             </button>
           ))}
         </div>

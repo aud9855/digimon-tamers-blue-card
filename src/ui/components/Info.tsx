@@ -63,7 +63,7 @@ export function InfoContent() {
       </p>
       <details className="mt-1">
         <summary className="cursor-pointer text-xs text-slate-400">pixelfx 라이선스 전문</summary>
-        <pre className="mt-1 text-[11px] whitespace-pre-wrap text-slate-400">{pixelfxLicense}</pre>
+        <pre className="mt-1 text-xs whitespace-pre-wrap text-slate-400">{pixelfxLicense}</pre>
       </details>
     </div>
   );
