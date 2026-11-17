@@ -38,20 +38,23 @@ export const chips = [
     name: '카드 리더',
     start: true,
     trigger: 'onFirstTurn',
-    effects: [{ op: 'draw', count: 2 }],
+    effects: [
+      { op: 'draw', count: 2 },
+      { op: 'gainMemory', amount: 1 },
+    ],
   },
   {
     id: 'guard_chip',
     name: '가드 칩',
     start: true,
     trigger: 'onBattleStart',
-    effects: [{ op: 'shield', amount: 8 }],
+    effects: [{ op: 'shield', amount: 10 }],
   },
   {
     id: 'bit_scanner',
     name: '비트 스캐너',
     start: true,
-    modifiers: { battleBitsBonus: 10, maxHpBonus: 5 },
+    modifiers: { battleBitsBonus: 10, maxHpBonus: 10 },
   },
   // 해금으로 열리는 시작 칩 (02 13.5)
   {
@@ -92,7 +95,7 @@ export const chips = [
     name: '침착함',
     hidden: true,
     trigger: 'onTurnStart',
-    effects: [{ op: 'shield', amount: 2 }],
+    effects: [{ op: 'shield', amount: 1 }],
   },
   {
     id: 'bit_pouch',

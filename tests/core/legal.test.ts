@@ -278,7 +278,7 @@ describe('설명 글 (03 5.3)', () => {
 
   it('describeIntent: 종류·피해량·횟수', () => {
     const state = makeBattle({ enemies: ['harpymon', 'allomon', 'thunderbirdmon', 'icedevimon'] });
-    expect(describeIntent(state, 0)).toMatchObject({ kind: 'attack', damage: 4, hits: 3 });
+    expect(describeIntent(state, 0)).toMatchObject({ kind: 'attack', damage: 3, hits: 3 });
     battleOf(state).enemies[1]!.intentMoveId = 'brace';
     expect(describeIntent(state, 1)).toEqual({ moveId: 'brace', name: '버티기', kind: 'defend' });
     battleOf(state).enemies[2]!.intentMoveId = 'static';

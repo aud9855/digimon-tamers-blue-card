@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { runOne } from '../../src/sim/runner';
 
 // 골든 값: 규칙이나 수치를 일부러 바꿨을 때만, 이유를 커밋 메시지에 적고 갱신합니다 (03 8.1).
-// 마지막 갱신: 2026-11-17 팀 점검: greedy가 메모리·약화·취약·회복 카드를 내게 됨 (03 7.1)
+// 마지막 갱신: 2026-11-17 밸런스 3차: 적·시작 칩·테이머 HP 수치 조정 (docs/balance/M2.md)
 const GOLDEN_SEED_12345 = {
   won: true,
   battles: 14,
-  finalHp: 76,
+  finalHp: 54,
   deck: [
     'attack_plugin',
     'attack_plugin+',
