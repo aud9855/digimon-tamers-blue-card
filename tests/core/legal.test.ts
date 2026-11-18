@@ -290,7 +290,7 @@ describe('설명 글 (03 5.3)', () => {
   });
 
   it('previewEvolveCost: 지금 진화 비용, 못 하면 null', () => {
-    expect(previewEvolveCost(makeBattle({ memory: 3 }))).toBe(3);
+    expect(previewEvolveCost(makeBattle({ memory: 3 }))).toBe(4);
     expect(previewEvolveCost(makeBattle({ stage: 'champion' }))).toBeNull();
     expect(previewEvolveCost(createInitialState(1))).toBeNull();
   });
@@ -302,7 +302,7 @@ describe('previewOverdraw (03 9.2 당겨쓰기 경고)', () => {
     const [strike, heavy] = battleOf(state).hand;
     expect(previewOverdraw(state, { cardUid: strike?.uid ?? -1 })).toBe(0);
     expect(previewOverdraw(state, { cardUid: heavy?.uid ?? -1 })).toBe(1);
-    expect(previewOverdraw(state, 'evolve')).toBe(2);
+    expect(previewOverdraw(state, 'evolve')).toBe(3);
     const indebted = makeBattle({ hand: ['strike'], memory: -1 });
     expect(previewOverdraw(indebted, { cardUid: battleOf(indebted).hand[0]?.uid ?? -1 })).toBe(2);
   });

@@ -59,8 +59,8 @@ describe('발동 시점 (02 5절)', () => {
   it('onEvolve: 진화할 때', () => {
     const state = freshBattle(['test_on_evolve']);
     const { state: next, events } = act(state, { type: 'evolve' });
-    // 3 - 3 + 1
-    expect(battleOf(next).memory).toBe(1);
+    // 3 - 4 + 1
+    expect(battleOf(next).memory).toBe(0);
     expect(eventsOf(events, 'chipTriggered').map((e) => e.chipId)).toEqual(['test_on_evolve']);
   });
 
@@ -88,7 +88,7 @@ describe('수치 보정 (02 5절)', () => {
   it('evolveCostDelta: 진화 비용에 더함', () => {
     const state = freshBattle(['test_evolve_cost']);
     const next = act(state, { type: 'evolve' }).state;
-    expect(battleOf(next).memory).toBe(3 - (3 - 1));
+    expect(battleOf(next).memory).toBe(3 - (4 - 1));
   });
 
   it('battleBitsBonus: 전투 보상 비트에 더함', () => {
@@ -248,9 +248,9 @@ describe('동료 카드 (02 12.6)', () => {
 
   it('동글몬: 동료 자리에 있는 동안 진화 비용 -1', () => {
     const state = makeBattle({ hand: ['calumon'], memory: 3 });
-    expect(previewEvolveCost(state)).toBe(3);
+    expect(previewEvolveCost(state)).toBe(4);
     const next = play(state, 'calumon').state;
-    expect(previewEvolveCost(next)).toBe(2 - 0);
+    expect(previewEvolveCost(next)).toBe(3);
   });
 
   it('강재호: 턴 시작에 무작위 적에게 피해', () => {

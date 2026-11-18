@@ -42,7 +42,12 @@ export function evolveCost(state: GameState): number | null {
   // 건너뛴 단계마다 +1 (02 13.3)
   const skipped = stageIndex(next) - stageIndex(battle.stage) - 1;
   const skip = skipped * constants.SKIP_EVOLVE_COST;
-  return Math.max(0, baseEvolveCost(next, run.maxStage) + skip + evolveCostDelta(state));
+  // 기다린 턴 할인 (02 3.7): 할인으로는 1 아래로 안 감
+  const waited = Math.max(
+    1,
+    baseEvolveCost(next, run.maxStage) - constants.EVOLVE_WAIT_DISCOUNT * (battle.turn - 1),
+  );
+  return Math.max(0, waited + skip + evolveCostDelta(state));
 }
 
 /** 조건: 국면 battle, stage < maxStage, 비용을 낼 수 있음 */

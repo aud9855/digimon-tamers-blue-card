@@ -26,7 +26,9 @@ export const constants = {
   ATTR_WEAK: 0.75,
   WEAK_MULT: 0.75,
   VULNERABLE_MULT: 1.5,
-  EVOLVE_BASE_COST: { champion: 3, ultimate: 3, mega: 4 } as Partial<Record<Stage, number>>,
+  EVOLVE_BASE_COST: { champion: 4, ultimate: 4, mega: 5 } as Partial<Record<Stage, number>>,
+  /** 전투 턴이 하나 지날 때마다 진화 비용에서 뺌, 할인으로는 1 아래로 안 감 (02 3.7) */
+  EVOLVE_WAIT_DISCOUNT: 1,
   /** 건너뛴 단계마다 진화 비용에 더함 (02 13.3) */
   SKIP_EVOLVE_COST: 0,
 
