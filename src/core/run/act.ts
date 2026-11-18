@@ -37,12 +37,19 @@ export function chooseFormTrait(state: GameState, events: GameEvent[], index: nu
   pending.traitStage = null;
 }
 
+/** 판 전체에서 지나온 칸 수 (지금 칸 포함). 결과 화면용 */
+export function totalNodesVisited(state: GameState): number {
+  const run = state.run;
+  return run ? run.pastNodes + run.path.length : 0;
+}
+
 /** proceed: 다음 막 지도를 만들고 map으로 */
 export function startNextAct(state: GameState, events: GameEvent[]): void {
   const run = requireRun(state);
   run.act += 1;
   run.map = generateMap(state, run.act);
   run.nodeId = null;
+  run.pastNodes += run.path.length;
   run.path = [];
   state.pending = null;
   setPhase(state, events, 'map');

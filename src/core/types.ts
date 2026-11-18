@@ -228,6 +228,8 @@ export interface RunState {
   map: ActMap;
   nodeId: string | null; // 지금 있는 칸 (막 시작 전에는 null)
   path: string[]; // 이번 막에서 지나온 칸 id (지금 칸 포함)
+  /** 지난 막들에서 지나온 칸 수 (결과 화면 통계, 규칙에 쓰지 않음) */
+  pastNodes: number;
   removalsBought: number;
   /** 디지털 해저드 단계 (02 13.6) */
   hazard: number;

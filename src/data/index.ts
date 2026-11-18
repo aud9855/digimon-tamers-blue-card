@@ -19,6 +19,7 @@ import { chips } from './chips';
 import { constants, type Constants } from './constants';
 import { encounters } from './encounters';
 import { enemies } from './enemies';
+import { endings } from './endings';
 import { events } from './events';
 import { forms } from './forms';
 import { meta, type MetaDef } from './meta';
@@ -147,6 +148,11 @@ export function getTamer(id: TamerId): TamerDef {
 }
 export function getTamers(): readonly TamerDef[] {
   return registry.tamers;
+}
+
+/** 테이머 엔딩 글 (02 13.10) */
+export function getEndingLines(id: TamerId): readonly string[] {
+  return endings[id];
 }
 
 /** 막 이름과 시작 글 (화면용) */

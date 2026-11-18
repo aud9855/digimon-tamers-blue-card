@@ -1,5 +1,5 @@
 // 카드·칩·인텐트 설명 글 (03 5.3). 효과 op마다 문장 틀이 하나씩 있습니다.
-import { getCard, getChip, getEnemy, getEvent, getTamer } from '../data/index';
+import { getCard, getChip, getEndingLines, getEnemy, getEvent, getTamer } from '../data/index';
 import { cardCost } from './battle/cards';
 import { canEvolve, evolveCost } from './battle/evolve';
 import { enemyHitDamage, playerHitDamage } from './battle/damage';
@@ -201,6 +201,12 @@ function describeModifiers(modifiers: NonNullable<ChipDef['modifiers']>): string
     parts.push(`매 턴 처음 내는 카드의 비용 ${signed(modifiers.firstCardCostDelta)}`);
   }
   return parts;
+}
+
+/** 엔딩 장면 (02 13.10): 판을 이겼을 때만 그 테이머의 글, 아니면 null */
+export function describeEnding(state: GameState): readonly string[] | null {
+  if (state.phase !== 'runWon' || !state.run) return null;
+  return getEndingLines(state.run.tamerId);
 }
 
 export function describeChip(chipId: string): string {

@@ -233,6 +233,7 @@ export interface RunState {
   deck: CardInstance[]; chips: string[];
   map: ActMap; nodeId: string | null;   // 지금 있는 칸 (막 시작 전에는 null)
   path: string[];                       // 이번 막에서 지나온 칸 id (지금 칸 포함)
+  pastNodes: number;                    // 지난 막들에서 지나온 칸 수 (결과 화면 통계)
   removalsBought: number;
   hazard: number;                                    // 디지털 해저드 단계 (02 13.6)
   formTraits: Partial<Record<Stage, FormTraitId>>;   // 단계별로 고른 형태 특성 (02 12.5)
@@ -356,6 +357,8 @@ getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 �
 applyAction(state: GameState, action: Action): { state: GameState; events: GameEvent[] }
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
 describeChip(chipId: string): string
+describeEnding(state: GameState): readonly string[] | null   // 02 13.10, runWon일 때만
+totalNodesVisited(state: GameState): number                    // 판 전체 지나온 칸 수
 describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
 describeTamer(tamerId): string   // 테이머 특성 설명
 describeHazardRule(level: number): string   // 디지털 해저드 그 단계에서 더해지는 규칙 한 줄 (02 13.6)

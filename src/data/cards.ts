@@ -315,15 +315,15 @@ export const cards = [
     base: {
       cost: 2,
       effects: [
-        { op: 'damage', amount: 20, target: 'enemy' },
-        { op: 'loseHp', amount: 4 },
+        { op: 'damage', amount: 22, target: 'enemy' },
+        { op: 'loseHp', amount: 3 },
       ],
     },
     upgraded: {
       cost: 2,
       effects: [
-        { op: 'damage', amount: 26, target: 'enemy' },
-        { op: 'loseHp', amount: 4 },
+        { op: 'damage', amount: 28, target: 'enemy' },
+        { op: 'loseHp', amount: 3 },
       ],
     },
   },

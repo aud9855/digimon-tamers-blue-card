@@ -36,7 +36,7 @@ const CARD_SCORES: Record<string, number> = {
   sweep: 6,
   counter_stance: 5,
   blue_card: 8,
-  digital_hazard: 4,
+  digital_hazard: 7,
   evo_resonance: 7,
   // 은세나
   diamond_storm: 3,
@@ -58,7 +58,7 @@ const CARD_SCORES: Record<string, number> = {
   terrier_tornado: 5,
   calm_guard: 5,
   analyze: 5,
-  burst_fire: 4,
+  burst_fire: 5,
   shield_rush: 5,
   kung_fu: 5,
   gatling: 6,

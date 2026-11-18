@@ -52,6 +52,7 @@ export function EnemyView({
   const enemy = state.battle?.enemies[index];
   if (!enemy) return null;
   const def = getEnemy(enemy.defId);
+  const boss = def.tier === 'boss';
   if (!enemy.alive) {
     return <div className="w-full" data-enemy-index={index} />;
   }
@@ -80,7 +81,12 @@ export function EnemyView({
           {/* 흰 외곽 빛은 도트에만 (발밑 그림자까지 빛나면 회색 네모판처럼 보임) */}
           <EnemySprite
             enemyId={def.id}
-            className="h-full w-full [filter:drop-shadow(0_0_1px_rgb(255_255_255/0.85))_drop-shadow(0_0_4px_rgb(255_255_255/0.3))]"
+            className={`h-full w-full ${
+              boss
+                ? // 보스: 흰 외곽선 두 겹 + 노란 빛 (디 리퍼처럼 배경과 색이 같은 보스도 보이게)
+                  '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_6px_rgb(253_224_71/0.55))]'
+                : '[filter:drop-shadow(0_0_1px_rgb(255_255_255/0.85))_drop-shadow(0_0_4px_rgb(255_255_255/0.3))]'
+            }`}
             scaled
           />
         </BattleSprite>

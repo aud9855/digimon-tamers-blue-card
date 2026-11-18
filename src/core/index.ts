@@ -13,6 +13,7 @@ export { currentForm, isMatrix } from './helpers';
 export { applyAction, getLegalActions, IllegalActionError } from './engine';
 /** 휴식의 회복 비율 (해저드 반영) */
 export { restHealPct } from './run/rest';
+export { totalNodesVisited } from './run/act';
 export {
   describeCard,
   describeChip,
@@ -24,6 +25,7 @@ export {
   previewCardCost,
   previewEvolveCost,
   previewOverdraw,
+  describeEnding,
 } from './describe';
 export type { DescribeContext, IntentView } from './describe';
 export type * from './types';
