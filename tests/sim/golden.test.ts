@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { runOne } from '../../src/sim/runner';
 
 // 골든 값: 규칙이나 수치를 일부러 바꿨을 때만, 이유를 커밋 메시지에 적고 갱신합니다 (03 8.1).
-// 마지막 갱신: 2026-11-17 밸런스 3차: 적·시작 칩·테이머 HP 수치 조정 (docs/balance/M2.md)
+// 마지막 갱신: 2026-11-18 콘텐츠 2차: 보상 칩 6개 추가(칩 뽑기 결과가 바뀜), 진화 충전기·연사·디지털 해저드 수치
 const GOLDEN_SEED_12345 = {
   won: true,
   battles: 14,
-  finalHp: 54,
+  finalHp: 80,
   deck: [
     'attack_plugin',
     'attack_plugin+',

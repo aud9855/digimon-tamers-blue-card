@@ -231,7 +231,7 @@ describe('카드 내기 (02 3.5)', () => {
 
 describe('승리와 패배 (02 3.11)', () => {
   it('loseHp로 HP가 0이 되면 패배하고 국면은 runLost', () => {
-    const state = makeBattle({ hand: ['digital_hazard'], hp: 4 });
+    const state = makeBattle({ hand: ['digital_hazard'], hp: 3 });
     const { state: next, events } = play(state, 'digital_hazard', 0);
     expect(next.phase).toBe('runLost');
     expect(next.battle).toBeNull();
@@ -239,7 +239,7 @@ describe('승리와 패배 (02 3.11)', () => {
     expect(eventsOf(events, 'runEnded')[0]?.won).toBe(false);
   });
 
-  it('마지막 적을 잡으면 그 카드의 남은 효과(HP 4 잃음)는 실행되지 않고 승리', () => {
+  it('마지막 적을 잡으면 그 카드의 남은 효과(HP 3 잃음)는 실행되지 않고 승리', () => {
     const state = makeBattle({
       hand: ['digital_hazard'],
       hp: 4,

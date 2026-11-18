@@ -78,6 +78,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     map: { nodes: [], bossNodeId: '' },
     nodeId: null,
     path: [],
+    pastNodes: 0,
     removalsBought: 0,
     hazard: opts.hazard ?? 0,
     formTraits: opts.formTraits ?? {},

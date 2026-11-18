@@ -69,7 +69,7 @@ export const chips = [
     name: '진화 충전기',
     start: true,
     trigger: 'onFirstTurn',
-    effects: [{ op: 'freeEvolve' }],
+    effects: [{ op: 'freeEvolve' }, { op: 'loseHp', amount: 3 }],
   },
   {
     id: 'heal_chip',
@@ -101,5 +101,41 @@ export const chips = [
     id: 'bit_pouch',
     name: '비트 주머니',
     modifiers: { battleBitsBonus: 5 },
+  },
+  // ── 콘텐츠 2차 보상 칩 (02 9.5). 칩 뽑기가 배열 순서를 따르므로 새 칩은 끝에 더함 ──
+  {
+    id: 'scope_lens',
+    name: '조준 렌즈',
+    trigger: 'onBattleStart',
+    effects: [{ op: 'applyStatus', status: 'vulnerable', amount: 1, target: 'allEnemies' }],
+  },
+  {
+    id: 'jammer',
+    name: '교란 신호',
+    trigger: 'onBattleStart',
+    effects: [{ op: 'applyStatus', status: 'weak', amount: 1, target: 'allEnemies' }],
+  },
+  {
+    id: 'ignition_core',
+    name: '점화 회로',
+    trigger: 'onEvolve',
+    effects: [{ op: 'damage', amount: 3, target: 'allEnemies' }],
+  },
+  {
+    id: 'data_buffer',
+    name: '데이터 버퍼',
+    modifiers: { maxHpBonus: 8 },
+  },
+  {
+    id: 'ultimate_core',
+    name: '궁극의 핵',
+    trigger: 'onTurnStart',
+    effects: [{ op: 'ifStage', min: 'ultimate', then: [{ op: 'shield', amount: 2 }] }],
+  },
+  {
+    id: 'first_aid_patch',
+    name: '응급 패치',
+    trigger: 'onEvolve',
+    effects: [{ op: 'heal', amount: 2 }],
   },
 ] satisfies ChipDef[];

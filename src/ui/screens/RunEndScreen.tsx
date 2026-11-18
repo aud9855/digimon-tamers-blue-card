@@ -1,8 +1,49 @@
 // 결과 화면 (runWon / runLost)
+import { useState } from 'react';
+import { describeEnding, totalNodesVisited, type TamerId } from '../../core/index';
 import { getChip, getTamer } from '../../data/index';
 import { displayFormId, Hero, PrimaryButton, ScreenTitle } from '../components/common';
 import { Screen } from '../components/Screen';
+import { TamerFace } from '../components/Sprites';
 import { useDisplayState, useGame } from '../store';
+
+/** 엔딩 한 장면 (02 13.10): 이긴 판에서 결과보다 먼저 한 번 */
+function EndingScene({
+  tamerId,
+  formId,
+  lines,
+  onDone,
+}: {
+  tamerId: TamerId;
+  formId: string;
+  lines: readonly string[];
+  onDone: () => void;
+}) {
+  return (
+    <div
+      className="flex flex-1 flex-col items-center justify-center-safe gap-5 overflow-y-auto px-6 py-6 text-center"
+      data-testid="ending"
+    >
+      <p className="text-xs font-bold tracking-[0.3em] text-amber-300/80">EPILOGUE</p>
+      <div className="flex items-end gap-3">
+        <TamerFace tamerId={tamerId} className="h-12 w-12" />
+        <Hero formId={formId} size={112} ray="252 211 77" />
+      </div>
+      <div className="ui-panel w-full max-w-xs space-y-2 p-4 text-left text-sm leading-relaxed text-slate-100">
+        {lines.map((line, i) => (
+          <p key={line} className="ending-line" style={{ animationDelay: `${0.3 + i * 0.6}s` }}>
+            {line}
+          </p>
+        ))}
+      </div>
+      <div className="w-full max-w-xs">
+        <PrimaryButton testId="ending-next" onClick={onDone}>
+          결과 보기
+        </PrimaryButton>
+      </div>
+    </div>
+  );
+}
 
 export function RunEndScreen() {
   const state = useDisplayState();
@@ -10,6 +51,20 @@ export function RunEndScreen() {
   const notice = useGame((s) => s.unlockNotice);
   const run = state.run;
   const won = state.phase === 'runWon';
+  const ending = describeEnding(state);
+  const [endingSeen, setEndingSeen] = useState(false);
+  if (run && ending && !endingSeen) {
+    return (
+      <Screen backdrop={run.act}>
+        <EndingScene
+          tamerId={run.tamerId}
+          formId={displayFormId(run.tamerId, run.maxStage)}
+          lines={ending}
+          onDone={() => setEndingSeen(true)}
+        />
+      </Screen>
+    );
+  }
   return (
     <Screen backdrop={run?.act}>
       <div
@@ -44,7 +99,7 @@ export function RunEndScreen() {
                 도달<b>{run.act}막</b>
               </div>
               <div className="ui-stat">
-                이번 막 칸<b>{run.path.length}</b>
+                지나온 칸<b>{totalNodesVisited(state)}</b>
               </div>
               <div className="ui-stat">
                 덱<b>{run.deck.length}장</b>

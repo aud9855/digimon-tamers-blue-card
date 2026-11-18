@@ -65,8 +65,8 @@ export const henryCards = [
     type: 'attack',
     rarity: 'common',
     pool: 'henry',
-    base: { cost: 1, effects: [{ op: 'damage', amount: 2, hits: 4, target: 'randomEnemy' }] },
-    upgraded: { cost: 1, effects: [{ op: 'damage', amount: 2, hits: 6, target: 'randomEnemy' }] },
+    base: { cost: 1, effects: [{ op: 'damage', amount: 2, hits: 5, target: 'randomEnemy' }] },
+    upgraded: { cost: 1, effects: [{ op: 'damage', amount: 2, hits: 7, target: 'randomEnemy' }] },
   },
   {
     id: 'shield_rush',

@@ -41,7 +41,7 @@ export const events = [
           { op: 'gainBits', amount: 20 },
         ],
       },
-      { label: '괜찮다고 한다', effects: [] },
+      { label: '괜찮다고 한다', effects: [{ op: 'gainBits', amount: 40 }] },
     ],
   },
   {

@@ -7,7 +7,7 @@ import {
   type GameState,
   type Profile,
 } from '../core/index';
-import { getCard, getEnemy, getTamer } from '../data/index';
+import { constants, getCard, getEnemy, getTamer } from '../data/index';
 import type { TamerId } from '../core/index';
 import type { PlaybackSpeed } from './playback';
 
@@ -139,6 +139,8 @@ export function fillMissingFields(state: GameState): void {
     run.formTraits ??= {};
     run.hazard ??= 0;
     run.removalsBought ??= 0;
+    // 지난 막은 끝까지(지도 줄 + 보스) 지나왔으므로 그 수로 채움
+    run.pastNodes ??= ((run.act ?? 1) - 1) * (constants.MAP_ROWS + 1);
   }
   const battle = state.battle as (Partial<NonNullable<GameState['battle']>> & object) | null;
   if (battle) {

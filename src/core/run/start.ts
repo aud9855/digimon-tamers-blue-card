@@ -36,6 +36,7 @@ export function startRun(
     map: { nodes: [], bossNodeId: '' },
     nodeId: null,
     path: [],
+    pastNodes: 0,
     removalsBought: 0,
     hazard,
     formTraits: {},

@@ -47,6 +47,7 @@ export interface BattleViewProps {
 
 /** 무대 높이를 아직 모를 때(서버 렌더·첫 그림) 쓰는 값 (360×640 기준) */
 const FIELD_DEFAULT_HEIGHT = 320;
+const FIELD_DEFAULT_WIDTH = 360;
 /** 적 칸에서 그림 말고 차지하는 높이 (인텐트·이름·HP·상태 줄, px) */
 const ENEMY_CHROME = 80;
 /** 무대 아래쪽 파트너 줄(진화 버튼) 높이 (px) */
@@ -56,19 +57,23 @@ const ENEMY_MIN_SIZE = 56;
 const ENEMY_STAGGER = 20;
 
 /** 요소 높이를 재서 돌려줌 (크기가 바뀌면 다시 잼) */
-function useHeight(initial: number) {
+function useFieldSize(initial: number) {
   const ref = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(initial);
+  const [width, setWidth] = useState(FIELD_DEFAULT_WIDTH);
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const measure = () => setHeight(el.clientHeight);
+    const measure = () => {
+      setHeight(el.clientHeight);
+      setWidth(el.clientWidth);
+    };
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     measure();
     return () => ro.disconnect();
   }, []);
-  return { ref, height };
+  return { ref, height, width };
 }
 
 /** 상태를 받아 그리기만 함 (테스트에서 바로 씀) */
@@ -89,12 +94,18 @@ export function BattleView({
 }: BattleViewProps) {
   const battle = state.battle;
   const run = state.run;
-  const { ref: fieldRef, height: fieldHeight } = useHeight(FIELD_DEFAULT_HEIGHT);
+  const {
+    ref: fieldRef,
+    height: fieldHeight,
+    width: fieldWidth,
+  } = useFieldSize(FIELD_DEFAULT_HEIGHT);
   if (!battle || !run) return null;
 
   const enemyCount = battle.enemies.length;
-  // 적이 적을수록 크게. 무대가 낮으면(작은 화면) 파트너 줄(진화 버튼)과 겹치지 않게 줄임
-  const baseSize = enemyCount <= 1 ? 104 : enemyCount === 2 ? 92 : 80;
+  // 적이 적을수록 크게, 무대가 넓으면 크게(360px 폭에서 104/92/80, 480px에서 139/122/106).
+  // 무대가 낮으면(작은 화면) 파트너 줄(진화 버튼)과 겹치지 않게 줄임
+  const widthFrac = enemyCount <= 1 ? 0.29 : enemyCount === 2 ? 0.255 : 0.22;
+  const baseSize = Math.round(fieldWidth * widthFrac);
   const stagger = (enemyCount - 1) * ENEMY_STAGGER;
   const enemySize = Math.max(
     ENEMY_MIN_SIZE,
@@ -133,8 +144,11 @@ export function BattleView({
             {battle.enemies.map((_, i) => (
               <div
                 key={i}
-                className="max-w-[120px] min-w-0 flex-1"
-                style={{ transform: `translateY(${(enemyCount - 1 - i) * ENEMY_STAGGER}px)` }}
+                className="min-w-0 flex-1"
+                style={{
+                  maxWidth: enemySize + 16,
+                  transform: `translateY(${(enemyCount - 1 - i) * ENEMY_STAGGER}px)`,
+                }}
               >
                 <EnemyView
                   state={state}

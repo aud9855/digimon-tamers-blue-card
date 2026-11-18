@@ -18,6 +18,16 @@ afterEach(() => restore());
 
 const DECK = Array.from({ length: 15 }, () => 'guard');
 
+/** 콘텐츠 2차에 더한 보상 칩 (0단계 칩 묶음 시험에서 뺌) */
+const CONTENT2 = [
+  'scope_lens',
+  'jammer',
+  'ignition_core',
+  'data_buffer',
+  'ultimate_core',
+  'first_aid_patch',
+];
+
 function freshBattle(chips: string[], extra: Parameters<typeof makeBattle>[0] = {}): GameState {
   const state = makeBattle({ deck: DECK, chips, ...extra });
   state.battle = null;
@@ -120,7 +130,7 @@ describe('0단계 칩 6개가 실제 전투에서 동작', () => {
       .map((c) => c.id)
       .filter((id) => {
         const chip = getChips().find((c) => c.id === id);
-        return !id.startsWith('test_') && !chip?.hidden && !chip?.start;
+        return !id.startsWith('test_') && !chip?.hidden && !chip?.start && !CONTENT2.includes(id);
       });
     expect(realChips).toHaveLength(6);
 
@@ -144,6 +154,46 @@ describe('0단계 칩 6개가 실제 전투에서 동작', () => {
     const withPouch = play(killable, 'strike', 0).state.run?.bits ?? 0;
     const without = play(plain, 'strike', 0).state.run?.bits ?? 0;
     expect(withPouch - without).toBe(5); // 비트 주머니
+  });
+});
+
+describe('콘텐츠 2차 보상 칩 6개 (02 9.5)', () => {
+  it('조준 렌즈·교란 신호: 전투 시작에 모든 적에게 취약 1·약화 1', () => {
+    const lens = battleOf(freshBattle(['scope_lens']));
+    expect(lens.enemies.every((e) => e.statuses.vulnerable === 1)).toBe(true);
+    const jam = battleOf(freshBattle(['jammer']));
+    expect(jam.enemies.every((e) => e.statuses.weak === 1)).toBe(true);
+  });
+
+  it('점화 회로: 진화하면 모든 적이 피해를 받음', () => {
+    const state = freshBattle(['ignition_core']);
+    const before = battleOf(state).enemies[0]!.hp;
+    const after = battleOf(act(state, { type: 'evolve' }).state).enemies[0]!.hp;
+    expect(after).toBeLessThan(before);
+  });
+
+  it('데이터 버퍼: 얻을 때 최대 HP와 지금 HP +8', () => {
+    const state = makeBattle({ hp: 30, maxHp: 60 });
+    gainChip(state, [], 'data_buffer');
+    expect(state.run?.maxHp).toBe(68);
+    expect(state.run?.hp).toBe(38);
+  });
+
+  it('궁극의 핵: 궁극체 이상일 때만 턴 시작에 실드 2', () => {
+    const low = makeBattle({ deck: DECK, chips: ['ultimate_core'], stage: 'champion' });
+    expect(battleOf(act(low, { type: 'endTurn' }).state).shield).toBe(0);
+    const high = makeBattle({
+      deck: DECK,
+      chips: ['ultimate_core'],
+      stage: 'ultimate',
+      maxStage: 'ultimate',
+    });
+    expect(battleOf(act(high, { type: 'endTurn' }).state).shield).toBe(2);
+  });
+
+  it('응급 패치: 진화하면 HP 2 회복', () => {
+    const state = freshBattle(['first_aid_patch'], { hp: 30 });
+    expect(act(state, { type: 'evolve' }).state.run?.hp).toBe(32);
   });
 });
 

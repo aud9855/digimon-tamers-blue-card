@@ -108,7 +108,7 @@ describe('1단계 저장 (버전 1, 2단계 필드 없음) 이어 하기', () =>
     };
     s.version = 1;
     delete s.unlocks;
-    for (const key of ['formTraits', 'hazard']) if (s.run) delete s.run[key];
+    for (const key of ['formTraits', 'hazard', 'pastNodes']) if (s.run) delete s.run[key];
     for (const key of ['companions', 'cardsPlayedThisTurn', 'rampage', 'handChoice']) {
       if (s.battle) delete s.battle[key];
     }
@@ -122,6 +122,8 @@ describe('1단계 저장 (버전 1, 2단계 필드 없음) 이어 하기', () =>
       if (!restored) return;
       expect(restored.battle?.companions).toEqual([]);
       expect(restored.run?.formTraits).toEqual({});
+      // 지난 막 칸 수: 1막이면 0 (02 13.10과 같은 콘텐츠 2차에 생긴 통계 필드)
+      expect(restored.run?.pastNodes).toBe(((restored.run?.act ?? 1) - 1) * 8);
       let state = restored;
       for (let i = 0; i < 40; i++) {
         const legal = getLegalActions(state);

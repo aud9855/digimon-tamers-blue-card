@@ -60,11 +60,11 @@ describe('콘텐츠 개수 (02 9절, 12절)', () => {
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(2);
   });
 
-  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 15, 이벤트 8, 테이머 4', () => {
+  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 21, 이벤트 8, 테이머 4', () => {
     expect(getForms()).toHaveLength(15);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
-    expect(getChips()).toHaveLength(15);
+    expect(getChips()).toHaveLength(21);
     expect(getEvents()).toHaveLength(8);
     expect(getTamers()).toHaveLength(4);
   });
