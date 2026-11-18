@@ -16,12 +16,21 @@ afterEach(() => restore());
 
 describe('진화 비용 표 (02 3.7)', () => {
   it('열린 최고 단계별 6칸', () => {
-    expect(baseEvolveCost('champion', 'champion')).toBe(3);
-    expect(baseEvolveCost('champion', 'ultimate')).toBe(2);
-    expect(baseEvolveCost('ultimate', 'ultimate')).toBe(3);
-    expect(baseEvolveCost('champion', 'mega')).toBe(1);
-    expect(baseEvolveCost('ultimate', 'mega')).toBe(2);
-    expect(baseEvolveCost('mega', 'mega')).toBe(4);
+    expect(baseEvolveCost('champion', 'champion')).toBe(4);
+    expect(baseEvolveCost('champion', 'ultimate')).toBe(3);
+    expect(baseEvolveCost('ultimate', 'ultimate')).toBe(4);
+    expect(baseEvolveCost('champion', 'mega')).toBe(2);
+    expect(baseEvolveCost('ultimate', 'mega')).toBe(3);
+    expect(baseEvolveCost('mega', 'mega')).toBe(5);
+  });
+
+  it('기다린 턴 할인: 턴마다 1씩 싸지고, 할인으로는 1 아래로 안 감', () => {
+    expect(evolveCost(makeBattle({ turn: 1 }))).toBe(4);
+    expect(evolveCost(makeBattle({ turn: 2 }))).toBe(3);
+    expect(evolveCost(makeBattle({ turn: 4 }))).toBe(1);
+    expect(evolveCost(makeBattle({ turn: 9 }))).toBe(1);
+    // 열린 최고 단계가 높아 비용이 낮아도 할인으로는 1까지
+    expect(evolveCost(makeBattle({ turn: 9, maxStage: 'mega' }))).toBe(1);
   });
 
   it('최고 단계에 이르면 진화할 수 없다', () => {
@@ -32,7 +41,7 @@ describe('진화 비용 표 (02 3.7)', () => {
 
   it('비용을 낼 수 없으면 (memory - cost < -3) 진화할 수 없다', () => {
     const state = makeBattle({ memory: -1 });
-    expect(evolveCost(state)).toBe(3);
+    expect(evolveCost(state)).toBe(4);
     expect(previewEvolveCost(state)).toBeNull();
     expect(getLegalActions(state)).not.toContainEqual({ type: 'evolve' });
   });
@@ -40,7 +49,7 @@ describe('진화 비용 표 (02 3.7)', () => {
 
 describe('진화 처리 (02 3.7)', () => {
   it('성장기 → 성숙기: 메모리, 임시 HP, 필살기 임시 카드, 표시', () => {
-    const state = makeBattle({ memory: 3 });
+    const state = makeBattle({ memory: 4 });
     const { state: next, events } = act(state, { type: 'evolve' });
     const battle = battleOf(next);
     expect(battle.stage).toBe('champion');
@@ -54,21 +63,21 @@ describe('진화 처리 (02 3.7)', () => {
       type: 'evolved',
       from: 'rookie',
       to: 'champion',
-      cost: 3,
+      cost: 4,
       tempHpGained: 5,
       formId: 'growlmon',
     });
   });
 
   it('성장기에서 궁극체까지 한 단계씩 진화 (메가로그라우몬·듀크몬)', () => {
-    const state = makeBattle({ maxStage: 'mega', memory: 4 });
-    // 비용: 성숙기 1, 완전체 2, 궁극체 4 → 4 - 1 - 2 = 1, 1 - 4 = -3 (가능)
+    const state = makeBattle({ maxStage: 'mega', memory: 7 });
+    // 비용: 성숙기 2, 완전체 3, 궁극체 5 → 7 - 2 - 3 = 2, 2 - 5 = -3 (가능)
     const s1 = act(state, { type: 'evolve' }).state;
     expect(battleOf(s1).stage).toBe('champion');
-    expect(battleOf(s1).memory).toBe(3);
+    expect(battleOf(s1).memory).toBe(5);
     const s2 = act(s1, { type: 'evolve' }).state;
     expect(battleOf(s2).stage).toBe('ultimate');
-    expect(battleOf(s2).memory).toBe(1);
+    expect(battleOf(s2).memory).toBe(2);
     const s3 = act(s2, { type: 'evolve' }).state;
     expect(battleOf(s3).stage).toBe('mega');
     expect(battleOf(s3).memory).toBe(-3);
@@ -125,6 +134,7 @@ describe('진화 처리 (02 3.7)', () => {
     const state = makeBattle({
       enemies: ['test_attacker'],
       hp: 50,
+      memory: 4,
       drawPile: Array.from({ length: 10 }, () => 'guard'),
     });
     const evolved = act(state, { type: 'evolve' }).state;
@@ -254,7 +264,7 @@ describe('다영·진 (02 13.3)', () => {
     const before = constants.SKIP_EVOLVE_COST;
     constants.SKIP_EVOLVE_COST = 1;
     try {
-      expect(previewEvolveCost(aiMako({ memory: 3 }))).toBe(
+      expect(previewEvolveCost(aiMako({ memory: 4 }))).toBe(
         (constants.EVOLVE_BASE_COST.mega ?? 0) + 2,
       );
     } finally {

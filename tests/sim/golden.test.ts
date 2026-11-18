@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { runOne } from '../../src/sim/runner';
 
 // 골든 값: 규칙이나 수치를 일부러 바꿨을 때만, 이유를 커밋 메시지에 적고 갱신합니다 (03 8.1).
-// 마지막 갱신: 2026-11-18 콘텐츠 2차: 보상 칩 6개 추가(칩 뽑기 결과가 바뀜), 진화 충전기·연사·디지털 해저드 수치
+// 마지막 갱신: 2026-11-18 진화 기다린 턴 할인(02 3.7, 사용자 결정 안 A): 기본 비용 +1, 턴마다 -1
 const GOLDEN_SEED_12345 = {
   won: true,
   battles: 14,
-  finalHp: 80,
+  finalHp: 65,
   deck: [
     'attack_plugin',
     'attack_plugin+',

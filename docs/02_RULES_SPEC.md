@@ -108,17 +108,22 @@
 ```
 next = stage의 다음 단계
 cost = EVOLVE_BASE_COST[next] - (index(run.maxStage) - index(next))
+cost = max(1, cost - EVOLVE_WAIT_DISCOUNT × (battle.turn - 1))   // 기다린 턴 할인 (1 아래로는 안 감)
 cost = cost + (칩의 evolveCostDelta 합)
 cost = max(0, cost)
 freeEvolve가 true면 cost = 0
 ```
-`EVOLVE_BASE_COST = { champion: 3, ultimate: 3, mega: 4 }`, `index`: rookie 0, champion 1, ultimate 2, mega 3.
+`EVOLVE_BASE_COST = { champion: 4, ultimate: 4, mega: 5 }`, `EVOLVE_WAIT_DISCOUNT = 1`, `index`: rookie 0, champion 1, ultimate 2, mega 3.
+
+1턴 비용 (2턴부터 1씩 싸지고, 할인으로는 1 아래로 안 감):
 
 | 열린 최고 단계 | 성숙기로 | 완전체로 | 궁극체로 |
 | :--- | :---: | :---: | :---: |
-| 성숙기 (1막) | 3 | — | — |
-| 완전체 (2막) | 2 | 3 | — |
-| 궁극체 (3막) | 1 | 2 | 4 |
+| 성숙기 (1막) | 4 | — | — |
+| 완전체 (2막) | 3 | 4 | — |
+| 궁극체 (3막) | 2 | 3 | 5 |
+
+- 기다린 턴 할인은 2026-11-18 사용자 결정(안 A)입니다. 첫 턴에 진화하는 것이 늘 정답이던 것을 "지금 진화할까, 기다릴까"의 선택으로 바꾸려는 것입니다 (설계 기둥 1). 그 전에는 기본 비용이 { 3, 3, 4 }이고 할인이 없었습니다.
 
 **처리 순서**:
 1. `memory -= cost`. `freeEvolve`가 true였으면 false로.
