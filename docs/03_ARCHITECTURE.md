@@ -94,6 +94,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  ├─ upper-drive.mjs        dev·build·test·e2e 실행기 (Windows 소문자 드라이브 경로에서 vitest·Tailwind가 깨지는 문제를 피함)
 │  ├─ card-texts.ts          카드·칩 설명 글을 docs/balance/card-texts.md로 출력
 │  ├─ e2e/                   npm run e2e (battle.mjs 시나리오, browser.mjs 브라우저 조작)
+│  ├─ perf/bench.mjs         npm run perf (첫 화면·카드 끌기·턴 끝 연출의 메인 스레드 시간)
 │  └─ art/battle-bg.mjs      막별 전투 배경 도트를 그려 src/ui/art/stage/에 저장
 ├─ public/                   아이콘, manifest.webmanifest (9.1)
 ├─ pwa/                      서비스 워커 템플릿 sw.js, 안드로이드 아이콘 앞면 그림(icon-foreground.svg)
@@ -381,7 +382,7 @@ interface IntentView {
 `kind` 정하기: `attack`만 있으면 `attack`, `shield`만 있으면 `defend`, 자기에게 거는 `applyStatus`만 있으면 `buff`, 플레이어에게 거는 `applyStatus`나 `addCard`만 있으면 `debuff`, 그 밖에 여러 종류가 섞였으면 `mixed`.
 
 **지켜야 하는 약속** (테스트로 확인합니다):
-1. **순수 함수**: `applyAction`은 받은 `state`를 고치지 않습니다. 시작할 때 `structuredClone(state)`로 복사해 복사본을 고치고 돌려줍니다.
+1. **순수 함수**: `applyAction`은 받은 `state`를 고치지 않습니다. 시작할 때 `cloneState(state)`(`core/clone.ts`)로 복사해 복사본을 고치고 돌려줍니다. 상태는 일반 객체·배열·원시값만 담으므로(Map·Set·Date·함수를 넣지 않음) `structuredClone`보다 몇 배 빠른 단순 재귀 복사를 씁니다.
 2. **결정적**: 같은 `state`와 `action`이면 결과가 항상 같습니다. `core`와 `data`에서 `Math.random`, `Date`, `performance`를 쓰지 않습니다. 무작위는 `state.rng`만 씁니다.
 3. **잘못된 행동은 예외**: `getLegalActions`에 없는 행동을 넣으면 `IllegalActionError`를 던지고 상태는 그대로입니다.
 4. **`getLegalActions`와 `applyAction`은 같은 판정 함수를 씁니다.** 조건을 두 군데에 따로 쓰지 않습니다.
@@ -564,6 +565,7 @@ pwa/sw.js                     서비스 워커 템플릿 (빌드 때 vite.config
 | `npm run sim -- …` | 봇 측정 (7.2) |
 | `npm run card-texts` | 카드·칩 설명 글 출력 (`docs/balance/card-texts.md`) |
 | `npm run e2e` | 360px 화면에서 전투 하나를 화면 조작만으로 끝까지 (`scripts/e2e/`, Chrome DevTools Protocol을 Node 내장 WebSocket으로 직접 다룸. 새 라이브러리 없음) |
+| `npm run perf` | 성능 측정: 확인용 훅을 켠 배포판(`VITE_DEBUG_HOOKS=1`, `node_modules/.perf-dist`)을 CPU 4배 느리게 해서 첫 화면·카드 끌기·턴 끝 연출의 메인 스레드 시간을 잼 (`scripts/perf/`) |
 | `npm run dev` / `npm run build` | (1단계) 개발 서버 / 빌드 |
 
 - **작업을 끝냈다고 하기 전에** `npm run typecheck`, `npm run lint`, `npm test`가 모두 통과해야 합니다.

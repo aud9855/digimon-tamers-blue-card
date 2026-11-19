@@ -1,4 +1,5 @@
 // core가 밖에 내보내는 것 (03 5절)
+export { cloneState } from './clone';
 export { createInitialState, SAVE_VERSION } from './state';
 export {
   applyRunResult,

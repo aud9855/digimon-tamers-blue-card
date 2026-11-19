@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { describeCard, previewCardCost, type GameState } from '../../core/index';
 import type { CardType, Rarity } from '../../core/index';
 import { getCard } from '../../data/index';
@@ -61,10 +62,13 @@ export interface CardViewProps {
   size?: 'hand' | 'offer' | 'large';
   /** 손패의 카드면 지금 낼 때의 비용(처음 내는 카드 할인 등)을 보여 줌 */
   cardUid?: number;
+  /** 반짝임·회전 애니메이션을 끔 (카드가 많이 깔리는 덱 목록 등, GPU 부담 줄이기) */
+  still?: boolean;
 }
 
-/** 카드 한 장: 풀아트 TCG 디자인 (04 B1, 모양은 CardView.css) */
-export function CardView({
+/** 카드 한 장: 풀아트 TCG 디자인 (04 B1, 모양은 CardView.css).
+ *  memo: 받는 값이 같으면(고르기·끌기만 바뀐 다른 카드) 다시 그리지 않음 */
+export const CardView = memo(function CardView({
   defId,
   upgraded,
   state,
@@ -72,6 +76,7 @@ export function CardView({
   selected = false,
   size = 'hand',
   cardUid,
+  still = false,
 }: CardViewProps) {
   const def = getCard(defId);
   const face = upgraded ? def.upgraded : def.base;
@@ -88,7 +93,7 @@ export function CardView({
           : size === 'offer'
             ? 'tcg-offer h-48 w-full'
             : 'h-[100px] w-full'
-      } ${dimmed ? 'opacity-40' : ''} ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
+      } ${still ? 'tcg-still' : ''} ${dimmed ? 'opacity-40' : ''} ${selected ? '-translate-y-2 ring-2 ring-amber-300' : ''}`}
     >
       <div className="tcg-art">
         {art.kind === 'form' ? (
@@ -125,4 +130,4 @@ export function CardView({
       </div>
     </div>
   );
-}
+});
