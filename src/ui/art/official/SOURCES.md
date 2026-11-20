@@ -1,5 +1,3 @@
- 좌우 뒤집음 (2026-11-16 아트 점검) |
-좌우 뒤집음 (2026-11-16 아트 점검) |
 # 원작 그림에서 줄인 도트 출처
 
 이 폴더의 그림은 원작 디지몬 게임의 3D 모델 렌더(일부는 공식 일러스트)를 도트로 줄인 것입니다. 권리는 © BANDAI, © TOEI ANIMATION 등 각 권리자에게 있습니다.
@@ -13,17 +11,17 @@
 | `growlmon` | [Growmon_DSAM_Model.png](https://wikimon.net/File:Growmon_DSAM_Model.png) |  |
 | `wargrowlmon` | [MegaloGrowmon_DSAM_Model.png](https://wikimon.net/File:MegaloGrowmon_DSAM_Model.png) |  |
 | `gallantmon` | [Dukemon_DSAM_Model.png](https://wikimon.net/File:Dukemon_DSAM_Model.png) | 좌우 뒤집음 |
-| `megidramon` | [Megidramon_Model_DSR.png](https://wikimon.net/File:Megidramon_Model_DSR.png) |  |
+| `megidramon` | [Megidramon_Model_DSR.png](https://wikimon.net/File:Megidramon_Model_DSR.png) | 좌우 뒤집음 (2026-11-20 디자인 점검) |
 | `renamon` | [Renamon_DSAM_Model.png](https://wikimon.net/File:Renamon_DSAM_Model.png) | 좌우 뒤집음 |
 | `kyubimon` | [Kyubimon_DSAM_Model.png](https://wikimon.net/File:Kyubimon_DSAM_Model.png) | 좌우 뒤집음 |
-| `taomon` | [Taomon_DSAM_Model.png](https://wikimon.net/File:Taomon_DSAM_Model.png) |  |
+| `taomon` | [Taomon_DSAM_Model.png](https://wikimon.net/File:Taomon_DSAM_Model.png) | 좌우 뒤집음 (2026-11-20 디자인 점검) |
 | `sakuyamon` | [Sakuyamon_DSAM_Model.png](https://wikimon.net/File:Sakuyamon_DSAM_Model.png) | 좌우 뒤집음 |
 | `terriermon` | [Terriermon_Model_DSR.png](https://wikimon.net/File:Terriermon_Model_DSR.png) | 좌우 뒤집음 (2026-11-16 아트 점검) |
 | `gargomon` | [Galgomon_Model_DSR.png](https://wikimon.net/File:Galgomon_Model_DSR.png) |  |
 | `rapidmon` | [Rapidmon_Perfect_Model_DSR.png](https://wikimon.net/File:Rapidmon_Perfect_Model_DSR.png) |  |
 | `megagargomon` | [Saint_Galgomon_Model_DSR.png](https://wikimon.net/File:Saint_Galgomon_Model_DSR.png) |  |
 | `impmon` | [Impmon_DSAM_Model.png](https://wikimon.net/File:Impmon_DSAM_Model.png) |  |
-| `beelzemon` | [Beelzebumon_DSAM_Model.png](https://wikimon.net/File:Beelzebumon_DSAM_Model.png) |  |
+| `beelzemon` | [Beelzebumon_DSAM_Model.png](https://wikimon.net/File:Beelzebumon_DSAM_Model.png) | 좌우 뒤집음 (2026-11-20 디자인 점검) |
 | `goblimon` | [Goburimon_DSAM_Model.png](https://wikimon.net/File:Goburimon_DSAM_Model.png) | 좌우 뒤집음 (2026-11-16 아트 점검) |
 | `vilemon` | [Evilmon_Model_DSR.png](https://wikimon.net/File:Evilmon_Model_DSR.png) |  |
 | `allomon` | [Allomon_New_Century_model.png](https://wikimon.net/File:Allomon_New_Century_model.png) |  |
