@@ -60,12 +60,12 @@ describe('콘텐츠 개수 (02 9절, 12절)', () => {
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(2);
   });
 
-  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 21, 이벤트 8, 테이머 4', () => {
+  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 21, 이벤트 20, 테이머 4', () => {
     expect(getForms()).toHaveLength(15);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
     expect(getChips()).toHaveLength(21);
-    expect(getEvents()).toHaveLength(8);
+    expect(getEvents()).toHaveLength(20);
     expect(getTamers()).toHaveLength(4);
   });
 
@@ -180,6 +180,38 @@ describe('적', () => {
         expect(phase.cycle.length).toBeGreaterThan(0);
         for (const id of phase.cycle) expect(moveIds.has(id)).toBe(true);
         if (phase.onEnter) expect(moveIds.has(phase.onEnter)).toBe(true);
+      }
+    }
+  });
+
+  it('카드 고르기 효과는 선택지 맨 끝에 하나만, 카드 보상 고르기와 함께 두지 않음 (02 14.2)', () => {
+    const PICK = new Set(['removeCard', 'upgradeCard']);
+    for (const event of getEvents()) {
+      for (const choice of event.choices) {
+        const ops = choice.effects.map((e) => e.op);
+        const picks = ops.filter((op) => PICK.has(op));
+        expect(picks.length, `${event.id} ${choice.label}`).toBeLessThanOrEqual(1);
+        if (picks.length === 1) {
+          expect(PICK.has(ops[ops.length - 1] ?? ''), `${event.id} 맨 끝`).toBe(true);
+          expect(ops.includes('offerCards'), `${event.id} offerCards`).toBe(false);
+        }
+      }
+    }
+    // 테이머의 시작 효과에는 두지 않음 (이벤트 국면이 아니므로)
+    for (const tamer of getTamers()) {
+      for (const e of tamer.startEffects) expect(PICK.has(e.op), tamer.id).toBe(false);
+    }
+  });
+
+  it('반응의 행동 id가 그 적의 행동에 있고, HP 비율은 0~1 (02 14.1)', () => {
+    for (const enemy of getEnemies()) {
+      const moveIds = new Set(enemy.moves.map((m) => m.id));
+      for (const r of enemy.reactions ?? []) {
+        expect(moveIds.has(r.move), `${enemy.id}.${r.move}`).toBe(true);
+        if ('playerHpAtMostPct' in r.when) {
+          expect(r.when.playerHpAtMostPct).toBeGreaterThan(0);
+          expect(r.when.playerHpAtMostPct).toBeLessThan(1);
+        }
       }
     }
   });

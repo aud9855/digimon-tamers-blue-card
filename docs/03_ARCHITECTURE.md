@@ -163,7 +163,11 @@ export interface EnemyDef {
   id: string; name: string; tier: 'normal' | 'elite' | 'boss';
   attribute: Attribute; maxHp: number;
   moves: EnemyMove[]; phases: EnemyPhase[];
+  reactions?: EnemyReaction[];   // 02 14.1
 }
+export type EnemyCondition =   // 02 14.1
+  | { partnerStageAtLeast: Stage } | { alone: true } | { playerHpAtMostPct: number };
+export interface EnemyReaction { when: EnemyCondition; move: string }
 export interface EncounterDef { id: string; act: number; tier: 'easy' | 'normal' | 'elite' | 'boss'; enemies: string[] }
 export type ChipTrigger = 'onBattleStart' | 'onFirstTurn' | 'onTurnStart' | 'onEvolve' | 'onCardPlayed';
 export interface ChipDef {
@@ -182,7 +186,8 @@ export type RunEffect =
   | { op: 'heal'; amount: number } | { op: 'loseHp'; amount: number } | { op: 'gainBits'; amount: number }
   | { op: 'addRandomCard'; rarity: Rarity }
   | { op: 'offerCards'; count: number; upgraded?: boolean; rarity?: Rarity }
-  | { op: 'addRandomChip' } | { op: 'addCard'; cardId: string };
+  | { op: 'addRandomChip' } | { op: 'addCard'; cardId: string }
+  | { op: 'changeMaxHp'; amount: number } | { op: 'removeCard' } | { op: 'upgradeCard' };   // 02 14.2
 export interface EventDef {
   id: string; acts: number[];   // acts: 나오는 막 (02 12.1)
   title: string; text: string; choices: { label: string; effects: RunEffect[] }[];
@@ -202,6 +207,8 @@ export interface EnemyState {
   phaseIndex: number;
   cycleIndex: number;              // -1: onEnter 행동을 보여 주는 중 (02 3.10.1)
   intentMoveId: string;
+  usedReactions: number[];         // 이 전투에서 쓴 반응의 번호 (02 14.1)
+  reacting: boolean;               // 지금 인텐트가 반응인지 (표시용)
 }
 export interface BattleState {
   kind: 'normal' | 'elite' | 'boss';
@@ -247,6 +254,7 @@ export type Pending =
   | { kind: 'shop'; cards: { defId: string; price: number; sold: boolean }[];
       chips: { chipId: string; price: number; sold: boolean }[]; removalUsed: boolean }
   | { kind: 'rest' } | { kind: 'event'; eventId: string }
+  | { kind: 'eventCard'; mode: 'remove' | 'upgrade' }   // 이벤트 효과로 카드 고르기 (02 14.2, 국면 event)
   | { kind: 'treasure'; chipId: string | null }
   | { kind: 'startChip'; chipIds: string[] }          // 시작 칩 고르기 (02 12.7)
   | { kind: 'actClear'; traitStage: Stage | null };   // traitStage: 특성을 고를 단계 (고르면 null)
@@ -288,6 +296,7 @@ export type Action =
   | { type: 'restHeal' }
   | { type: 'restUpgrade'; cardUid: number }
   | { type: 'eventChoose'; index: number }
+  | { type: 'eventPickCard'; cardUid: number }   // 02 14.2
   | { type: 'proceed' }
   | { type: 'chooseStartChip'; index: number }   // 02 12.7
   | { type: 'chooseFormTrait'; index: number }   // 02 12.5
@@ -320,6 +329,7 @@ export type GameEvent =
   | { type: 'memoryChanged'; memory: number }
   | { type: 'damage'; source: Who; target: Who; amount: number; blocked: number; tempHpLost: number; hpLost: number; attrMult: number }
   | { type: 'hpLost'; amount: number }             // loseHp
+  | { type: 'maxHpChanged'; maxHp: number; hp: number }   // changeMaxHp (02 14.2)
   | { type: 'healed'; amount: number }
   | { type: 'shieldGained'; target: Who; amount: number }
   | { type: 'statusApplied'; target: Who; status: StatusId; amount: number }
@@ -328,7 +338,7 @@ export type GameEvent =
       formId: string }                                      // formId: 된 형태 (폭주면 폭주 형태)
   | { type: 'enemyPhaseChanged'; enemyIndex: number; phaseIndex: number }
   | { type: 'enemyMoved'; enemyIndex: number; moveId: string }
-  | { type: 'enemyIntent'; enemyIndex: number; moveId: string }
+  | { type: 'enemyIntent'; enemyIndex: number; moveId: string; reaction?: true }   // reaction: 02 14.1
   | { type: 'enemyDied'; enemyIndex: number }
   | { type: 'battleEnded'; won: boolean; kind: 'normal' | 'elite' | 'boss'; encounterId: string;
       turns: number; hpBefore: number; hpAfter: number; evolveCount: number }

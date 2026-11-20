@@ -101,6 +101,14 @@ export const enemies = [
     attribute: 'virus',
     maxHp: 90,
     moves: [
+      {
+        id: 'cold_glare',
+        name: '차가운 눈빛',
+        effects: [
+          { op: 'applyStatus', status: 'weak', amount: 2, target: 'player' },
+          { op: 'shield', amount: 6 },
+        ],
+      },
       { id: 'ice_claw', name: '얼음 발톱', effects: [{ op: 'attack', amount: 12 }] },
       {
         id: 'frost_breath',
@@ -120,6 +128,8 @@ export const enemies = [
       },
     ],
     phases: [{ cycle: ['ice_claw', 'frost_breath', 'ice_wall'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { partnerStageAtLeast: 'champion' }, move: 'cold_glare' }],
   },
   {
     id: 'musyamon',
@@ -128,6 +138,7 @@ export const enemies = [
     attribute: 'data',
     maxHp: 85,
     moves: [
+      { id: 'one_strike', name: '일도양단', effects: [{ op: 'attack', amount: 16 }] },
       { id: 'triple_cut', name: '삼단 베기', effects: [{ op: 'attack', amount: 4, hits: 3 }] },
       { id: 'great_cut', name: '큰 베기', effects: [{ op: 'attack', amount: 10 }] },
       {
@@ -137,6 +148,8 @@ export const enemies = [
       },
     ],
     phases: [{ cycle: ['triple_cut', 'great_cut', 'focus'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { playerHpAtMostPct: 0.4 }, move: 'one_strike' }],
   },
 
   // ── 보스 ──
@@ -147,6 +160,7 @@ export const enemies = [
     attribute: 'none',
     maxHp: 150,
     moves: [
+      { id: 'hunt', name: '사냥 본능', effects: [{ op: 'attack', amount: 8, hits: 2 }] },
       { id: 'pounce', name: '덮치기', effects: [{ op: 'attack', amount: 12 }] },
       { id: 'claw_flurry', name: '연속 할퀴기', effects: [{ op: 'attack', amount: 4, hits: 3 }] },
       {
@@ -172,6 +186,8 @@ export const enemies = [
       { untilHpPct: 0.5, cycle: ['pounce', 'claw_flurry', 'crouch'] },
       { onEnter: 'roar', cycle: ['rampage', 'fang_flurry'] },
     ],
+    // 반응 (02 14.1)
+    reactions: [{ when: { playerHpAtMostPct: 0.3 }, move: 'hunt' }],
   },
 
   // ── 2막: 일반 ──
@@ -211,6 +227,11 @@ export const enemies = [
     attribute: 'virus',
     maxHp: 58,
     moves: [
+      {
+        id: 'frenzy',
+        name: '격노',
+        effects: [{ op: 'applyStatus', status: 'strength', amount: 3, target: 'self' }],
+      },
       { id: 'scissor', name: '집게', effects: [{ op: 'attack', amount: 5, hits: 2 }] },
       { id: 'dive', name: '내리꽂기', effects: [{ op: 'attack', amount: 12 }] },
       {
@@ -220,6 +241,8 @@ export const enemies = [
       },
     ],
     phases: [{ cycle: ['scissor', 'dive', 'rage'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { alone: true }, move: 'frenzy' }],
   },
   {
     id: 'pico_devimon',
@@ -294,6 +317,14 @@ export const enemies = [
     attribute: 'data',
     maxHp: 160,
     moves: [
+      {
+        id: 'constrict',
+        name: '조여 감기',
+        effects: [
+          { op: 'applyStatus', status: 'weak', amount: 2, target: 'player' },
+          { op: 'attack', amount: 8 },
+        ],
+      },
       { id: 'coil', name: '똬리 휘감기', effects: [{ op: 'attack', amount: 6, hits: 3 }] },
       {
         id: 'shed',
@@ -306,6 +337,8 @@ export const enemies = [
       { id: 'venom_fang', name: '독니', effects: [{ op: 'attack', amount: 17 }] },
     ],
     phases: [{ cycle: ['coil', 'shed', 'venom_fang'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { partnerStageAtLeast: 'ultimate' }, move: 'constrict' }],
   },
   {
     id: 'vajramon',
@@ -314,6 +347,7 @@ export const enemies = [
     attribute: 'virus',
     maxHp: 170,
     moves: [
+      { id: 'ram', name: '돌진', effects: [{ op: 'attack', amount: 22 }] },
       { id: 'horn_charge', name: '뿔 들이받기', effects: [{ op: 'attack', amount: 19 }] },
       {
         id: 'war_stance',
@@ -326,6 +360,8 @@ export const enemies = [
       { id: 'twin_blade', name: '쌍칼', effects: [{ op: 'attack', amount: 7, hits: 2 }] },
     ],
     phases: [{ cycle: ['horn_charge', 'war_stance', 'twin_blade'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { playerHpAtMostPct: 0.4 }, move: 'ram' }],
   },
 
   // ── 2막: 보스 ──
@@ -336,6 +372,14 @@ export const enemies = [
     attribute: 'none',
     maxHp: 380,
     moves: [
+      {
+        id: 'phoenix_plume',
+        name: '불사조의 깃',
+        effects: [
+          { op: 'shield', amount: 15 },
+          { op: 'applyStatus', status: 'strength', amount: 2, target: 'self' },
+        ],
+      },
       { id: 'flame_wing', name: '불꽃 날개', effects: [{ op: 'attack', amount: 11 }] },
       { id: 'ember_rain', name: '불씨 비', effects: [{ op: 'attack', amount: 4, hits: 4 }] },
       {
@@ -369,6 +413,8 @@ export const enemies = [
       { untilHpPct: 0.5, cycle: ['flame_wing', 'ember_rain', 'rise'] },
       { onEnter: 'vermilion_flame', cycle: ['inferno', 'phoenix_dive', 'ash_storm'] },
     ],
+    // 반응 (02 14.1)
+    reactions: [{ when: { partnerStageAtLeast: 'ultimate' }, move: 'phoenix_plume' }],
   },
 
   // ── 3막: 일반 (디 리퍼 에이전트) ──
@@ -435,11 +481,14 @@ export const enemies = [
     attribute: 'data',
     maxHp: 210,
     moves: [
+      { id: 'pierce', name: '꿰뚫기', effects: [{ op: 'attack', amount: 30 }] },
       { id: 'horn_strike', name: '뿔 찌르기', effects: [{ op: 'attack', amount: 26 }] },
       { id: 'carapace', name: '껍질 두르기', effects: [{ op: 'shield', amount: 20 }] },
       { id: 'triple_horn', name: '세 번 찌르기', effects: [{ op: 'attack', amount: 9, hits: 3 }] },
     ],
     phases: [{ cycle: ['horn_strike', 'carapace', 'triple_horn'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { playerHpAtMostPct: 0.35 }, move: 'pierce' }],
   },
   {
     id: 'reaper_optimizer',
@@ -448,6 +497,14 @@ export const enemies = [
     attribute: 'vaccine',
     maxHp: 170,
     moves: [
+      {
+        id: 'counter_optimize',
+        name: '대응 최적화',
+        effects: [
+          { op: 'shield', amount: 15 },
+          { op: 'applyStatus', status: 'weak', amount: 2, target: 'player' },
+        ],
+      },
       {
         id: 'optimize',
         name: '최적화',
@@ -467,6 +524,8 @@ export const enemies = [
       },
     ],
     phases: [{ cycle: ['optimize', 'quad_cut', 'expose'] }],
+    // 반응 (02 14.1)
+    reactions: [{ when: { partnerStageAtLeast: 'mega' }, move: 'counter_optimize' }],
   },
 
   // ── 3막: 보스 ──
@@ -477,6 +536,15 @@ export const enemies = [
     attribute: 'none',
     maxHp: 620,
     moves: [
+      {
+        id: 'analyze',
+        name: '분석',
+        effects: [
+          { op: 'applyStatus', status: 'vulnerable', amount: 2, target: 'player' },
+          { op: 'attack', amount: 10 },
+        ],
+      },
+      { id: 'delete_order', name: '삭제 명령', effects: [{ op: 'attack', amount: 22 }] },
       { id: 'erase', name: '지우기', effects: [{ op: 'attack', amount: 18 }] },
       { id: 'swarm', name: '떼 공격', effects: [{ op: 'attack', amount: 6, hits: 4 }] },
       {
@@ -514,6 +582,11 @@ export const enemies = [
       { untilHpPct: 0.6, cycle: ['erase', 'swarm', 'enclose'] },
       { untilHpPct: 0.3, onEnter: 'diffuse', cycle: ['devour', 'lash', 'suppress'] },
       { onEnter: 'final_process', cycle: ['collapse', 'annihilate'] },
+    ],
+    // 반응 (02 14.1)
+    reactions: [
+      { when: { partnerStageAtLeast: 'mega' }, move: 'analyze' },
+      { when: { playerHpAtMostPct: 0.3 }, move: 'delete_order' },
     ],
   },
 ] satisfies EnemyDef[];

@@ -485,7 +485,28 @@ function restAction(state: GameState, legal: Action[]): Action {
   return best;
 }
 
+/** 이벤트 효과의 카드 고르기 (02 14.2): 지우기는 점수가 가장 낮은 카드, 강화는 가장 높은 카드 */
+function eventCardAction(state: GameState, legal: Action[]): Action {
+  const run = state.run;
+  if (!run || state.pending?.kind !== 'eventCard') throw new Error('카드 고르기 중이 아닙니다');
+  const sign = state.pending.mode === 'remove' ? -1 : 1;
+  let best: Action | null = null;
+  let bestScore = -Infinity;
+  for (const a of legal) {
+    if (a.type !== 'eventPickCard') continue;
+    const card = run.deck.find((c) => c.uid === a.cardUid);
+    const score = card ? sign * cardScore(card.defId, card.upgraded) : -Infinity;
+    if (score > bestScore) {
+      best = a;
+      bestScore = score;
+    }
+  }
+  if (!best) throw new Error('고를 카드가 없습니다');
+  return best;
+}
+
 function eventAction(state: GameState, legal: Action[]): Action {
+  if (state.pending?.kind === 'eventCard') return eventCardAction(state, legal);
   const run = state.run;
   if (!run || state.pending?.kind !== 'event') return legal[0] ?? { type: 'proceed' };
   const event = getEvent(state.pending.eventId);

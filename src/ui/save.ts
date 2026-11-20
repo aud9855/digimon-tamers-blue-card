@@ -77,12 +77,12 @@ async function get(key: string): Promise<unknown> {
 }
 
 /** 국면마다 있어야 하는 대기 정보 (02 2절의 표) */
-const PENDING_OF: Partial<Record<GameState['phase'], string>> = {
+const PENDING_OF: Partial<Record<GameState['phase'], string | string[]>> = {
   startChip: 'startChip',
   reward: 'reward',
   shop: 'shop',
   rest: 'rest',
-  event: 'event',
+  event: ['event', 'eventCard'],
   treasure: 'treasure',
   actClear: 'actClear',
 };
@@ -125,7 +125,7 @@ export function isConsistentState(state: GameState): boolean {
     return false;
   }
   const kind = PENDING_OF[state.phase];
-  if (kind && state.pending?.kind !== kind) return false;
+  if (kind && !([] as string[]).concat(kind).includes(state.pending?.kind ?? '')) return false;
   return true;
 }
 
@@ -151,6 +151,11 @@ export function fillMissingFields(state: GameState): void {
     battle.handChoice ??= null;
     battle.exhaustPile ??= [];
     battle.evolveCount ??= 0;
+    for (const enemy of battle.enemies ?? []) {
+      const e = enemy as Partial<typeof enemy> & object;
+      e.usedReactions ??= [];
+      e.reacting ??= false;
+    }
   }
   const pending = state.pending as { kind?: string; traitStage?: unknown } | null;
   if (pending?.kind === 'actClear') pending.traitStage ??= null;
