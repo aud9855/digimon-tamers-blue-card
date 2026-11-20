@@ -45,5 +45,8 @@
 | `reaper_horn_striker` | [D-Reaper_ADR-06_Model_DM.png](https://wikimon.net/File:D-Reaper_ADR-06_Model_DM.png) |  |
 | `reaper_optimizer` | [D-Reaper_ADR-08_Model_DM.png](https://wikimon.net/File:D-Reaper_ADR-08_Model_DM.png) |  |
 | `d_reaper` | [Mother_D-Reaper_Model_Dm.png](https://wikimon.net/File:Mother_D-Reaper_Model_Dm.png) |  |
+| `reaper_searcher` | 없음 (직접 그림) | 원작 모델이 없어 직접 칠한 큰 그림(512칸)을 높이 64칸으로 줄임 (2026-11-20 사용자 선택) |
+| `reaper_creeper` | 없음 (직접 그림) | 위와 같음 |
+| `reaper_paranoia` | 없음 (직접 그림) | 위와 같음 |
 
-원작 모델이 없는 `reaper_searcher`, `reaper_creeper`, `reaper_paranoia`는 직접 그린 도트(`../v2/`)를 씁니다.
+`reaper_searcher`, `reaper_creeper`, `reaper_paranoia`는 원작 그림이 없어 직접 그린 것입니다. 큰 그림을 원작 도트와 같은 방식으로 줄였고, 다른 그림보다 칸 수가 적은 64칸입니다. 예전 32칸 도트(`../v2/`)는 이 파일이 없을 때 대신 쓰입니다.
