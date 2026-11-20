@@ -1,6 +1,6 @@
 // 02 3.10 적 행동, 3.10.1 적의 행동 고르기
 import { getEnemy } from '../../data/index';
-import { emptyStatuses, requireBattle } from '../helpers';
+import { emptyStatuses, requireBattle, unreachable } from '../helpers';
 import type { EnemyMove, EnemyState, GameEvent, GameState } from '../types';
 import { hitPlayer } from './damage';
 import { applyStatus } from './effects';
@@ -71,6 +71,8 @@ export function enemyTakeTurn(state: GameState, events: GameEvent[], enemyIndex:
       case 'addCard':
         createTempCards(state, events, effect.cardId, effect.to, effect.count);
         break;
+      default:
+        unreachable(effect, '적 행동 효과');
     }
   }
   if (battleStopped(state)) return;

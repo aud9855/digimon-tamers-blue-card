@@ -387,6 +387,7 @@ interface IntentView {
 4. **`getLegalActions`와 `applyAction`은 같은 판정 함수를 씁니다.** 조건을 두 군데에 따로 쓰지 않습니다.
 5. **저장 가능**: `GameState`에는 JSON으로 바꿀 수 있는 값만 넣습니다 (함수, `Map`, `Set`, `undefined`가 든 배열 금지). `JSON.parse(JSON.stringify(state))`로 되살린 상태에서 이어 해도 결과가 같습니다.
 6. **수치는 코드에 쓰지 않습니다.** `core` 안에 5, 0.25 같은 규칙 숫자를 직접 쓰지 않고 `src/data/constants.ts`나 정의에서 읽습니다.
+7. **효과 종류를 빠뜨리지 않습니다.** 효과·적 행동·런 효과를 다루는 `switch`는 끝에 `default: unreachable(effect, …)`(`core/helpers.ts`)를 둡니다. 새 종류를 더하고 처리를 빠뜨리면 타입 검사에서 걸립니다.
 
 ### 5.1 난수 (src/core/rng.ts)
 - 알고리즘: mulberry32 (32비트 정수 상태 하나, 공개 도메인 알고리즘, 직접 구현).
@@ -436,7 +437,7 @@ interface IntentView {
 
 **`greedy`** (전투 밖):
 - 지도: 다음 칸 점수가 가장 높은 것. HP 50% 미만이면 휴식 > 이벤트 > 상점 > 보물 > 전투 > 강적, 아니면 강적(HP 70% 이상일 때) > 보물 > 전투 > 이벤트 > 상점 > 휴식. HP 50~70%에서는 강적을 맨 뒤로 둡니다.
-- 카드 보상: `policies/greedy.ts` 안의 카드 점수표에서 가장 높은 카드. 덱이 20장 이상이고 점수가 기준 아래면 건너뜀.
+- 카드 보상: `policies/greedy.ts` 안의 카드 점수표에서 가장 높은 카드. 점수표에 없는 카드(새 카드)는 `policies/cardValue.ts`가 효과 목록에서 추정한 점수(손 점수표와 같은 1~8 눈금)를 씁니다. 보상·상점에 나오지 않는 카드(`pool: none`)는 점수표에 없으면 0입니다. 덱이 20장 이상이고 점수가 기준 아래면 건너뜀.
 - 상점: 살 수 있으면 점수가 가장 높은 카드 1장(상점 한 곳에서 1장), 남으면 타격 지우기. 칩은 사지 않습니다.
 - 휴식: HP 60% 미만이면 회복, 아니면 점수가 가장 높은 카드 강화.
 - 이벤트: HP 30% 미만이면 HP를 잃지 않는 선택지, 아니면 첫 선택지.
@@ -481,6 +482,9 @@ npm run sim -- --policy greedy --tamer takato --runs 1000 --hazard 10
 | `tests/data/integrity.test.ts` | 6절의 무결성 |
 | `tests/sim/smoke.test.ts` | `random` 봇 200판이 예외 없이 5,000행동 안에 끝남 |
 | `tests/sim/determinism.test.ts` | 같은 시드·정책이면 마지막 상태가 같음. 중간에 JSON으로 저장했다 되살려도 같음 |
+| `tests/core/effect-coverage.test.ts` | 효과 종류(op)마다 core 처리, 카드 설명 글, 봇 점수가 있음 (새 종류를 더하면 이 파일의 표가 타입 오류로 알려 줌) |
+| `tests/sim/card-value.test.ts` | 봇의 카드 값 추정: 모든 카드가 1~8점(저주 -10), 새 카드가 0점이 아님 |
+| `tests/ui/save-renames.test.ts` | 옛 저장의 id 바꾸기 (`src/ui/saveRenames.ts`) |
 | `tests/sim/golden.test.ts` | 시드 12345 `greedy` 판의 요약(승패, 전투 수, 마지막 HP, 덱)이 저장된 값과 같음 |
 
 - 테스트용 전투는 `tests/helpers`의 함수로 만듭니다 (원하는 덱·손패·적으로 바로 전투 상태를 만드는 함수).
@@ -503,6 +507,7 @@ src/ui/
 ├─ store.ts                   GameState 보관, dispatch(action), 일어난 일 재생 줄
 ├─ playback.ts                GameEvent를 차례로 재생 (종류마다 걸리는 시간)
 ├─ save.ts                    IndexedDB 저장·불러오기 (게임 상태, 설정, 프로필은 따로)
+├─ saveRenames.ts             옛 저장의 id 바꾸기 표 (데이터의 id를 바꾸거나 합칠 때 "옛 id → 새 id"를 적음)
 ├─ sound.ts                   효과음 (Web Audio 합성, 소리 파일 없음, 02 13.7). 재생 줄이 일을 보여 줄 때 냄
 ├─ spritePack.ts              도트 팩 (04 P1): 플레이어가 고른 그림 파일로 디지몬 도트를 바꿈. 이 기기의 IndexedDB에만 저장
 ├─ debug.ts                   개발 서버 전용 주소 옵션 (?debug=battle 등)

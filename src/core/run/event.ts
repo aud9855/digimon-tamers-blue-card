@@ -2,7 +2,7 @@
 import { constants, getEvent } from '../../data/index';
 import { heal, loseHp } from '../battle/damage';
 import { setPhase } from '../phase';
-import { requireRun } from '../helpers';
+import { requireRun, unreachable } from '../helpers';
 import { nextInt } from '../rng';
 import type { GameEvent, GameState, RunEffect } from '../types';
 import {
@@ -53,6 +53,8 @@ export function runRunEffects(
       case 'addCard':
         addCardToDeck(state, events, effect.cardId, false);
         break;
+      default:
+        unreachable(effect, '런 효과');
     }
   }
 }

@@ -9,6 +9,7 @@ import {
 } from '../core/index';
 import { constants, getCard, getEnemy, getTamer } from '../data/index';
 import type { TamerId } from '../core/index';
+import { renameSavedIds } from './saveRenames';
 import type { PlaybackSpeed } from './playback';
 
 const DB_NAME = 'digimon-blue-card';
@@ -171,6 +172,8 @@ export function parseSavedGame(raw: unknown): GameState | null {
     } else {
       return null;
     }
+    // 데이터에서 바꾼 id를 새 id로 (saveRenames.ts)
+    renameSavedIds(state);
     fillMissingFields(state);
     return isConsistentState(state) ? state : null;
   } catch {
