@@ -73,9 +73,9 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
-│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  enemies.ts  encounters.ts
+│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  cards-ryo.ts  enemies.ts  encounters.ts
 │  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
-│  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5)
+│  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5, 두 번째 승리 15.2)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
 │  │  ├─ policies/random.ts  policies/greedy.ts  policies/types.ts(정책 타입)
@@ -113,7 +113,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 export type Stage = 'rookie' | 'champion' | 'ultimate' | 'mega';
 export type Attribute = 'vaccine' | 'data' | 'virus' | 'none';
 export type StatusId = 'strength' | 'weak' | 'vulnerable';
-export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako';
+export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako' | 'ryo';
 export type CardType = 'attack' | 'skill' | 'signature' | 'curse' | 'companion';
 export type FormTraitId = 'tough' | 'sharp';   // 형태 특성 (02 12.5)
 export type Rarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
@@ -362,6 +362,7 @@ createProfile(): Profile   defaultUnlocks(): Unlocks   fullUnlocks(): Unlocks   
 PROFILE_VERSION: number   // Profile.version
 applyRunResult(profile, finalState, events): Profile   // 판이 끝났을 때 판 수·해금·도감 갱신 (순수 함수)
 recordCodex(profile, events): Profile   // 도감만 (새로 본 것이 없으면 같은 객체)
+totalWins(profile): number   tamerUnlockWins(tamerId): number   // 이긴 판 수(테이머별 승리 합), 테이머가 열리는 승리 수 0·1·2 (02 15.2, 잠김 글용)
 currentForm(state): FormDef   // 지금 형태 (폭주 중이면 폭주 형태, 전투 밖이면 성장기). 화면 표시용
 isMatrix(state): boolean   // 매트릭스 에볼루션 중인지 (전투 중 궁극체이고 폭주가 아님, 02 13.1). 화면 표시용
 getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 모든 행동
@@ -534,7 +535,7 @@ src/ui/
 │  └─ Codex(도감)  Settings  Guide(하는 법)  Info(정보·저작권 고지)  ErrorBoundary
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ art/                       도트 그림 (04 7절). index.ts가 id → 그림 표를 모음
-│  ├─ build.ts  v2/           2판 도트 조립기와 그것으로 만든 디지몬 도트 (직접 그림)
+│  ├─ build.ts  v2/           2판 도트 조립기와 그것으로 만든 디지몬 도트 (직접 그림, 테이머 계열마다 한 파일: takato·rika·henry·ai_mako·ryo)
 │  ├─ official.ts  official/  원작 도트 (원작 그림을 줄인 PNG, 출처는 official/SOURCES.md)
 │  ├─ spriteScale.ts          원작 도트의 화면 크기
 │  ├─ stage.ts  stage/        막별 전투 배경 (scripts/art/battle-bg.mjs로 그림)
