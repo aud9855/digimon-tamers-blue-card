@@ -32,7 +32,7 @@ export const tamers = [
     name: '은세나',
     trait: '카드 배틀 실력자',
     line: 'renamon',
-    maxHp: 76,
+    maxHp: 78,
     startBits: 0,
     startMaxStage: 'champion',
     startMaxMemory: 3,

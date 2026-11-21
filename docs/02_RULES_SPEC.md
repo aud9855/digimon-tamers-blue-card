@@ -551,7 +551,7 @@ damage = max(0, floor(raw × mult))
 | 값 | 오유민 (`takato`) | 은세나 (`rika`) | 곽소룡 (`henry`) |
 | :--- | :--- | :--- | :--- |
 | 파트너 계열 | `guilmon` (바이러스) | `renamon` (데이터) | `terriermon` (백신) |
-| 최대 HP | 92 | 76 | 76 |
+| 최대 HP | 92 | 78 | 76 |
 | 시작 비트 / 최고 단계 / 메모리 | 0 / 성숙기 / 3 | 0 / 성숙기 / 3 | 0 / 성숙기 / 3 |
 | 시작 덱 (10장) | 타격 ×4, 방어 ×4, 파이어 볼, 록 브레이커 | 타격 ×4, 방어 ×4, 다이아몬드 스톰, 카드 슬래시 | 타격 ×4, 방어 ×4, 버니 블래스트, 테리어 토네이도 |
 | 특성 | 직접 그린 카드 (8절) | 카드 배틀 실력자 | 침착함 |
@@ -572,8 +572,8 @@ damage = max(0, floor(raw × mult))
 | `wargrowlmon` | 메가로그라우몬 | guilmon | 완전체 | 바이러스 | 12 | 2 | `atomic_blaster` |
 | `gallantmon` | 듀크몬 | guilmon | 궁극체 | 바이러스 | 18 | 4 | `royal_saber` |
 | `renamon` | 레나몬 | renamon | 성장기 | 데이터 | 0 | 0 | — |
-| `kyubimon` | 구미호몬 | renamon | 성숙기 | 데이터 | 9 | 0 | `fox_tail_inferno` |
-| `taomon` | 도사몬 | renamon | 완전체 | 데이터 | 10 | 0 | `talisman_of_light` |
+| `kyubimon` | 구미호몬 | renamon | 성숙기 | 데이터 | 5 | 1 | `fox_tail_inferno` |
+| `taomon` | 도사몬 | renamon | 완전체 | 데이터 | 8 | 0 | `talisman_of_light` |
 | `sakuyamon` | 샤크라몬 | renamon | 궁극체 | 데이터 | 16 | 4 | `amethyst_wind` |
 | `terriermon` | 테리어몬 | terriermon | 성장기 | 백신 | 0 | 0 | — |
 | `gargomon` | 가고몬 | terriermon | 성숙기 | 백신 | 8 | 0 | `gargo_laser` |
