@@ -23,8 +23,8 @@ export const ryoCards = [
     type: 'attack',
     rarity: 'basic',
     pool: 'ryo',
-    base: { cost: 1, effects: [{ op: 'ifEvolvedThisTurn', then: [dmg(8)], else: [dmg(5)] }] },
-    upgraded: { cost: 1, effects: [{ op: 'ifEvolvedThisTurn', then: [dmg(11)], else: [dmg(7)] }] },
+    base: { cost: 1, effects: [{ op: 'ifEvolvedThisTurn', then: [dmg(8)], else: [dmg(7)] }] },
+    upgraded: { cost: 1, effects: [{ op: 'ifEvolvedThisTurn', then: [dmg(11)], else: [dmg(9)] }] },
   },
   {
     id: 'veteran_read',

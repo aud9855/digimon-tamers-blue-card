@@ -5,7 +5,7 @@ export const mutations = [
   {
     id: 'weak_wilds',
     name: '흐려진 와일드 원',
-    good: [{ op: 'enemyHpPct', pct: -15 }],
+    good: [{ op: 'enemyHpPct', pct: -5 }],
     bad: [{ op: 'rewardCards', amount: -1 }],
   },
   {
@@ -36,18 +36,18 @@ export const mutations = [
     id: 'many_choices',
     name: '많은 선택지',
     good: [{ op: 'rewardCards', amount: 1 }],
-    bad: [{ op: 'maxHp', amount: -10 }],
+    bad: [{ op: 'maxHp', amount: -5 }],
   },
   {
     id: 'bit_hunter',
     name: '비트 사냥꾼',
     good: [{ op: 'modifiers', modifiers: { battleBitsBonus: 15 } }],
-    bad: [{ op: 'enemyHpPct', pct: 10 }],
+    bad: [{ op: 'enemyHpPct', pct: 5 }],
   },
   {
     id: 'quiet_night',
     name: '조용한 밤',
-    good: [{ op: 'enemyDamagePct', pct: -12 }],
+    good: [{ op: 'enemyDamagePct', pct: -8 }],
     bad: [{ op: 'modifiers', modifiers: { handSizeBonus: -1 } }],
   },
 ] satisfies MutationDef[];

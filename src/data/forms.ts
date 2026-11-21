@@ -159,7 +159,7 @@ export const forms = [
     stage: 'rookie',
     attribute: 'data',
     tempHp: 0,
-    power: 0,
+    power: 4,
   },
   {
     id: 'strikedramon',
@@ -167,8 +167,8 @@ export const forms = [
     line: 'monodramon',
     stage: 'champion',
     attribute: 'data',
-    tempHp: 2,
-    power: 0,
+    tempHp: 1,
+    power: 3,
     signatureCardId: 'strike_fang',
   },
   {
@@ -177,8 +177,8 @@ export const forms = [
     line: 'monodramon',
     stage: 'ultimate',
     attribute: 'data',
-    tempHp: 5,
-    power: 1,
+    tempHp: 4,
+    power: 3,
     signatureCardId: 'desolation_claw',
   },
   {
@@ -188,7 +188,7 @@ export const forms = [
     stage: 'mega',
     attribute: 'data',
     tempHp: 10,
-    power: 2,
+    power: 3,
     signatureCardId: 'justice_kick',
   },
 ] satisfies FormDef[];

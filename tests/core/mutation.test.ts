@@ -222,8 +222,8 @@ describe('변이 효과 계산 (02 15.1, 해저드 13.6 뒤)', () => {
     const boss = getEnemy('mihiramon').maxHp;
     // 해저드 없음
     expect(enemyAt(0, 'weak_wilds', 'a1_easy_goblimon', 'normal')).toMatchObject({
-      maxHp: Math.floor((goblin * 85) / 100),
-      hp: Math.floor((goblin * 85) / 100),
+      maxHp: Math.floor((goblin * 95) / 100),
+      hp: Math.floor((goblin * 95) / 100),
     });
     expect(enemyAt(0, 'wide_hand', 'a1_easy_goblimon', 'normal')?.maxHp).toBe(
       Math.floor((goblin * 115) / 100),
@@ -231,13 +231,13 @@ describe('변이 효과 계산 (02 15.1, 해저드 13.6 뒤)', () => {
     // 해저드 1과 함께: 해저드로 내림한 값에 다시 곱하고 내림
     const h1 = Math.floor((goblin * 110) / 100);
     expect(enemyAt(1, 'bit_hunter', 'a1_easy_goblimon', 'normal')?.maxHp).toBe(
-      Math.floor((h1 * 110) / 100),
+      Math.floor((h1 * 105) / 100),
     );
     // 해저드 9 보스와 함께
     const h9 = Math.floor((boss * 110 * 110) / 10000);
     expect(enemyAt(9, 'weak_wilds', 'a1_boss_mihiramon', 'boss')).toMatchObject({
-      maxHp: Math.floor((h9 * 85) / 100),
-      hp: Math.floor((h9 * 85) / 100),
+      maxHp: Math.floor((h9 * 95) / 100),
+      hp: Math.floor((h9 * 95) / 100),
     });
     // 변이 없음은 그대로
     expect(enemyAt(0, null, 'a1_easy_goblimon', 'normal')?.maxHp).toBe(goblin);
@@ -254,12 +254,12 @@ describe('변이 효과 계산 (02 15.1, 해저드 13.6 뒤)', () => {
     // 길몬(바이러스)과 고부리몬(바이러스): 속성 배율 1
     expect(base).toBe(20);
     expect(dmg(0, 'tough_body')).toBe(Math.floor(20 * 1.1));
-    expect(dmg(0, 'quiet_night')).toBe(Math.floor(20 * 0.88));
+    expect(dmg(0, 'quiet_night')).toBe(Math.floor(20 * 0.92));
     expect(dmg(6, 'tough_body')).toBe(
       Math.floor(20 * constants.HAZARD_ENEMY_DAMAGE_MULT * 1.1 + 1e-9),
     );
     expect(dmg(6, 'quiet_night')).toBe(
-      Math.floor(20 * constants.HAZARD_ENEMY_DAMAGE_MULT * 0.88 + 1e-9),
+      Math.floor(20 * constants.HAZARD_ENEMY_DAMAGE_MULT * 0.92 + 1e-9),
     );
   });
 
@@ -380,7 +380,7 @@ describe('변이 설명 글 (02 15.1)', () => {
 
   it('표의 글과 같음', () => {
     expect(describeMutation('weak_wilds')).toEqual({
-      good: '모든 적 최대 HP -15%',
+      good: '모든 적 최대 HP -5%',
       bad: '전투 보상 카드 고르기 -1장',
     });
     expect(describeMutation('rush_evolve')).toEqual({ good: '진화 비용 -1', bad: '최대 HP -12' });
@@ -389,7 +389,7 @@ describe('변이 설명 글 (02 15.1)', () => {
       bad: '상점 가격 +30%',
     });
     expect(describeMutation('quiet_night')).toEqual({
-      good: '적의 공격 피해 -12%',
+      good: '적의 공격 피해 -8%',
       bad: '턴 시작에 뽑는 카드 -1장',
     });
   });
