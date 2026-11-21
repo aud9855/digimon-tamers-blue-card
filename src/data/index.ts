@@ -6,6 +6,7 @@ import type {
   EnemyDef,
   EventDef,
   FormDef,
+  MutationDef,
   Stage,
   TamerDef,
   TamerId,
@@ -15,6 +16,7 @@ import { cards } from './cards';
 import { aiMakoCards } from './cards-ai-mako';
 import { henryCards } from './cards-henry';
 import { rikaCards } from './cards-rika';
+import { ryoCards } from './cards-ryo';
 import { chips } from './chips';
 import { constants, type Constants } from './constants';
 import { encounters } from './encounters';
@@ -23,6 +25,7 @@ import { endings } from './endings';
 import { events } from './events';
 import { forms } from './forms';
 import { meta, type MetaDef } from './meta';
+import { mutations } from './mutations';
 import { tamers } from './tamers';
 
 export { constants, meta };
@@ -36,16 +39,18 @@ interface Registry {
   chips: ChipDef[];
   events: EventDef[];
   tamers: TamerDef[];
+  mutations: MutationDef[];
 }
 
 const registry: Registry = {
-  cards: [...cards, ...rikaCards, ...henryCards, ...aiMakoCards],
+  cards: [...cards, ...rikaCards, ...henryCards, ...aiMakoCards, ...ryoCards],
   forms: [...forms],
   enemies: [...enemies],
   encounters: [...encounters],
   chips: [...chips],
   events: [...events],
   tamers: [...tamers],
+  mutations: [...mutations],
 };
 
 // 자주 찾는 것은 id로 바로 찾도록 색인을 둡니다. registry가 바뀌면 다시 만듭니다.
@@ -55,6 +60,7 @@ let encounterIndex = new Map<string, EncounterDef>();
 let chipIndex = new Map<string, ChipDef>();
 let eventIndex = new Map<string, EventDef>();
 let tamerIndex = new Map<string, TamerDef>();
+let mutationIndex = new Map<string, MutationDef>();
 
 function byId<T extends { id: string }>(list: readonly T[]): Map<string, T> {
   return new Map(list.map((item) => [item.id, item]));
@@ -67,6 +73,7 @@ function rebuildIndexes(): void {
   chipIndex = byId(registry.chips);
   eventIndex = byId(registry.events);
   tamerIndex = byId(registry.tamers);
+  mutationIndex = byId(registry.mutations);
 }
 rebuildIndexes();
 
@@ -150,6 +157,14 @@ export function getTamers(): readonly TamerDef[] {
   return registry.tamers;
 }
 
+/** 변이 카드 (02 15.1) */
+export function getMutation(id: string): MutationDef {
+  return must(mutationIndex.get(id), '변이', id);
+}
+export function getMutations(): readonly MutationDef[] {
+  return registry.mutations;
+}
+
 /** 테이머 엔딩 글 (02 13.10) */
 export function getEndingLines(id: TamerId): readonly string[] {
   return endings[id];
@@ -173,6 +188,7 @@ export interface RegistryOverride {
   chips?: ChipDef[];
   events?: EventDef[];
   tamers?: TamerDef[];
+  mutations?: MutationDef[];
   constants?: Partial<Constants>;
 }
 
@@ -202,6 +218,7 @@ export function overrideRegistry(partial: RegistryOverride): () => void {
   registry.chips = mergeById(registry.chips, partial.chips);
   registry.events = mergeById(registry.events, partial.events);
   registry.tamers = mergeById(registry.tamers, partial.tamers);
+  registry.mutations = mergeById(registry.mutations, partial.mutations);
   // constants는 밖에서 같은 객체를 들고 있으므로 자리에서 고칩니다.
   if (partial.constants) Object.assign(constants, partial.constants);
   rebuildIndexes();

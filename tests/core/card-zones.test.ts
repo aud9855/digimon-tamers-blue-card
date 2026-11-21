@@ -44,7 +44,7 @@ function checkZones(state: GameState, where: string) {
   }
 }
 
-const TAMERS: TamerId[] = ['takato', 'rika', 'henry', 'ai_mako'];
+const TAMERS: TamerId[] = ['takato', 'rika', 'henry', 'ai_mako', 'ryo'];
 
 describe('카드 위치 불변식', () => {
   it.each(TAMERS)('%s: 봇 두 종류로 판을 끝까지, 행동마다 검사', (tamerId) => {

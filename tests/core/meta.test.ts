@@ -8,6 +8,8 @@ import {
   defaultUnlocks,
   fullUnlocks,
   recordCodex,
+  tamerUnlockWins,
+  totalWins,
   type GameEvent,
   type GameState,
 } from '../../src/core/index';
@@ -90,6 +92,27 @@ describe('프로필 갱신 applyRunResult (02 13.5)', () => {
     const p4 = applyRunResult(p3, ended(true), []);
     expect(p4.unlocks.startChips).toEqual([...meta.baseStartChips, ...meta.startChipUnlockOrder]);
     expect(p4.runs.takato).toEqual({ played: 4, won: 4 });
+  });
+
+  it('두 번째로 이기면 이재익 (02 15.2): 이긴 판 수는 테이머별 승리 수의 합', () => {
+    const p1 = applyRunResult(createProfile(), ended(true), []);
+    expect(p1.unlocks.tamers).not.toContain('ryo');
+    expect(totalWins(p1)).toBe(1);
+    // 진 판은 세지 않음
+    const lost = applyRunResult(p1, ended(false), []);
+    expect(lost.unlocks.tamers).not.toContain('ryo');
+    // 다른 테이머로 이겨도 합으로 셈
+    const other = { ...ended(true) };
+    if (other.run) other.run = { ...other.run, tamerId: 'rika' };
+    const p2 = applyRunResult(lost, other, []);
+    expect(p2.runs).toEqual({ takato: { played: 2, won: 1 }, rika: { played: 1, won: 1 } });
+    expect(totalWins(p2)).toBe(2);
+    expect(p2.unlocks.tamers).toContain('ryo');
+    const p3 = applyRunResult(p2, ended(true), []);
+    expect(p3.unlocks.tamers.filter((t) => t === 'ryo')).toHaveLength(1);
+    expect(tamerUnlockWins('ryo')).toBe(2);
+    expect(tamerUnlockWins('ai_mako')).toBe(1);
+    expect(tamerUnlockWins('takato')).toBe(0);
   });
 
   it('끝나지 않은 판은 기록하지 않음, 받은 프로필은 바꾸지 않음', () => {

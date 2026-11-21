@@ -10,6 +10,7 @@ import {
 } from '../helpers';
 import type { Attribute, GameEvent, GameState } from '../types';
 import { checkDefeat } from './outcome';
+import { mutationEnemyDamageMult } from '../mutation';
 
 /** 속성 배율 attr(공격, 방어): 백신 > 바이러스 > 데이터 > 백신 */
 export function attributeMultiplier(attacker: Attribute, defender: Attribute): number {
@@ -55,7 +56,8 @@ export function enemyHitDamage(state: GameState, amount: number, enemyIndex: num
     attrMult *
     (enemy.statuses.weak > 0 ? constants.WEAK_MULT : 1) *
     (battle.statuses.vulnerable > 0 ? constants.VULNERABLE_MULT : 1) *
-    (hazardOn(state, 'enemyDamage') ? constants.HAZARD_ENEMY_DAMAGE_MULT : 1);
+    (hazardOn(state, 'enemyDamage') ? constants.HAZARD_ENEMY_DAMAGE_MULT : 1) *
+    mutationEnemyDamageMult(state); // 변이 enemyDamagePct (02 15.1)
   return { damage: floorNonNegative(raw * mult), attrMult };
 }
 

@@ -45,6 +45,10 @@ export const constants = {
   // ── 폭주 진화 (02 13.2) ──
   /** 시작 칩 후보 수 (02 12.7, 13.5) */
   START_CHIP_CHOICES: 3,
+  /** 판 시작에 보여 주는 변이 수 (02 15.1) */
+  MUTATION_CHOICES: 3,
+  /** 변이로 줄어도 전투 보상 카드 고르기는 이 장수 이상 (02 15.1) */
+  MUTATION_MIN_REWARD_CARDS: 1,
   RAMPAGE_HP_PCT: 0.25,
   RAMPAGE_HP_LOSS: 4,
   RAMPAGE_CURSE_ID: 'rampage_scar',

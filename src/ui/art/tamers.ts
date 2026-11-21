@@ -83,4 +83,28 @@ const ai_mako = fit(S, { ...SKIN, A: '#e07a9a', P: '#5a8ad8', J: '#4a3a2a', Y: '
   '.KAAYYAAKPPPPPPK',
 ]);
 
-export const TAMER_ART_LIST: Record<string, PixelArt> = { takato, rika, henry, ai_mako };
+// 이재익: 뾰족한 갈색 머리, 빨간 머리띠(뒤로 묶은 끝), 치켜든 눈썹과 한쪽으로 올라간 입
+const ryo = fit(
+  S,
+  { ...SKIN, H: '#8a5a32', h: '#5e3a1e', R: '#c8323a', r: '#7e1c24', D: '#3a4256' },
+  [
+    '..K.K..K..K.K...',
+    '.KHKHKKHKKHKHK..',
+    '.KHHHHHHHHHHHHK.',
+    'KHHhHHHHHHhHHHHK',
+    'KRRRRRRRRRRRRRRK',
+    '.KrrrrrrrrrrrrKR',
+    '.KHFFFFFFFFFFHKr',
+    '.KFKKFFFFFFKKFK.',
+    '.KFFEFFFFFFEFFK.',
+    '.KFFFFFffFFFFFK.',
+    '..KFFFFFFFFFFK..',
+    '...KFFFFMMMFK...',
+    '....KKFFFFKK....',
+    '..KDDKKFFKKDDK..',
+    '.KDDDDDKKDDDDDK.',
+    'KDDDDDDDDDDDDDDK',
+  ],
+);
+
+export const TAMER_ART_LIST: Record<string, PixelArt> = { takato, rika, henry, ai_mako, ryo };

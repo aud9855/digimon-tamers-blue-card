@@ -2,7 +2,14 @@
 // 아래 16진수는 알고리즘 자체의 상수이고 게임 규칙 수치가 아닙니다.
 import type { GameState, RngStream } from './types';
 
-const STREAM_KEYS: Record<RngStream, number> = { map: 1, battle: 2, reward: 3, event: 4 };
+// 줄기마다 k가 따로라 줄기를 더해도 다른 줄기의 초기값은 그대로입니다 (02 15.1 mutation)
+const STREAM_KEYS: Record<RngStream, number> = {
+  map: 1,
+  battle: 2,
+  reward: 3,
+  event: 4,
+  mutation: 5,
+};
 const GOLDEN_RATIO_32 = 0x9e3779b9;
 const UINT32_RANGE = 0x100000000;
 
@@ -14,6 +21,7 @@ export function initialRngState(seed: number): Record<RngStream, number> {
     battle: init(STREAM_KEYS.battle),
     reward: init(STREAM_KEYS.reward),
     event: init(STREAM_KEYS.event),
+    mutation: init(STREAM_KEYS.mutation),
   };
 }
 

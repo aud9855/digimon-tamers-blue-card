@@ -2,12 +2,13 @@
 import {
   createProfile,
   defaultUnlocks,
+  initialRngState,
   PROFILE_VERSION,
   SAVE_VERSION,
   type GameState,
   type Profile,
 } from '../core/index';
-import { constants, getCard, getEnemy, getTamer } from '../data/index';
+import { constants, getCard, getEnemy, getMutation, getTamer } from '../data/index';
 import type { TamerId } from '../core/index';
 import { renameSavedIds } from './saveRenames';
 import type { PlaybackSpeed } from './playback';
@@ -79,6 +80,7 @@ async function get(key: string): Promise<unknown> {
 /** 국면마다 있어야 하는 대기 정보 (02 2절의 표) */
 const PENDING_OF: Partial<Record<GameState['phase'], string | string[]>> = {
   startChip: 'startChip',
+  mutation: 'mutation',
   reward: 'reward',
   shop: 'shop',
   rest: 'rest',
@@ -121,6 +123,8 @@ export function isConsistentState(state: GameState): boolean {
     for (const c of cards) getCard(c.defId);
     for (const e of state.battle?.enemies ?? []) getEnemy(e.defId);
     getTamer(run.tamerId as TamerId);
+    if (run.mutation) getMutation(run.mutation);
+    if (state.pending?.kind === 'mutation') state.pending.mutationIds.forEach(getMutation);
   } catch {
     return false;
   }
@@ -140,9 +144,14 @@ export function fillMissingFields(state: GameState): void {
     run.formTraits ??= {};
     run.hazard ??= 0;
     run.removalsBought ??= 0;
+    // 변이가 생기기 전의 판은 변이 없음 (02 15.1)
+    run.mutation ??= null;
     // 지난 막은 끝까지(지도 줄 + 보스) 지나왔으므로 그 수로 채움
     run.pastNodes ??= ((run.act ?? 1) - 1) * (constants.MAP_ROWS + 1);
   }
+  // 새 난수 줄기 mutation (02 15.1): 다른 줄기와 따로라 시드에서 처음 값을 만들어 채움
+  const rng = state.rng as Partial<GameState['rng']>;
+  rng.mutation ??= initialRngState(state.seed).mutation;
   const battle = state.battle as (Partial<NonNullable<GameState['battle']>> & object) | null;
   if (battle) {
     battle.companions ??= [];

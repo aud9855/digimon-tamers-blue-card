@@ -338,3 +338,62 @@ describe('다영·진 (02 13.3)', () => {
     expect(s1.run?.chips).toContain('trait_two_tamers');
   });
 });
+
+describe('이재익 (02 15.2)', () => {
+  const ryo = (opts = {}) => {
+    const state = makeBattle({
+      maxStage: 'mega',
+      drawPile: Array.from({ length: 30 }, () => 'guard'),
+      chips: ['trait_legendary_tamer'],
+      ...opts,
+    });
+    if (state.run) state.run.tamerId = 'ryo';
+    return state;
+  };
+
+  it('단계를 하나씩 밟고, 1턴 비용은 성숙기 2 · 완전체 3 · 궁극체 5', () => {
+    expect(previewEvolveCost(ryo({ stage: 'rookie' }))).toBe(2);
+    expect(previewEvolveCost(ryo({ stage: 'champion' }))).toBe(3);
+    expect(previewEvolveCost(ryo({ stage: 'ultimate' }))).toBe(5);
+    expect(previewEvolveCost(ryo({ stage: 'mega' }))).toBeNull();
+  });
+
+  it('성장기부터 궁극체까지 차례로 진화하고 형태마다 필살기', () => {
+    let state = ryo({ memory: 10 });
+    const seen: string[] = [];
+    for (const stage of ['champion', 'ultimate', 'mega'] as const) {
+      const { state: next, events } = act(state, { type: 'evolve' });
+      expect(battleOf(next).stage).toBe(stage);
+      seen.push(...eventsOf(events, 'evolved').map((e) => e.formId));
+      state = next;
+    }
+    expect(seen).toEqual(['strikedramon', 'cyberdramon', 'justimon']);
+    const hand = battleOf(state).hand.map((c) => c.defId);
+    for (const id of ['strike_fang', 'desolation_claw', 'justice_kick']) expect(hand).toContain(id);
+  });
+
+  it('전설의 테이머: 진화할 때마다 카드 1장 뽑기', () => {
+    const state = ryo({ memory: 10 });
+    const before = battleOf(state).drawPile.length;
+    const s1 = act(state, { type: 'evolve' }).state;
+    expect(battleOf(s1).drawPile).toHaveLength(before - 1);
+    expect(battleOf(s1).hand.filter((c) => c.defId === 'guard')).toHaveLength(1);
+    const s2 = act(s1, { type: 'evolve' }).state;
+    expect(battleOf(s2).drawPile).toHaveLength(before - 2);
+    // 특성 칩이 없으면 뽑지 않음
+    const plain = ryo({ memory: 10, chips: [] });
+    const p1 = act(plain, { type: 'evolve' }).state;
+    expect(battleOf(p1).drawPile).toHaveLength(before);
+  });
+
+  it('형태 특성은 고르지 않음 (처음부터 궁극체까지 열림)', () => {
+    const s0 = applyAction(createInitialState(1, fullUnlocks()), {
+      type: 'startRun',
+      tamerId: 'ryo',
+    }).state;
+    const s1 = applyAction(s0, { type: 'chooseStartChip', index: 0 }).state;
+    expect(s1.run?.maxStage).toBe('mega');
+    expect(s1.run?.maxHp).toBeGreaterThan(0);
+    expect(s1.run?.chips).toContain('trait_legendary_tamer');
+  });
+});
