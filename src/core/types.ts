@@ -3,7 +3,7 @@
 export type Stage = 'rookie' | 'champion' | 'ultimate' | 'mega';
 export type Attribute = 'vaccine' | 'data' | 'virus' | 'none';
 export type StatusId = 'strength' | 'weak' | 'vulnerable';
-export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako';
+export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako' | 'ryo';
 export type CardType = 'attack' | 'skill' | 'signature' | 'curse' | 'companion';
 /** 형태 특성 (02 12.5) */
 export type FormTraitId = 'tough' | 'sharp';

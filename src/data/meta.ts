@@ -6,6 +6,8 @@ export interface MetaDef {
   baseTamers: TamerId[];
   /** 처음 이기면 열리는 테이머 */
   firstWinTamers: TamerId[];
+  /** 두 번째로 이기면 열리는 테이머 (02 15.2). 이긴 판 수는 테이머별 승리 수의 합 */
+  secondWinTamers: TamerId[];
   /** 처음부터 열린 시작 칩 (02 12.7) */
   baseStartChips: string[];
   /** 이길 때마다 하나씩 열리는 시작 칩, 이 순서대로 */
@@ -17,6 +19,7 @@ export interface MetaDef {
 export const meta: MetaDef = {
   baseTamers: ['takato', 'rika', 'henry'],
   firstWinTamers: ['ai_mako'],
+  secondWinTamers: ['ryo'],
   baseStartChips: ['card_reader', 'guard_chip', 'bit_scanner'],
   startChipUnlockOrder: ['memory_booster', 'evo_charger', 'heal_chip'],
   maxHazard: 10,

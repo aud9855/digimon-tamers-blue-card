@@ -15,6 +15,7 @@ import { cards } from './cards';
 import { aiMakoCards } from './cards-ai-mako';
 import { henryCards } from './cards-henry';
 import { rikaCards } from './cards-rika';
+import { ryoCards } from './cards-ryo';
 import { chips } from './chips';
 import { constants, type Constants } from './constants';
 import { encounters } from './encounters';
@@ -39,7 +40,7 @@ interface Registry {
 }
 
 const registry: Registry = {
-  cards: [...cards, ...rikaCards, ...henryCards, ...aiMakoCards],
+  cards: [...cards, ...rikaCards, ...henryCards, ...aiMakoCards, ...ryoCards],
   forms: [...forms],
   enemies: [...enemies],
   encounters: [...encounters],

@@ -18,6 +18,11 @@ export const SPRITE_SIZE: Record<string, number> = {
   megagargomon: 100,
   impmon: 50,
   beelzemon: 100,
+  // 모노드라몬 계열: 원작 도트는 없지만 도트 팩 그림이 들어올 때를 위해 기본 단계 크기 (02 15.2)
+  monodramon: 50,
+  strikedramon: 70,
+  cyberdramon: 85,
+  justimon: 100,
   goblimon: 45,
   vilemon: 50,
   allomon: 70,
