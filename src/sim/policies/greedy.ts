@@ -125,6 +125,10 @@ function resolveEffects(state: GameState, effects: readonly Effect[]): Effect[] 
     if (e.op === 'ifEvolvedThisTurn') {
       return resolveEffects(state, battle.evolvedThisTurn ? e.then : (e.else ?? []));
     }
+    if (e.op === 'ifPlayedThisTurn') {
+      // 지금 낸다면: 이 카드는 아직 세지 않은 값 (02 12.11)
+      return resolveEffects(state, battle.cardsPlayedThisTurn >= e.min ? e.then : (e.else ?? []));
+    }
     return [e];
   });
 }
