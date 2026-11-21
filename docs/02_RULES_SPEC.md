@@ -1065,7 +1065,7 @@ damage = max(0, floor(raw × mult))
 
 | id | 이름 | 계열 | 단계 | 속성 | `tempHp` | `power` | 필살기 |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
-| `monodramon` | 모노드라몬 | monodramon | 성장기 | 데이터 | 0 | 4 | — |
+| `monodramon` | 모노드라몬 | monodramon | 성장기 | 데이터 | 0 | 3 | — |
 | `strikedramon` | 스트라이크드라몬 | monodramon | 성숙기 | 데이터 | 1 | 3 | `strike_fang` |
 | `cyberdramon` | 사이버드라몬 | monodramon | 완전체 | 데이터 | 4 | 3 | `desolation_claw` |
 | `justimon` | 저스티몬 | monodramon | 궁극체 | 데이터 | 10 | 3 | `justice_kick` |

@@ -159,7 +159,7 @@ export const forms = [
     stage: 'rookie',
     attribute: 'data',
     tempHp: 0,
-    power: 4,
+    power: 3,
   },
   {
     id: 'strikedramon',
