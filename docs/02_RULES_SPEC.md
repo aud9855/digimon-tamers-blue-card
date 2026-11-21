@@ -108,7 +108,7 @@
 ```
 next = stage의 다음 단계
 cost = EVOLVE_BASE_COST[next] - (index(run.maxStage) - index(next))
-cost = max(1, cost - EVOLVE_WAIT_DISCOUNT × (battle.turn - 1))   // 기다린 턴 할인 (1 아래로는 안 감)
+cost = max(1, cost - (EVOLVE_WAIT_DISCOUNT + 칩의 evolveWaitBonus 합) × (battle.turn - 1))   // 기다린 턴 할인 (1 아래로는 안 감)
 cost = cost + (칩의 evolveCostDelta 합)
 cost = max(0, cost)
 freeEvolve가 true면 cost = 0
@@ -290,6 +290,7 @@ damage = max(0, floor(raw × mult))
 | 수치 보정 | 뜻 |
 | :--- | :--- |
 | `evolveCostDelta` | 진화 비용에 더함 (음수면 할인) |
+| `evolveWaitBonus` | 기다린 턴 할인(3.7)에서 한 턴마다 더 깎는 양 |
 | `battleBitsBonus` | 전투 보상 비트에 더함 |
 | `handSizeBonus` | 턴 시작에 뽑는 장수에 더함 |
 | `maxHpBonus` | 얻을 때 최대 HP와 지금 HP를 함께 올림 |
@@ -874,7 +875,7 @@ damage = max(0, floor(raw × mult))
 | id | 이름 | 발동 | 효과 |
 | :--- | :--- | :--- | :--- |
 | `memory_booster` | 메모리 부스터 | `onFirstTurn` | 메모리 +2 |
-| `evo_charger` | 진화 충전기 | `onFirstTurn` | 이번 턴 다음 진화 비용 0, HP 3 잃음 |
+| `evo_charger` | 진화 충전기 | 수치 보정 | `evolveWaitBonus` +1 (기다린 턴마다 진화 비용 -2, 2026-11-21 밸런스 4차에서 "첫 턴 다음 진화 비용 0, HP 3 잃음"을 바꿈) |
 | `heal_chip` | 회복 칩 | 수치 보정 | `maxHpBonus` +10 |
 
 ### 13.6 디지털 해저드 1~10
