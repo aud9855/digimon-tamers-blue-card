@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { battleBackground } from '../art/stage';
-import { useDisplayState } from '../store';
+import { useGame } from '../store';
 
 /** 세로 틀: 기준 폭 360px, 안전 영역을 지킴 (03 9.2).
  *  backdrop(막 번호)을 주면 그 막의 배경을 어둡게 깔아 지금 있는 곳이 느껴지게 함 (04 B2) */
@@ -43,7 +43,8 @@ export function Screen({
 
 /** 넓은 화면(가로 화면 웹 등)에서 세로 판 양옆을 지금 막 배경으로 흐리게 채움 */
 function SideBackdrop() {
-  const act = useDisplayState().run?.act ?? 1;
+  // 막 번호만 구독 (재생 단계마다 다시 그리지 않게)
+  const act = useGame((s) => (s.view ?? s.state).run?.act ?? 1);
   return (
     <div
       aria-hidden

@@ -15,6 +15,9 @@ html,
 body,
 #root {
   height: 100%;
+  /* 화면 흔들기(FxLayer)가 transform을 바꿀 때 쌓임 맥락이 생겼다 없어졌다 하며
+     앱 전체를 다시 그리지 않도록 처음부터 둠 */
+  transform: translate(0, 0);
 }
 
 body {

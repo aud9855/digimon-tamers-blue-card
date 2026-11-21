@@ -20,6 +20,7 @@
     "card-texts": "tsx scripts/card-texts.ts",
     "sim": "tsx src/sim/cli.ts",
     "e2e": "node scripts/upper-drive.mjs scripts/e2e/battle.mjs",
+    "perf": "node scripts/upper-drive.mjs scripts/perf/bench.mjs",
     "cap:sync": "npm run build && cap sync android"
   },
   "devDependencies": {

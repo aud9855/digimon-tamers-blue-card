@@ -235,7 +235,11 @@ export function BattleScreen() {
   const setSpeed = useGame((s) => s.setSpeed);
   const [selectedUid, setSelectedUid] = useState<number | null>(null);
   const [zoom, setZoom] = useState<CardInstance | null>(null);
-  const [drag, setDrag] = useState<{ card: CardInstance; x: number; y: number } | null>(null);
+  // 끄는 카드. 위치는 상태가 아니라 dragPos(ref)와 그림 요소의 transform으로 직접 바꿈
+  // (손가락이 움직일 때마다 전투 화면 전체를 다시 그리지 않게)
+  const [drag, setDrag] = useState<CardInstance | null>(null);
+  const dragPos = useRef({ x: 0, y: 0 });
+  const ghostRef = useRef<HTMLDivElement>(null);
   const [evolveArmed, setEvolveArmed] = useState(false);
   const handRef = useRef<HTMLDivElement>(null);
 
@@ -268,8 +272,12 @@ export function BattleScreen() {
     onLongPressEnd: () => setZoom(null),
     canDrag: (card) => playable(card),
     onDragMove: (card, x, y) => {
-      setSelectedUid(card.uid);
-      setDrag({ card, x, y });
+      dragPos.current = { x, y };
+      if (drag?.uid !== card.uid) {
+        setSelectedUid(card.uid);
+        setDrag(card);
+      }
+      moveGhost(ghostRef.current, x, y);
     },
     onDrop: (card, x, y) => {
       setDrag(null);
@@ -336,11 +344,9 @@ export function BattleScreen() {
   } else if (drag) {
     middle = (
       <div className="flex flex-col items-center gap-2">
-        {previewOverdraw(state, { cardUid: drag.card.uid }) > 0 && (
-          <OverdrawWarning accel={previewOverdraw(state, { cardUid: drag.card.uid })} />
-        )}
+        {selectedAccel > 0 && <OverdrawWarning accel={selectedAccel} />}
         <p className="text-sm text-sky-300">
-          {needsTarget(drag.card.uid) ? '적 위에 놓으세요' : '위로 올려 놓으면 냄'}
+          {needsTarget(drag.uid) ? '적 위에 놓으세요' : '위로 올려 놓으면 냄'}
         </p>
       </div>
     );
@@ -400,15 +406,13 @@ export function BattleScreen() {
       />
       {drag && (
         <div
-          className="pointer-events-none fixed z-30 w-16 -translate-x-1/2 -translate-y-1/2"
-          style={{ left: drag.x, top: drag.y }}
+          ref={(el) => {
+            ghostRef.current = el;
+            moveGhost(el, dragPos.current.x, dragPos.current.y);
+          }}
+          className="pointer-events-none fixed top-0 left-0 z-30 w-16"
         >
-          <CardView
-            defId={drag.card.defId}
-            upgraded={drag.card.upgraded}
-            state={state}
-            cardUid={drag.card.uid}
-          />
+          <CardView defId={drag.defId} upgraded={drag.upgraded} state={state} cardUid={drag.uid} />
         </div>
       )}
       {battle.handChoice && (
@@ -431,7 +435,7 @@ export function BattleScreen() {
               </span>
               <span className="grid grid-cols-5 gap-1.5">
                 {group.map((c) => (
-                  <CardView key={c.uid} defId={c.defId} upgraded={c.upgraded} state={state} />
+                  <CardView key={c.uid} defId={c.defId} upgraded={c.upgraded} state={state} still />
                 ))}
               </span>
             </button>
@@ -451,6 +455,11 @@ export function BattleScreen() {
       )}
     </div>
   );
+}
+
+/** 끄는 카드 그림을 손가락 위치로 (가운데 맞춤). 레이아웃을 다시 하지 않도록 transform만 씀 */
+function moveGhost(el: HTMLDivElement | null, x: number, y: number) {
+  if (el) el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
 }
 
 function OverdrawWarning({ accel, label }: { accel: number; label?: string }) {
