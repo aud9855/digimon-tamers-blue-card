@@ -189,6 +189,9 @@ function describeModifiers(modifiers: NonNullable<ChipDef['modifiers']>): string
   const parts: string[] = [];
   const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
   if (modifiers.evolveCostDelta) parts.push(`진화 비용 ${signed(modifiers.evolveCostDelta)}`);
+  if (modifiers.evolveWaitBonus) {
+    parts.push(`기다린 턴마다 진화 비용 ${signed(-modifiers.evolveWaitBonus)} 더`);
+  }
   if (modifiers.battleBitsBonus) {
     parts.push(`전투 보상 비트 ${signed(modifiers.battleBitsBonus)}`);
   }

@@ -12,6 +12,7 @@ import {
   type GameState,
 } from '../../src/core/index';
 import { meta } from '../../src/data/index';
+import { evolveCost } from '../../src/core/battle/evolve';
 import { act, battleOf, makeBattle } from '../helpers/battle';
 
 function started(state: GameState): GameState {
@@ -175,10 +176,11 @@ describe('해금 시작 칩 (02 13.5)', () => {
     expect(battleOf(next).memory).toBe((next.run?.maxMemory ?? 0) + 2);
   });
 
-  it('진화 충전기: 첫 턴의 다음 진화 비용 0', () => {
-    const state = makeBattle({ chips: ['evo_charger'], memory: 0, enemies: ['goblimon'] });
-    battleOf(state).turn = 0;
-    const next = act(state, { type: 'endTurn' }).state;
-    expect(battleOf(next).freeEvolve).toBe(true);
+  it('진화 충전기: 기다린 턴마다 진화 비용 -2 (02 3.7, evolveWaitBonus)', () => {
+    const at = (turn: number) =>
+      evolveCost(makeBattle({ chips: ['evo_charger'], turn, enemies: ['goblimon'] }));
+    expect(at(1)).toBe(4);
+    expect(at(2)).toBe(2);
+    expect(at(3)).toBe(1); // 할인으로는 1 아래로 안 감
   });
 });

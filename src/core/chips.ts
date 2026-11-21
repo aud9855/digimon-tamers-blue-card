@@ -42,6 +42,8 @@ export const evolveCostDelta = (state: GameState) =>
     (sum, card) => sum + (cardFace(card).companion?.modifiers?.evolveCostDelta ?? 0),
     0,
   );
+/** 기다린 턴 할인에 더하는 양 (02 3.7) */
+export const evolveWaitBonus = (state: GameState) => sumModifier(state, 'evolveWaitBonus');
 export const battleBitsBonus = (state: GameState) => sumModifier(state, 'battleBitsBonus');
 export const handSizeBonus = (state: GameState) => sumModifier(state, 'handSizeBonus');
 export const firstCardCostDelta = (state: GameState) => sumModifier(state, 'firstCardCostDelta');

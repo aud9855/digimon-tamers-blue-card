@@ -124,6 +124,8 @@ export interface ChipDef {
   start?: boolean;
   modifiers?: {
     evolveCostDelta?: number;
+    /** 기다린 턴 할인에서 한 턴마다 더 깎는 양 (02 3.7) */
+    evolveWaitBonus?: number;
     /** 그 턴에 처음 내는 카드의 비용에 더함 (02 12.11) */
     firstCardCostDelta?: number;
     /** 2면 턴 시작에 두 묶음을 뽑아 하나를 고름 (02 13.3) */
