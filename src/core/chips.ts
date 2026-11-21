@@ -9,6 +9,7 @@ function activeCompanions(state: GameState): CardInstance[] {
 }
 import type { ChipDef, ChipTrigger, GameEvent, GameState } from './types';
 import { runEffects } from './battle/effects';
+import { mutationModifier } from './mutation';
 
 /** 가진 칩 중 그 발동 시점의 칩을 얻은 순서대로 실행합니다 */
 export function triggerChips(state: GameState, events: GameEvent[], trigger: ChipTrigger): void {
@@ -35,17 +36,22 @@ function sumModifier(state: GameState, key: keyof NonNullable<ChipDef['modifiers
   return run.chips.reduce((sum, id) => sum + (getChip(id).modifiers?.[key] ?? 0), 0);
 }
 
-/** 칩과 동료의 진화 비용 보정 합 */
+// 변이의 modifiers는 숨은 칩처럼 더함: evolveCostDelta, handSizeBonus, battleBitsBonus만 (02 15.1)
+
+/** 칩·변이·동료의 진화 비용 보정 합 */
 export const evolveCostDelta = (state: GameState) =>
   sumModifier(state, 'evolveCostDelta') +
+  mutationModifier(state, 'evolveCostDelta') +
   activeCompanions(state).reduce(
     (sum, card) => sum + (cardFace(card).companion?.modifiers?.evolveCostDelta ?? 0),
     0,
   );
 /** 기다린 턴 할인에 더하는 양 (02 3.7) */
 export const evolveWaitBonus = (state: GameState) => sumModifier(state, 'evolveWaitBonus');
-export const battleBitsBonus = (state: GameState) => sumModifier(state, 'battleBitsBonus');
-export const handSizeBonus = (state: GameState) => sumModifier(state, 'handSizeBonus');
+export const battleBitsBonus = (state: GameState) =>
+  sumModifier(state, 'battleBitsBonus') + mutationModifier(state, 'battleBitsBonus');
+export const handSizeBonus = (state: GameState) =>
+  sumModifier(state, 'handSizeBonus') + mutationModifier(state, 'handSizeBonus');
 export const firstCardCostDelta = (state: GameState) => sumModifier(state, 'firstCardCostDelta');
 /** 턴 시작에 뽑는 묶음 수 (기본 1, 02 13.3) */
 export const handGroups = (state: GameState) => Math.max(1, sumModifier(state, 'handGroups'));

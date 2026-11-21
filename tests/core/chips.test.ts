@@ -299,13 +299,17 @@ describe('시작 디아크 (02 12.7)', () => {
     const s1 = applyAction(s0, { type: 'chooseStartChip', index: 2 }).state;
     expect(s1.run?.chips).toContain('bit_scanner');
     expect(s1.run?.maxHp).toBe(getTamer('takato').maxHp + 10);
-    expect(s1.phase).toBe('reward');
+    // 시작 칩 다음은 변이 고르기 (02 15.1), 건너뛰면 테이머 특성
+    expect(s1.phase).toBe('mutation');
+    const s2 = applyAction(s1, { type: 'skipMutation' }).state;
+    expect(s2.phase).toBe('reward');
   });
 
   it('특성 카드 고르기가 없는 테이머는 바로 지도', () => {
     const s0 = applyAction(createInitialState(1), { type: 'startRun', tamerId: 'henry' }).state;
     const s1 = applyAction(s0, { type: 'chooseStartChip', index: 0 }).state;
-    expect(s1.phase).toBe('map');
-    expect(s1.run?.chips).toEqual(['trait_calm', 'card_reader']);
+    const s2 = applyAction(s1, { type: 'skipMutation' }).state;
+    expect(s2.phase).toBe('map');
+    expect(s2.run?.chips).toEqual(['trait_calm', 'card_reader']);
   });
 });

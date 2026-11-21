@@ -23,6 +23,8 @@ export type CardSpec = string;
 export interface BattleOptions {
   /** 디지털 해저드 단계 (02 13.6) */
   hazard?: number;
+  /** 고른 변이 id (02 15.1) */
+  mutation?: string;
   seed?: number;
   enemies?: string[];
   enemyOverrides?: Partial<EnemyState>[];
@@ -82,6 +84,7 @@ export function makeBattle(opts: BattleOptions = {}): GameState {
     removalsBought: 0,
     hazard: opts.hazard ?? 0,
     formTraits: opts.formTraits ?? {},
+    mutation: opts.mutation ?? null,
   };
   state.run.deck = makeCards(state, opts.deck ?? []);
   const enemies = (opts.enemies ?? ['test_dummy']).map((id, i) => ({
@@ -154,12 +157,29 @@ export function eventsOf<T extends GameEvent['type']>(
   return events.filter((e): e is Extract<GameEvent, { type: T }> => e.type === type);
 }
 
-/** 런을 시작하고 시작 칩을 고른 상태 (오유민이면 특성 카드 고르기 국면) */
-export function startedRun(seed = 1, tamerId: TamerId = 'takato', startChip = 0): GameState {
-  const s = applyAction(createInitialState(seed), { type: 'startRun', tamerId }).state;
-  return s.phase === 'startChip'
-    ? applyAction(s, { type: 'chooseStartChip', index: startChip }).state
-    : s;
+/**
+ * 런을 시작하고 시작 칩을 고르고 변이를 건너뛴 상태 (오유민이면 특성 카드 고르기 국면).
+ * mutation을 주면 건너뛰지 않고 그 번호의 변이를 고름 (02 15.1)
+ */
+export function startedRun(
+  seed = 1,
+  tamerId: TamerId = 'takato',
+  startChip = 0,
+  mutation?: number,
+): GameState {
+  let s = applyAction(createInitialState(seed), { type: 'startRun', tamerId }).state;
+  if (s.phase === 'startChip') {
+    s = applyAction(s, { type: 'chooseStartChip', index: startChip }).state;
+  }
+  if (s.phase === 'mutation') {
+    s = applyAction(
+      s,
+      mutation === undefined
+        ? { type: 'skipMutation' }
+        : { type: 'chooseMutation', index: mutation },
+    ).state;
+  }
+  return s;
 }
 
 /** 무작위로 얻을 수 있는 칩 (숨은 칩·시작 칩 제외) */

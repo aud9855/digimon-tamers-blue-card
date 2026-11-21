@@ -1,6 +1,8 @@
 // core가 밖에 내보내는 것 (03 5절)
 export { cloneState } from './clone';
 export { createInitialState, SAVE_VERSION } from './state';
+/** 줄기마다의 처음 난수 상태 (옛 저장에 새 줄기를 채울 때) */
+export { initialRngState } from './rng';
 export {
   applyRunResult,
   createProfile,
@@ -20,6 +22,7 @@ export {
   describeChip,
   describeEventChoice,
   describeIntent,
+  describeMutation,
   describeHazard,
   describeHazardRule,
   describeTamer,

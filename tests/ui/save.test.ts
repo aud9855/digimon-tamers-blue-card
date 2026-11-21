@@ -108,7 +108,9 @@ describe('1단계 저장 (버전 1, 2단계 필드 없음) 이어 하기', () =>
     };
     s.version = 1;
     delete s.unlocks;
-    for (const key of ['formTraits', 'hazard', 'pastNodes']) if (s.run) delete s.run[key];
+    for (const key of ['formTraits', 'hazard', 'pastNodes', 'mutation'])
+      if (s.run) delete s.run[key];
+    delete (s.rng as Record<string, unknown> | undefined)?.mutation;
     for (const key of ['companions', 'cardsPlayedThisTurn', 'rampage', 'handChoice']) {
       if (s.battle) delete s.battle[key];
     }
@@ -122,6 +124,8 @@ describe('1단계 저장 (버전 1, 2단계 필드 없음) 이어 하기', () =>
       if (!restored) return;
       expect(restored.battle?.companions).toEqual([]);
       expect(restored.run?.formTraits).toEqual({});
+      expect(restored.run?.mutation).toBeNull();
+      expect(restored.rng.mutation).toBe(createInitialState(restored.seed).rng.mutation);
       // 지난 막 칸 수: 1막이면 0 (02 13.10과 같은 콘텐츠 2차에 생긴 통계 필드)
       expect(restored.run?.pastNodes).toBe(((restored.run?.act ?? 1) - 1) * 8);
       let state = restored;

@@ -35,6 +35,16 @@ export function pctFloor(value: number, pct: number): number {
   return Math.floor((value * pct) / 100);
 }
 
+/** 퍼센트만큼 늘리거나 줄인 배율: (100 + pct) / 100 */
+export function pctChangeMult(pct: number): number {
+  return (100 + pct) / 100;
+}
+
+/** 퍼센트만큼 늘리거나 줄이고 내림: floor(값 × (100 + pct) / 100) */
+export function pctChangeFloor(value: number, pct: number): number {
+  return Math.floor((value * (100 + pct)) / 100);
+}
+
 export function requireRun(state: GameState): RunState {
   if (!state.run) throw new Error('런이 없습니다');
   return state.run;
