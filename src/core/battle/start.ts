@@ -2,6 +2,7 @@
 import { constants, getEncounter } from '../../data/index';
 import { emptyStatuses, hasKeyword, hazardOn, pctFloor, requireRun } from '../helpers';
 import { triggerChips } from '../chips';
+import { applyMutationPct } from '../mutation';
 import { shuffle } from '../rng';
 import { winIfCleared } from './outcome';
 import type { BattleState, EnemyState, GameEvent, GameState } from '../types';
@@ -19,6 +20,12 @@ function hazardEnemy(state: GameState, enemy: EnemyState, kind: BattleState['kin
     );
   }
   return { ...enemy, maxHp, hp: maxHp };
+}
+
+/** 변이 enemyHpPct: 해저드 계산 뒤에 적의 최대 HP (02 15.1) */
+function mutationEnemy(state: GameState, enemy: EnemyState): EnemyState {
+  const maxHp = applyMutationPct(state, 'enemyHpPct', enemy.maxHp);
+  return maxHp === enemy.maxHp ? enemy : { ...enemy, maxHp, hp: maxHp };
 }
 
 export function startBattle(
@@ -65,7 +72,9 @@ export function startBattle(
     discardPile: [],
     exhaustPile: [],
     companions: [],
-    enemies: encounter.enemies.map((id) => hazardEnemy(state, createEnemy(id), kind)),
+    enemies: encounter.enemies.map((id) =>
+      mutationEnemy(state, hazardEnemy(state, createEnemy(id), kind)),
+    ),
   };
   state.pending = null;
   setPhase(state, events, 'battle');

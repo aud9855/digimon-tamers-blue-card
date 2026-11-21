@@ -156,6 +156,33 @@ export interface EventDef {
   text: string;
   choices: { label: string; effects: RunEffect[] }[];
 }
+/** 변이 효과 (02 15.1). 이 목록이 전부 */
+export type MutationEffect =
+  /** 모든 적의 최대 HP (해저드 뒤, 음수 가능) */
+  | { op: 'enemyHpPct'; pct: number }
+  /** 적의 공격 피해 (3.8의 mult에 곱함) */
+  | { op: 'enemyDamagePct'; pct: number }
+  /** 시작 최대 HP */
+  | { op: 'maxHp'; amount: number }
+  /** 시작 비트 */
+  | { op: 'startBits'; amount: number }
+  /** 상점 가격 (해저드 뒤) */
+  | { op: 'shopPricePct'; pct: number }
+  /** 전투 보상 카드 고르기 장수 (해저드 뒤, 1 이상) */
+  | { op: 'rewardCards'; amount: number }
+  /** 칩의 수치 보정처럼 셈 (이 세 가지만) */
+  | { op: 'modifiers'; modifiers: MutationModifiers };
+export type MutationModifiers = Pick<
+  NonNullable<ChipDef['modifiers']>,
+  'evolveCostDelta' | 'handSizeBonus' | 'battleBitsBonus'
+>;
+/** 변이 카드 (02 15.1): 좋은 점과 나쁜 점이 함께 붙음 */
+export interface MutationDef {
+  id: string;
+  name: string;
+  good: MutationEffect[];
+  bad: MutationEffect[];
+}
 export interface TamerDef {
   id: TamerId;
   name: string;
@@ -256,6 +283,8 @@ export interface RunState {
   hazard: number;
   /** 단계별로 고른 형태 특성 (02 12.5) */
   formTraits: Partial<Record<Stage, FormTraitId>>;
+  /** 고른 변이 id (없으면 null, 02 15.1) */
+  mutation: string | null;
 }
 // 플레이어 HP는 run.hp 하나뿐입니다. 전투 중에도 run.hp를 직접 고칩니다.
 // 지금 형태는 getForm(tamer.line, battle.stage)로 찾습니다. 전투 밖에서는 성장기입니다.
@@ -276,11 +305,14 @@ export type Pending =
   | { kind: 'eventCard'; mode: 'remove' | 'upgrade' }
   | { kind: 'treasure'; chipId: string | null }
   | { kind: 'startChip'; chipIds: string[] }
+  /** 변이 고르기 (02 15.1) */
+  | { kind: 'mutation'; mutationIds: string[] }
   /** traitStage: 특성을 고를 단계 (고르면 null) */
   | { kind: 'actClear'; traitStage: Stage | null };
 export type Phase =
   | 'title'
   | 'startChip'
+  | 'mutation'
   | 'map'
   | 'battle'
   | 'reward'
@@ -291,7 +323,7 @@ export type Phase =
   | 'actClear'
   | 'runWon'
   | 'runLost';
-export type RngStream = 'map' | 'battle' | 'reward' | 'event';
+export type RngStream = 'map' | 'battle' | 'reward' | 'event' | 'mutation';
 /** 판 시작에 받는 해금 정보 (02 13.5) */
 export interface Unlocks {
   tamers: TamerId[];
@@ -338,6 +370,8 @@ export type Action =
   | { type: 'eventChoose'; index: number }
   | { type: 'proceed' }
   | { type: 'chooseStartChip'; index: number }
+  | { type: 'chooseMutation'; index: number }
+  | { type: 'skipMutation' }
   | { type: 'chooseFormTrait'; index: number }
   | { type: 'rampage' }
   | { type: 'chooseHandGroup'; index: number };
@@ -409,5 +443,7 @@ export type GameEvent =
   | { type: 'cardGained'; cardUid: number; defId: string }
   | { type: 'cardUpgraded'; cardUid: number }
   | { type: 'chipGained'; chipId: string }
+  /** 02 15.1: 고른 변이 (건너뛰면 null) */
+  | { type: 'mutationChosen'; mutationId: string | null }
   | { type: 'stageUnlocked'; stage: Stage }
   | { type: 'runEnded'; won: boolean };

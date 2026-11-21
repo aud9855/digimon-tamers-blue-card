@@ -5,6 +5,7 @@ import { ActClearScreen } from './screens/ActClearScreen';
 import { BattleScreen } from './screens/BattleScreen';
 import { EventScreen } from './screens/EventScreen';
 import { MapScreen } from './screens/MapScreen';
+import { MutationScreen } from './screens/MutationScreen';
 import { RestScreen } from './screens/RestScreen';
 import { RewardScreen } from './screens/RewardScreen';
 import { RunEndScreen } from './screens/RunEndScreen';
@@ -23,6 +24,7 @@ import { useDisplayState, useGame } from './store';
 const SCREENS: Record<Phase, () => React.JSX.Element | null> = {
   title: TitleScreen,
   startChip: StartChipScreen,
+  mutation: MutationScreen,
   map: MapScreen,
   battle: BattleScreen,
   reward: RewardScreen,

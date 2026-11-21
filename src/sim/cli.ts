@@ -2,8 +2,9 @@
 //   npm run sim -- --policy greedy --tamer takato --runs 1000 --seed-start 1
 //   npm run sim -- --policy greedy --evolve turn2 --runs 1000
 //   npm run sim -- --report m0 [--runs 1000] [--json]
+//   npm run sim -- --policy greedy --tamer rika --runs 300 --mutation fat_wallet
 import type { TamerId } from '../core/index';
-import { getTamer, getTamers } from '../data/index';
+import { getMutation, getTamer, getTamers } from '../data/index';
 import type { EvolveMode } from './policies/types';
 import {
   encounterTable,
@@ -18,7 +19,7 @@ import {
   pickCounts,
   summarize,
 } from './report';
-import { runMany, type PolicyName, type RunConfig } from './runner';
+import { runMany, runOne, type PolicyName, type RunConfig, type RunRecord } from './runner';
 
 interface Args {
   policy: PolicyName;
@@ -27,6 +28,8 @@ interface Args {
   seedStart: number;
   evolve: EvolveMode;
   hazard: number;
+  /** 제시되면 고를 변이 (02 15.1) */
+  mutation: string | null;
   report: 'm0' | 'm2' | null;
   json: boolean;
 }
@@ -39,6 +42,7 @@ function parseArgs(argv: string[]): Args {
     seedStart: 1,
     evolve: 'asap',
     hazard: 0,
+    mutation: null,
     report: null,
     json: false,
   };
@@ -81,6 +85,12 @@ function parseArgs(argv: string[]): Args {
       case '--hazard':
         args.hazard = Number(take());
         break;
+      case '--mutation': {
+        const v = take();
+        getMutation(v); // 없는 id면 예외
+        args.mutation = v;
+        break;
+      }
       case '--json':
         args.json = true;
         break;
@@ -101,22 +111,73 @@ function single(args: Args): void {
     tamerId: args.tamer,
     evolve: args.evolve,
     hazard: args.hazard,
+    ...(args.mutation ? { mutation: args.mutation } : {}),
   };
   const records = runMany(config, args.runs, args.seedStart);
   const summary = summarize(records);
   const encounters = encounterTable(records);
   const picks = pickCounts(records);
+  const mutation = args.mutation ? mutationReport(config, records, args.mutation) : null;
   if (args.json) {
-    console.log(JSON.stringify({ config, summary, encounters, picks }, null, 2));
+    const out = { config, summary, encounters, picks, ...(mutation ? { mutation } : {}) };
+    console.log(JSON.stringify(out, null, 2));
     return;
   }
   const label = `${args.policy}${args.policy === 'greedy' ? ` (진화 ${args.evolve})` : ''}${args.hazard > 0 ? ` · 해저드 ${args.hazard}` : ''}`;
   console.log(formatSummary(label, summary));
+  if (mutation) console.log(formatMutationReport(mutation));
   console.log('\n## 조우별\n');
   console.log(formatEncounters(encounters));
   console.log('\n## 카드별 고른 횟수\n');
   console.log(formatPicks(picks));
   if (summary.timedOut > 0) process.exitCode = 1;
+}
+
+interface MutationReport {
+  mutationId: string;
+  runs: number;
+  /** 변이가 3개 후보에 들어 고른 판 수. 나머지 판은 건너뜀 */
+  chosen: number;
+  /** 고른 판의 승률 */
+  chosenWinRate: number;
+  /** 고른 판과 같은 시드를 변이 없이(건너뛰고) 돌린 승률 */
+  sameSeedsNoMutationWinRate: number;
+}
+
+/**
+ * --mutation (02 15.1): 변이는 core 규칙대로 3개 후보에 들 때만 고를 수 있어 섞인 판이 됩니다.
+ * 고른 판만 떼어, 같은 시드를 변이 없이 돌린 판과 짝지어 비교합니다.
+ * mutation 흐름은 다른 흐름과 따로라 고른 시드는 시드 전체에서 고르게 뽑힌 것과 같습니다.
+ */
+function mutationReport(
+  config: RunConfig,
+  records: RunRecord[],
+  mutationId: string,
+): MutationReport {
+  const chosen = records.filter((r) => r.finalState.run?.mutation === mutationId);
+  const noMutation: RunConfig = { ...config };
+  delete noMutation.mutation;
+  const baseline = chosen.map((r) => runOne(r.seed, noMutation));
+  const rate = (list: RunRecord[]) =>
+    list.length === 0 ? 0 : list.filter((r) => r.won).length / list.length;
+  return {
+    mutationId,
+    runs: records.length,
+    chosen: chosen.length,
+    chosenWinRate: rate(chosen),
+    sameSeedsNoMutationWinRate: rate(baseline),
+  };
+}
+
+function formatMutationReport(m: MutationReport): string {
+  const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
+  const diff = (m.chosenWinRate - m.sameSeedsNoMutationWinRate) * 100;
+  return [
+    `\n## 변이 ${getMutation(m.mutationId).name} (${m.mutationId})\n`,
+    `- 후보에 들어 고른 판: ${m.chosen} / ${m.runs} (후보에 없어 건너뛴 판 ${m.runs - m.chosen})`,
+    `- 고른 판 승률: ${pct(m.chosenWinRate)}`,
+    `- 같은 시드, 변이 없음: ${pct(m.sameSeedsNoMutationWinRate)} (차이 ${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%p)`,
+  ].join('\n');
 }
 
 function reportM0(args: Args): void {

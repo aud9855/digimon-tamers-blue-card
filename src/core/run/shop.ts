@@ -3,15 +3,19 @@ import { constants, getCard, getChips } from '../../data/index';
 import { setPhase } from '../phase';
 import { gainChip, isRandomChip } from '../chips';
 import { hazardOn, pctFloor, requireRun } from '../helpers';
+import { applyMutationPct } from '../mutation';
 import { nextInt } from '../rng';
 import type { GameEvent, GameState, Pending } from '../types';
 import { addCardToDeck, gainBits, makeCardChoices } from './reward';
 
 type ShopPending = Extract<Pending, { kind: 'shop' }>;
 
-/** 해저드 8: 상점 가격 +20% (02 13.6) */
+/** 해저드 8: 상점 가격 +20% (02 13.6), 그 뒤에 변이 shopPricePct (02 15.1) */
 function shopPrice(state: GameState, price: number): number {
-  return hazardOn(state, 'shopPrice') ? pctFloor(price, constants.HAZARD_SHOP_PRICE_PCT) : price;
+  const hazard = hazardOn(state, 'shopPrice')
+    ? pctFloor(price, constants.HAZARD_SHOP_PRICE_PCT)
+    : price;
+  return applyMutationPct(state, 'shopPricePct', hazard);
 }
 
 function cardPrice(state: GameState, defId: string): number {

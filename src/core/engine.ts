@@ -18,7 +18,7 @@ import {
   shopBuyChip,
   shopRemoveCard,
 } from './run/shop';
-import { chooseNode, chooseStartChip, startRun } from './run/start';
+import { chooseMutation, chooseNode, chooseStartChip, skipMutation, startRun } from './run/start';
 import { eventCardChoices, eventChoose, eventPickCard } from './run/event';
 import type { Action, GameEvent, GameState } from './types';
 
@@ -127,6 +127,17 @@ export function getLegalActions(state: GameState): Action[] {
         ? state.pending.chipIds.map((_, index) => ({ type: 'chooseStartChip', index }))
         : [];
 
+    case 'mutation': {
+      // 02 15.1: 3개 중 고르기 또는 건너뛰기
+      if (state.pending?.kind !== 'mutation') return [];
+      const actions: Action[] = state.pending.mutationIds.map((_, index) => ({
+        type: 'chooseMutation',
+        index,
+      }));
+      actions.push({ type: 'skipMutation' });
+      return actions;
+    }
+
     case 'actClear':
       // 형태 특성을 먼저 고르고, 그 뒤 다음 막으로 (02 12.5)
       if (state.pending?.kind === 'actClear' && state.pending.traitStage) {
@@ -198,6 +209,10 @@ function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
       return eventPickCard(draft, events, action.cardUid);
     case 'chooseStartChip':
       return chooseStartChip(draft, events, action.index);
+    case 'chooseMutation':
+      return chooseMutation(draft, events, action.index);
+    case 'skipMutation':
+      return skipMutation(draft, events);
     case 'chooseFormTrait':
       return chooseFormTrait(draft, events, action.index);
     case 'proceed':

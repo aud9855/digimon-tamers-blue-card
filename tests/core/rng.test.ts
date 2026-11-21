@@ -3,7 +3,7 @@ import { createInitialState } from '../../src/core/state';
 import { initialRngState, nextInt, shuffle, weightedPick } from '../../src/core/rng';
 import type { RngStream } from '../../src/core/types';
 
-const STREAMS: RngStream[] = ['map', 'battle', 'reward', 'event'];
+const STREAMS: RngStream[] = ['map', 'battle', 'reward', 'event', 'mutation'];
 
 function sequence(seed: number, stream: RngStream, count: number, n = 1000): number[] {
   const state = createInitialState(seed);
@@ -11,17 +11,18 @@ function sequence(seed: number, stream: RngStream, count: number, n = 1000): num
 }
 
 describe('rng 초기값 (03 5.1)', () => {
-  it('(seed + k × 0x9E3779B9) >>> 0, k는 map 1 · battle 2 · reward 3 · event 4', () => {
+  it('(seed + k × 0x9E3779B9) >>> 0, k는 map 1 · battle 2 · reward 3 · event 4 · mutation 5', () => {
     const rng = initialRngState(7);
     expect(rng.map).toBe((7 + 1 * 0x9e3779b9) >>> 0);
     expect(rng.battle).toBe((7 + 2 * 0x9e3779b9) >>> 0);
     expect(rng.reward).toBe((7 + 3 * 0x9e3779b9) >>> 0);
     expect(rng.event).toBe((7 + 4 * 0x9e3779b9) >>> 0);
+    expect(rng.mutation).toBe((7 + 5 * 0x9e3779b9) >>> 0);
   });
 
-  it('줄기 4개의 초기값이 서로 다르다', () => {
+  it('줄기 5개의 초기값이 서로 다르다', () => {
     const rng = initialRngState(1);
-    expect(new Set(Object.values(rng)).size).toBe(4);
+    expect(new Set(Object.values(rng)).size).toBe(5);
   });
 });
 
