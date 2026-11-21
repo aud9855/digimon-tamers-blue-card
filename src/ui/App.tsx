@@ -1,5 +1,5 @@
 // 국면(phase)에 따라 화면을 바꿈 (03 9.1)
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import type { Phase } from '../core/index';
 import { ActClearScreen } from './screens/ActClearScreen';
 import { BattleScreen } from './screens/BattleScreen';
@@ -58,6 +58,11 @@ function useInputGuard(phase: Phase, turn: number | undefined) {
   }, [phase, turn]);
 }
 
+// 받는 값이 없는 겹 화면: 필요한 것은 각자 구독하므로 App이 다시 그려질 때 따라 그리지 않음
+const FxLayerMemo = memo(FxLayer);
+const PlaybackOverlayMemo = memo(PlaybackOverlay);
+const PanelHostMemo = memo(PanelHost);
+
 export function App() {
   useBackButtonGuard();
   const state = useDisplayState();
@@ -71,9 +76,9 @@ export function App() {
   return (
     <>
       <Current />
-      <FxLayer />
-      <PlaybackOverlay />
-      <PanelHost />
+      <FxLayerMemo />
+      <PlaybackOverlayMemo />
+      <PanelHostMemo />
     </>
   );
 }

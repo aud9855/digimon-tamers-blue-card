@@ -75,7 +75,7 @@ export function DeckPicker({
                 onClick={() => onPick(card)}
                 className="text-left"
               >
-                <CardView defId={shown.defId} upgraded={shown.upgraded} />
+                <CardView defId={shown.defId} upgraded={shown.upgraded} still />
               </button>
             );
           })}

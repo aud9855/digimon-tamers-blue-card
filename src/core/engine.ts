@@ -1,4 +1,5 @@
 import { constants, getEvent, getTamers } from '../data/index';
+import { cloneState } from './clone';
 import { canEvolve, evolve } from './battle/evolve';
 import { canRampage, rampage } from './battle/rampage';
 import { cardNeedsTarget, isCardPlayable, playCard } from './battle/cards';
@@ -144,10 +145,13 @@ export function getLegalActions(state: GameState): Action[] {
 
 /** 두 행동이 같은지 (값이 undefined인 필드는 없는 것으로 봄) */
 function sameAction(a: Action, b: Action): boolean {
+  if (a.type !== b.type) return false;
   const ra = a as unknown as Record<string, unknown>;
   const rb = b as unknown as Record<string, unknown>;
-  const keys = new Set([...Object.keys(ra), ...Object.keys(rb)]);
-  for (const key of keys) {
+  for (const key in ra) {
+    if (ra[key] !== rb[key]) return false;
+  }
+  for (const key in rb) {
     if (ra[key] !== rb[key]) return false;
   }
   return true;
@@ -212,7 +216,7 @@ export function applyAction(
       `'${state.phase}' 국면에서 할 수 없는 행동: ${JSON.stringify(action)}`,
     );
   }
-  const draft = structuredClone(state);
+  const draft = cloneState(state);
   const events: GameEvent[] = [];
   dispatch(draft, events, action);
   return { state: draft, events };

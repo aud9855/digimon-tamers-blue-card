@@ -1,3 +1,4 @@
+import { cloneState } from './clone';
 import { defaultUnlocks } from './meta';
 import { initialRngState } from './rng';
 import type { GameState, Unlocks } from './types';
@@ -13,7 +14,7 @@ export function createInitialState(seed: number, unlocks: Unlocks = defaultUnloc
   return {
     version: SAVE_VERSION,
     seed,
-    unlocks: structuredClone(unlocks),
+    unlocks: cloneState(unlocks),
     rng: initialRngState(seed),
     phase: 'title',
     run: null,

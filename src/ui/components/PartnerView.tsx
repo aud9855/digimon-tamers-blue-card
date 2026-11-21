@@ -21,23 +21,20 @@ export function PartnerView({
   if (!run || !battle) return null;
   const form = currentForm(state);
   const cost = previewEvolveCost(state);
+  const glow = battle.rampage
+    ? '[filter:drop-shadow(0_0_6px_#f43f5e)]'
+    : isMatrix(state)
+      ? '[filter:drop-shadow(0_0_6px_#fcd34d)]'
+      : '';
   const stageLabel = `${form.name} · ${
     battle.rampage ? '폭주' : isMatrix(state) ? '매트릭스' : STAGE_LABEL[battle.stage]
   }`;
   return (
     <div className="flex items-end gap-2 px-2" data-testid="partner">
-      <div
-        className={`flex h-28 w-28 shrink-0 items-end justify-center ${
-          battle.rampage
-            ? '[filter:drop-shadow(0_0_6px_#f43f5e)]'
-            : isMatrix(state)
-              ? '[filter:drop-shadow(0_0_6px_#fcd34d)]'
-              : ''
-        }`}
-        data-form={form.id}
-      >
+      <div className="flex h-28 w-28 shrink-0 items-end justify-center" data-form={form.id}>
         <BattleSprite className="h-full w-full">
-          <FormSprite formId={form.id} className="h-full w-full" scaled />
+          {/* 빛 필터는 숨쉬는 층 안쪽 그림에: 한 번 그린 것을 층째 움직여 숨쉴 때마다 다시 그리지 않음 */}
+          <FormSprite formId={form.id} className={`h-full w-full ${glow}`} scaled />
         </BattleSprite>
       </div>
       <div
