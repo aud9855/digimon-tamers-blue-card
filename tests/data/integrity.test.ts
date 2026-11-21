@@ -46,27 +46,27 @@ const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const REWARD_RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
 
 describe('콘텐츠 개수 (02 9절, 12절)', () => {
-  it('카드: 기본 6, 일반 27, 고급 21, 희귀 13, 필살기 11, 저주 2 (동료 4장 포함)', () => {
+  it('카드: 기본 8, 일반 34, 고급 25, 희귀 16, 필살기 14, 저주 2 (동료 4장 포함)', () => {
     const all = getCards();
-    expect(all).toHaveLength(80);
+    expect(all).toHaveLength(99);
     expect(countBy(all, (c) => c.rarity)).toEqual({
-      basic: 6,
-      common: 27,
-      uncommon: 21,
-      rare: 13,
-      special: 13,
+      basic: 8,
+      common: 34,
+      uncommon: 25,
+      rare: 16,
+      special: 16,
     });
-    expect(all.filter((c) => c.type === 'signature')).toHaveLength(11);
+    expect(all.filter((c) => c.type === 'signature')).toHaveLength(14);
     expect(all.filter((c) => c.type === 'curse')).toHaveLength(2);
   });
 
-  it('형태 15 (폭주 1 포함), 적 24, 조우 39, 칩 21, 이벤트 20, 테이머 4', () => {
-    expect(getForms()).toHaveLength(15);
+  it('형태 19 (폭주 1 포함), 적 24, 조우 39, 칩 22, 이벤트 20, 테이머 5', () => {
+    expect(getForms()).toHaveLength(19);
     expect(getEnemies()).toHaveLength(24);
     expect(getAllEncounters()).toHaveLength(39);
-    expect(getChips()).toHaveLength(21);
+    expect(getChips()).toHaveLength(22);
     expect(getEvents()).toHaveLength(20);
-    expect(getTamers()).toHaveLength(4);
+    expect(getTamers()).toHaveLength(5);
   });
 
   it('막마다 조우: 쉬움 4, 보통 6, 강적 2, 보스 1 (02 9.4, 12.10)', () => {
@@ -379,10 +379,11 @@ describe('칩', () => {
     expect(meta.baseStartChips).toEqual(['card_reader', 'guard_chip', 'bit_scanner']);
   });
 
-  it('메타 데이터의 id가 모두 있음 (02 13.5)', () => {
-    for (const id of [...meta.baseTamers, ...meta.firstWinTamers])
-      expect(() => getTamer(id)).not.toThrow();
-    expect(new Set([...meta.baseTamers, ...meta.firstWinTamers]).size).toBe(getTamers().length);
+  it('메타 데이터의 id가 모두 있음 (02 13.5, 15.2)', () => {
+    const listed = [...meta.baseTamers, ...meta.firstWinTamers, ...meta.secondWinTamers];
+    for (const id of listed) expect(() => getTamer(id)).not.toThrow();
+    expect(new Set(listed).size).toBe(getTamers().length);
+    expect(listed).toHaveLength(getTamers().length);
   });
 
   it("칩 효과는 target 'enemy'를 쓰지 않는다 (02 5절)", () => {
