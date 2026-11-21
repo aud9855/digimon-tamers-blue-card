@@ -6,12 +6,12 @@ import {
   FX_MODULES,
   PAL,
   clearFrame,
-  composite,
   createFrame,
   createFx,
   type FxFrame,
   type FxInstance,
 } from '../fx/library';
+import { compositeFast } from '../fx/composite';
 import { FEEL, motionFor, vfxFor, type FeelTier, type VfxCue } from '../fx/vfx';
 import { playBodyMotion } from './bodyMotion';
 import { useGame } from '../store';
@@ -53,7 +53,7 @@ function applyShake(realDt: number) {
   if (!root) return;
   feel.trauma = Math.max(0, feel.trauma - TRAUMA_DECAY * realDt);
   if (feel.trauma === 0) {
-    root.style.transform = '';
+    root.style.transform = 'translate(0px, 0px)';
     return;
   }
   feel.t += realDt * 30;
@@ -133,7 +133,7 @@ export function FxLayer() {
         fx.draw(frame);
       }
       live.current = live.current.filter((fx) => !fx.done());
-      composite(frame, image.data, null);
+      compositeFast(frame, image.data);
       ctx.putImageData(image, 0, 0);
       if (live.current.length > 0 || feel.trauma > 0) raf = requestAnimationFrame(tick);
       else {

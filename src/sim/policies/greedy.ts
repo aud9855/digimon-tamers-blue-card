@@ -13,9 +13,13 @@ import {
   type GameState,
 } from '../../core/index';
 import { constants, getCard, getEvent } from '../../data/index';
+import { estimateCardScore } from './cardValue';
 import type { Policy, PolicyContext } from './types';
 
 // ── 카드 점수표 (봇 전용, 게임 데이터에 넣지 않음) ──
+// 손으로 매긴 점수가 우선이고, 없는 카드(새 카드)는 효과에서 추정한 점수(cardValue.ts)를 씀.
+// 보상·상점에 나오는 카드는 모두 여기에 있어야 함은 아님: 새 카드는 추정 점수로 시작하고,
+// 밸런스 측정 뒤 필요하면 여기에 손 점수를 더해 보정함.
 const CARD_SCORES: Record<string, number> = {
   strike: 1,
   guard: 1,
@@ -97,8 +101,12 @@ const SKIP_SCORE = 5;
 /** 받을 피해가 지금 HP의 이 비율 이상이면 당겨써서라도 막음 */
 const BLOCK_OVERDRAW_HP_RATIO = 0.3;
 
+/** 보상·상점에 나오지 않는 카드(필살기·저주 등, pool 'none')는 예전처럼 손 점수가 없으면 0 */
 function cardScore(defId: string, upgraded: boolean): number {
-  return (CARD_SCORES[defId] ?? 0) + (upgraded ? UPGRADE_BONUS : 0);
+  const hand = CARD_SCORES[defId];
+  const def = getCard(defId);
+  const base = hand ?? (def.pool === 'none' ? 0 : estimateCardScore(def));
+  return base + (upgraded ? UPGRADE_BONUS : 0);
 }
 
 // ── 효과 읽기 ──
@@ -477,7 +485,28 @@ function restAction(state: GameState, legal: Action[]): Action {
   return best;
 }
 
+/** 이벤트 효과의 카드 고르기 (02 14.2): 지우기는 점수가 가장 낮은 카드, 강화는 가장 높은 카드 */
+function eventCardAction(state: GameState, legal: Action[]): Action {
+  const run = state.run;
+  if (!run || state.pending?.kind !== 'eventCard') throw new Error('카드 고르기 중이 아닙니다');
+  const sign = state.pending.mode === 'remove' ? -1 : 1;
+  let best: Action | null = null;
+  let bestScore = -Infinity;
+  for (const a of legal) {
+    if (a.type !== 'eventPickCard') continue;
+    const card = run.deck.find((c) => c.uid === a.cardUid);
+    const score = card ? sign * cardScore(card.defId, card.upgraded) : -Infinity;
+    if (score > bestScore) {
+      best = a;
+      bestScore = score;
+    }
+  }
+  if (!best) throw new Error('고를 카드가 없습니다');
+  return best;
+}
+
 function eventAction(state: GameState, legal: Action[]): Action {
+  if (state.pending?.kind === 'eventCard') return eventCardAction(state, legal);
   const run = state.run;
   if (!run || state.pending?.kind !== 'event') return legal[0] ?? { type: 'proceed' };
   const event = getEvent(state.pending.eventId);

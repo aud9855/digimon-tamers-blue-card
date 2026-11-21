@@ -1,5 +1,6 @@
 // 02 13.5 메타 진행: 판 밖의 기록(프로필)과 해금. 모두 순수 함수입니다.
 import { getChips, getEncounter, getTamers, meta } from '../data/index';
+import { cloneState } from './clone';
 import type { GameEvent, GameState, Profile, TamerId, Unlocks } from './types';
 
 /** 프로필 저장 형식 버전 */
@@ -53,7 +54,7 @@ export function recordCodex(profile: Profile, events: readonly GameEvent[]): Pro
     if (e.type === 'battleStarted') enemies.push(...getEncounter(e.encounterId).enemies);
   }
   if (forms.length === 0 && enemies.length === 0) return profile;
-  const next = structuredClone(profile);
+  const next = cloneState(profile);
   const newForms = addUnique(next.codex.forms, forms);
   const newEnemies = addUnique(next.codex.enemies, enemies);
   return newForms || newEnemies ? next : profile;
@@ -65,7 +66,7 @@ export function applyRunResult(
   finalState: GameState,
   events: readonly GameEvent[],
 ): Profile {
-  const next = structuredClone(recordCodex(profile, events));
+  const next = cloneState(recordCodex(profile, events));
   const run = finalState.run;
   if (!run || (finalState.phase !== 'runWon' && finalState.phase !== 'runLost')) return next;
   const won = finalState.phase === 'runWon';

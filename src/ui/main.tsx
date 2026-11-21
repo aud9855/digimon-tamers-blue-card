@@ -21,8 +21,10 @@ import { useGame } from './store';
 import { restoreSpritePack } from './spritePack';
 
 const params = new URLSearchParams(location.search);
+/** 개발 서버, 또는 성능 측정용 빌드(VITE_DEBUG_HOOKS=1, npm run perf)에서만 켜는 확인용 기능 */
+const debugHooks = import.meta.env.DEV || import.meta.env.VITE_DEBUG_HOOKS === '1';
 /** 개발 서버에서 주소로 상태를 정했으면 저장을 불러오지 않음 */
-const devOverride = import.meta.env.DEV && (params.has('debug') || params.has('seed'));
+const devOverride = debugHooks && (params.has('debug') || params.has('seed'));
 
 // 저장 불러오기 (03 9.1): 진행 중인 판이 있으면 그 자리에서 이어 함
 // 불러오기가 실패해도(저장소를 못 여는 브라우저 등) 화면은 처음 상태로 그림
@@ -42,7 +44,7 @@ try {
 }
 restoreSpritePack().catch((error) => console.error('도트 팩 불러오기 실패', error));
 
-if (import.meta.env.DEV) {
+if (debugHooks) {
   // 개발 서버에서만: 자동 확인 스크립트가 지금 상태와 봇의 다음 행동을 읽을 수 있게 함
   const { botAction, debugStateFromUrl } = await import('./debug');
   const w = window as unknown as {

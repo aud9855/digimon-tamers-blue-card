@@ -33,6 +33,8 @@ export interface IntentView {
   kind: 'attack' | 'defend' | 'buff' | 'debuff' | 'mixed';
   damage?: number;
   hits?: number;
+  /** 반응으로 고른 인텐트 (02 14.1, 화면에 "!" 표시) */
+  reaction?: boolean;
 }
 
 const STAGE_NAMES: Record<Stage, string> = {
@@ -244,6 +246,7 @@ export function describeIntent(state: GameState, enemyIndex: number): IntentView
     name: move.name,
     kind: kinds.size === 1 && only ? only : 'mixed',
   };
+  if (enemy.reacting) view.reaction = true;
   const attack = move.effects.find((e) => e.op === 'attack');
   if (attack && attack.op === 'attack') {
     view.damage = enemyHitDamage(state, attack.amount, enemyIndex).damage;
@@ -304,6 +307,12 @@ function describeRunEffect(effect: RunEffect): string {
       return `${effect.upgraded ? '강화된 ' : ''}${
         effect.rarity ? `${RARITY_NAMES[effect.rarity]} ` : ''
       }카드 ${effect.count}장 중 1장 고르기`;
+    case 'changeMaxHp':
+      return effect.amount >= 0 ? `최대 HP +${effect.amount}` : `최대 HP ${effect.amount}`;
+    case 'removeCard':
+      return '덱에서 카드 1장을 골라 지움';
+    case 'upgradeCard':
+      return '카드 1장을 골라 강화';
     case 'addRandomChip':
       return '무작위 디아크 칩 1개';
     case 'addCard':

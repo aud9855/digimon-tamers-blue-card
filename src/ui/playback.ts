@@ -100,7 +100,10 @@ export function applyEventToView(view: GameState, event: GameEvent): void {
       return;
     case 'enemyIntent': {
       const enemy = battle.enemies[event.enemyIndex];
-      if (enemy) enemy.intentMoveId = event.moveId;
+      if (enemy) {
+        enemy.intentMoveId = event.moveId;
+        enemy.reacting = event.reaction === true;
+      }
       return;
     }
     case 'turnStarted':

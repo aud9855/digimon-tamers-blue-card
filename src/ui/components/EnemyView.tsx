@@ -26,6 +26,11 @@ export function IntentBadge({ intent }: { intent: IntentView }) {
       }`}
       title={intent.name}
     >
+      {intent.reaction && (
+        <span className="mr-0.5 text-amber-300" aria-label="반응">
+          !
+        </span>
+      )}
       {INTENT_ICON[intent.kind]}
       {damage}
     </div>

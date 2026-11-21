@@ -1,7 +1,14 @@
 // 02 3.10 적 행동, 3.10.1 적의 행동 고르기
 import { getEnemy } from '../../data/index';
-import { emptyStatuses, requireBattle } from '../helpers';
-import type { EnemyMove, EnemyState, GameEvent, GameState } from '../types';
+import {
+  emptyStatuses,
+  livingEnemyIndexes,
+  requireBattle,
+  requireRun,
+  stageIndex,
+  unreachable,
+} from '../helpers';
+import type { EnemyCondition, EnemyMove, EnemyState, GameEvent, GameState } from '../types';
 import { hitPlayer } from './damage';
 import { applyStatus } from './effects';
 import { battleStopped } from './outcome';
@@ -23,6 +30,8 @@ export function createEnemy(defId: string): EnemyState {
     phaseIndex: 0,
     cycleIndex: 0,
     intentMoveId: first,
+    usedReactions: [],
+    reacting: false,
   };
 }
 
@@ -71,6 +80,8 @@ export function enemyTakeTurn(state: GameState, events: GameEvent[], enemyIndex:
       case 'addCard':
         createTempCards(state, events, effect.cardId, effect.to, effect.count);
         break;
+      default:
+        unreachable(effect, '적 행동 효과');
     }
   }
   if (battleStopped(state)) return;
@@ -98,6 +109,7 @@ export function chooseNextIntent(state: GameState, events: GameEvent[], enemyInd
   const phase = def.phases[enemy.phaseIndex];
   if (!phase) throw new Error(`적 ${enemy.defId}에게 없는 페이즈: ${enemy.phaseIndex}`);
 
+  enemy.reacting = false;
   // 1. 페이즈 전환
   const nextPhase = def.phases[enemy.phaseIndex + 1];
   if (phase.untilHpPct !== undefined && nextPhase && enemy.hp / enemy.maxHp <= phase.untilHpPct) {
@@ -111,15 +123,45 @@ export function chooseNextIntent(state: GameState, events: GameEvent[], enemyInd
       enemy.intentMoveId = cycleMove(nextPhase.cycle, 0);
     }
   } else {
-    // 2. 전환이 없으면 순환 위치를 1 올림 (-1이었으면 0)
-    enemy.cycleIndex = (enemy.cycleIndex + 1) % phase.cycle.length;
-    enemy.intentMoveId = cycleMove(phase.cycle, enemy.cycleIndex);
+    // 2. 전환이 없으면: 아직 쓰지 않았고 조건이 맞는 첫 반응 (02 14.1). 순환 위치는 그대로
+    const reactions = def.reactions ?? [];
+    const index = reactions.findIndex(
+      (r, i) => !enemy.usedReactions.includes(i) && conditionMet(state, enemyIndex, r.when),
+    );
+    const reaction = reactions[index];
+    if (reaction) {
+      enemy.usedReactions.push(index);
+      enemy.reacting = true;
+      enemy.intentMoveId = reaction.move;
+    } else {
+      // 반응이 없으면 순환 위치를 1 올림 (-1이었으면 0)
+      enemy.cycleIndex = (enemy.cycleIndex + 1) % phase.cycle.length;
+      enemy.intentMoveId = cycleMove(phase.cycle, enemy.cycleIndex);
+    }
   }
-  events.push({ type: 'enemyIntent', enemyIndex, moveId: enemy.intentMoveId });
+  events.push(
+    enemy.reacting
+      ? { type: 'enemyIntent', enemyIndex, moveId: enemy.intentMoveId, reaction: true }
+      : { type: 'enemyIntent', enemyIndex, moveId: enemy.intentMoveId },
+  );
 }
 
 function cycleMove(cycle: readonly string[], index: number): string {
   const id = cycle[index];
   if (id === undefined) throw new Error(`순환 위치 ${index}에 행동이 없습니다`);
   return id;
+}
+
+/** 02 14.1 반응 조건 */
+function conditionMet(state: GameState, enemyIndex: number, when: EnemyCondition): boolean {
+  const battle = requireBattle(state);
+  if ('partnerStageAtLeast' in when) {
+    return stageIndex(battle.stage) >= stageIndex(when.partnerStageAtLeast);
+  }
+  if ('alone' in when) {
+    const living = livingEnemyIndexes(battle);
+    return living.length === 1 && living[0] === enemyIndex;
+  }
+  const run = requireRun(state);
+  return run.hp / run.maxHp <= when.playerHpAtMostPct;
 }

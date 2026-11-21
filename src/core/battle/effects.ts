@@ -1,5 +1,5 @@
 // 02 4.3 효과 실행 (카드와 칩이 함께 씀)
-import { livingEnemyIndexes, requireBattle, stageIndex } from '../helpers';
+import { livingEnemyIndexes, requireBattle, stageIndex, unreachable } from '../helpers';
 import { nextInt } from '../rng';
 import type { Effect, GameEvent, GameState, StatusId, Who } from '../types';
 import { heal, hitEnemy, loseHp } from './damage';
@@ -92,6 +92,8 @@ function runEffect(state: GameState, events: GameEvent[], effect: Effect, ctx: E
         ctx,
       );
       return;
+    default:
+      unreachable(effect, '카드 효과');
   }
 }
 
