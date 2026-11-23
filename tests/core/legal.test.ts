@@ -92,11 +92,11 @@ describe('국면마다 할 수 있는 행동 (02 2절, 03 5.2)', () => {
     const state = createInitialState(1);
     expect(getLegalActions(state)).toEqual(
       getTamers()
-        .filter((t) => t.id !== 'ai_mako')
+        .filter((t) => t.id !== 'ai_mako' && t.id !== 'ryo')
         .map((t) => ({ type: 'startRun', tamerId: t.id })),
     );
     expectOnlyLegal(state);
-    // 모두 열리면 테이머 4명 × 해저드 0~10 (02 13.6)
+    // 모두 열리면 테이머 5명 × 해저드 0~10 (02 13.6)
     const all = createInitialState(1, fullUnlocks());
     expect(getLegalActions(all)).toEqual(
       getTamers().flatMap((t) => [

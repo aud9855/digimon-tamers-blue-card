@@ -109,6 +109,28 @@ for (const HEIGHT of HEIGHTS) {
         );
       }
     }
+    // 변이 고르기 화면 (02 15.1): 3장과 건너뛰기가 화면 안에 있고, 고르면 덱 정보 줄에 보임
+    await browser.goto(`${origin}/?debug=bot&seed=1&actions=0&phase=mutation`);
+    if ((await browser.eval('window.__game().phase')) !== 'mutation') {
+      fail('변이 국면으로 시작하지 않음');
+    } else {
+      await sleep(SETTLE_MS);
+      const cards = await browser.eval(`document.querySelectorAll('[data-mutation]').length`);
+      const width = await browser.eval('document.documentElement.scrollWidth');
+      const skipInside = await browser.eval(`(() => {
+        const r = document.querySelector('[data-testid="skip-mutation"]')?.getBoundingClientRect();
+        return !!r && r.bottom <= window.innerHeight && r.right <= window.innerWidth;
+      })()`);
+      if (cards !== 3) fail(`변이 카드가 3장이 아님 (${cards})`);
+      if (width > WIDTH) fail(`변이 화면이 가로로 넘침 (${width}px)`);
+      if (!skipInside) fail('건너뛰기 단추가 화면 밖');
+      await browser.tap('[data-mutation="0"]');
+      await sleep(SETTLE_MS);
+      const chosen = await browser.eval('window.__game().run.mutation');
+      const shown = await browser.eval(`!!document.querySelector('[data-testid="run-mutation"]')`);
+      if (!chosen || !shown) fail(`변이를 고른 뒤 상태·표시가 맞지 않음 (${chosen}, ${shown})`);
+      else console.log(`높이 ${HEIGHT}: 변이 화면 확인 (${chosen}), 폭 ${width}px`);
+    }
     if (browser.errors.length > 0) fail(`페이지 오류: ${browser.errors.join(' / ')}`);
   } finally {
     await browser.close();

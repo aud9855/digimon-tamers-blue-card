@@ -60,7 +60,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  │  ├─ rampage.ts       폭주 진화 (02 13.2)
 │  │  │  └─ enemy.ts         적 행동·인텐트 (02 3.10)
 │  │  ├─ run/
-│  │  │  ├─ start.ts         startRun, 테이머 특성 (02 8)
+│  │  │  ├─ start.ts         startRun, 시작 칩·변이 고르기, 테이머 특성 (02 8, 12.7, 15.1)
 │  │  │  ├─ map.ts           지도 생성·이동 (02 6)
 │  │  │  ├─ reward.ts        보상·카드 고르기 (02 7.1)
 │  │  │  ├─ shop.ts          상점 (02 7.2)
@@ -68,14 +68,15 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 │  │  │  ├─ event.ts         이벤트·보물·런 효과 (02 7.4, 7.5)
 │  │  │  └─ act.ts           막 넘어가기 (02 7.6)
 │  │  ├─ chips.ts            칩 발동 (02 5)
+│  │  ├─ mutation.ts         고른 변이의 효과 읽기 (02 15.1, 거는 곳은 각 모듈)
 │  │  ├─ describe.ts         카드·칩·인텐트 설명 글 만들기
 │  │  ├─ helpers.ts          여러 모듈이 함께 쓰는 작은 도우미 (단계 순서, 지금 형태, 카드 면)
 │  │  └─ phase.ts            국면 바꾸기 (setPhase, returnToMap)
 │  ├─ data/                  수치와 이름 (TypeScript 객체)
 │  │  ├─ constants.ts        규칙 상수 (HAND_SIZE 등)
-│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  enemies.ts  encounters.ts
-│  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)
-│  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5)
+│  │  ├─ forms.ts  cards.ts(공용·오유민)  cards-rika.ts  cards-henry.ts  cards-ai-mako.ts  cards-ryo.ts  enemies.ts  encounters.ts
+│  │  ├─ chips.ts  events.ts  tamers.ts  acts.ts(막 이름·시작 글)  mutations.ts(변이 카드, 02 15.1)
+│  │  ├─ meta.ts             처음 열린 테이머·시작 칩, 해금 순서 (02 13.5, 두 번째 승리 15.2)
 │  │  └─ index.ts            id로 찾는 함수 (getCard, getEnemy…)
 │  ├─ sim/                   봇과 측정
 │  │  ├─ policies/random.ts  policies/greedy.ts  policies/types.ts(정책 타입)
@@ -113,7 +114,7 @@ DigimonDeckRogue/            (저장소: digimon-tamers-blue-card)
 export type Stage = 'rookie' | 'champion' | 'ultimate' | 'mega';
 export type Attribute = 'vaccine' | 'data' | 'virus' | 'none';
 export type StatusId = 'strength' | 'weak' | 'vulnerable';
-export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako';
+export type TamerId = 'takato' | 'rika' | 'henry' | 'ai_mako' | 'ryo';
 export type CardType = 'attack' | 'skill' | 'signature' | 'curse' | 'companion';
 export type FormTraitId = 'tough' | 'sharp';   // 형태 특성 (02 12.5)
 export type Rarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
@@ -193,6 +194,14 @@ export interface EventDef {
   id: string; acts: number[];   // acts: 나오는 막 (02 12.1)
   title: string; text: string; choices: { label: string; effects: RunEffect[] }[];
 }
+export type MutationEffect =   // 변이 효과 (02 15.1, 이 목록이 전부)
+  | { op: 'enemyHpPct'; pct: number } | { op: 'enemyDamagePct'; pct: number }
+  | { op: 'maxHp'; amount: number } | { op: 'startBits'; amount: number }
+  | { op: 'shopPricePct'; pct: number } | { op: 'rewardCards'; amount: number }
+  | { op: 'modifiers'; modifiers: MutationModifiers };
+export type MutationModifiers =   // 칩의 수치 보정 중 세 가지만
+  Pick<NonNullable<ChipDef['modifiers']>, 'evolveCostDelta' | 'handSizeBonus' | 'battleBitsBonus'>;
+export interface MutationDef { id: string; name: string; good: MutationEffect[]; bad: MutationEffect[] }
 export interface TamerDef {
   id: TamerId; name: string; trait: string; line: string; maxHp: number;   // trait: 테이머 특성 이름 (02 8, 12.3)
   startBits: number; startMaxStage: Stage; startMaxMemory: number;
@@ -245,6 +254,7 @@ export interface RunState {
   removalsBought: number;
   hazard: number;                                    // 디지털 해저드 단계 (02 13.6)
   formTraits: Partial<Record<Stage, FormTraitId>>;   // 단계별로 고른 형태 특성 (02 12.5)
+  mutation: string | null;                           // 고른 변이 id (02 15.1, 건너뛰면 null)
 }
 // 플레이어 HP는 run.hp 하나뿐입니다. 전투 중에도 run.hp를 직접 고칩니다.
 // 지금 형태는 getForm(tamer.line, battle.stage)로 찾습니다. 전투 밖에서는 성장기입니다.
@@ -258,10 +268,11 @@ export type Pending =
   | { kind: 'eventCard'; mode: 'remove' | 'upgrade' }   // 이벤트 효과로 카드 고르기 (02 14.2, 국면 event)
   | { kind: 'treasure'; chipId: string | null }
   | { kind: 'startChip'; chipIds: string[] }          // 시작 칩 고르기 (02 12.7)
+  | { kind: 'mutation'; mutationIds: string[] }       // 변이 고르기 (02 15.1)
   | { kind: 'actClear'; traitStage: Stage | null };   // traitStage: 특성을 고를 단계 (고르면 null)
-export type Phase = 'title' | 'startChip' | 'map' | 'battle' | 'reward' | 'shop' | 'rest' | 'event'
+export type Phase = 'title' | 'startChip' | 'mutation' | 'map' | 'battle' | 'reward' | 'shop' | 'rest' | 'event'
   | 'treasure' | 'actClear' | 'runWon' | 'runLost';
-export type RngStream = 'map' | 'battle' | 'reward' | 'event';
+export type RngStream = 'map' | 'battle' | 'reward' | 'event' | 'mutation';
 export interface Unlocks {        // 판 시작에 받는 해금 정보 (02 13.5)
   tamers: TamerId[]; startChips: string[];
   hazard: number;                 // 열린 디지털 해저드 최고 단계
@@ -300,6 +311,8 @@ export type Action =
   | { type: 'eventPickCard'; cardUid: number }   // 02 14.2
   | { type: 'proceed' }
   | { type: 'chooseStartChip'; index: number }   // 02 12.7
+  | { type: 'chooseMutation'; index: number }    // 02 15.1
+  | { type: 'skipMutation' }
   | { type: 'chooseFormTrait'; index: number }   // 02 12.5
   | { type: 'rampage' }                          // 폭주 진화 (02 13.2)
   | { type: 'chooseHandGroup'; index: number };  // 두 사람의 카드 (02 13.3)
@@ -348,6 +361,7 @@ export type GameEvent =
   | { type: 'cardGained'; cardUid: number; defId: string }
   | { type: 'cardUpgraded'; cardUid: number }
   | { type: 'chipGained'; chipId: string }
+  | { type: 'mutationChosen'; mutationId: string | null }   // 02 15.1 (건너뛰면 null)
   | { type: 'stageUnlocked'; stage: Stage }
   | { type: 'runEnded'; won: boolean };
 ```
@@ -362,12 +376,15 @@ createProfile(): Profile   defaultUnlocks(): Unlocks   fullUnlocks(): Unlocks   
 PROFILE_VERSION: number   // Profile.version
 applyRunResult(profile, finalState, events): Profile   // 판이 끝났을 때 판 수·해금·도감 갱신 (순수 함수)
 recordCodex(profile, events): Profile   // 도감만 (새로 본 것이 없으면 같은 객체)
+totalWins(profile): number   tamerUnlockWins(tamerId): number   // 이긴 판 수(테이머별 승리 합), 테이머가 열리는 승리 수 0·1·2 (02 15.2, 잠김 글용)
 currentForm(state): FormDef   // 지금 형태 (폭주 중이면 폭주 형태, 전투 밖이면 성장기). 화면 표시용
 isMatrix(state): boolean   // 매트릭스 에볼루션 중인지 (전투 중 궁극체이고 폭주가 아님, 02 13.1). 화면 표시용
 getLegalActions(state: GameState): Action[]          // 지금 할 수 있는 모든 행동
 applyAction(state: GameState, action: Action): { state: GameState; events: GameEvent[] }
 describeCard(defId: string, upgraded: boolean, ctx?: DescribeContext): string
 describeChip(chipId: string): string
+describeMutation(mutationId: string): { good: string; bad: string }   // 변이의 좋은 점·나쁜 점 글 (02 15.1)
+initialRngState(seed): Record<RngStream, number>   // 줄기마다의 처음 값 (옛 저장에 새 줄기를 채울 때)
 describeEnding(state: GameState): readonly string[] | null   // 02 13.10, runWon일 때만
 totalNodesVisited(state: GameState): number                    // 판 전체 지나온 칸 수
 describeEventChoice(eventId: string, index: number): string   // 이벤트 선택지의 결과 글
@@ -402,8 +419,9 @@ interface IntentView {
 
 ### 5.1 난수 (src/core/rng.ts)
 - 알고리즘: mulberry32 (32비트 정수 상태 하나, 공개 도메인 알고리즘, 직접 구현).
-- 줄기 4개: `map`(지도), `battle`(섞기·무작위 대상), `reward`(보상·상점·보물), `event`(이벤트).
-- 초기값: `k`를 map 1, battle 2, reward 3, event 4로 두고 `(seed + k × 0x9E3779B9) >>> 0`.
+- 줄기 5개: `map`(지도), `battle`(섞기·무작위 대상), `reward`(보상·상점·보물), `event`(이벤트), `mutation`(변이 후보, 02 15.1).
+- 초기값: `k`를 map 1, battle 2, reward 3, event 4, mutation 5로 두고 `(seed + k × 0x9E3779B9) >>> 0`. 줄기마다 k가 따로라 줄기를 더해도 다른 줄기의 값은 그대로입니다 (그래서 변이를 건너뛴 판은 골든까지 전과 같음).
+- 옛 저장에 없는 줄기는 `initialRngState(seed)`의 그 줄기 값으로 채웁니다 (`ui/save.ts`의 `fillMissingFields`).
 - 줄기를 쓰는 곳: `map`은 지도 생성 전부, `battle`은 섞기·`randomEnemy`·`addCard`의 뽑을 더미 위치, `reward`는 전투 보상·카드 고르기(이벤트의 `offerCards` 포함)·상점 진열·보물, `event`는 이벤트의 `addRandomCard`·`addRandomChip`.
 - 줄기를 나누는 이유: 전투에서 카드를 한 장 더 뽑아도 지도나 보상이 달라지지 않게 하기 위해서입니다.
 - 쓰는 함수: `nextInt(state, 줄기, n)` (0 이상 n 미만 정수), `shuffle(state, 줄기, items)` (섞은 새 배열), `weightedPick(state, 줄기, [{ item, weight }])` (가중치는 0 이상 정수, 0이면 안 뽑힘). 모두 `state.rng`의 값을 갱신합니다.
@@ -425,7 +443,7 @@ interface IntentView {
 - JSON이 아니라 **TypeScript 객체**로 씁니다. `satisfies CardDef[]`로 타입 검사를 받아 오타를 컴파일 때 잡습니다.
 - id는 영문 소문자와 밑줄(`rock_breaker`), 이름(`name`)은 한국어.
 - `constants.ts`에 넣는 것: `HAND_SIZE`, `HAND_LIMIT`, `MAX_OVERDRAW`, `ACCEL_PER_POINT`, `ATTR_STRONG`, `ATTR_WEAK`, `WEAK_MULT`, `VULNERABLE_MULT`, `EVOLVE_BASE_COST`, `REST_HEAL_PCT`, `ACT_CLEAR_HEAL_PCT`, `ACT_COUNT`, 보상 가중치, 비트 범위, 상점 가격, 지도 행별 가중치.
-- **찾는 길은 하나**: `core`는 데이터 파일을 직접 import하지 않고 `src/data/index.ts`의 함수(`getCard`, `getForm(line, stage)`, `getEnemy`, `getEncounter`, `getEncounters(act, tier)`, `getChip`, `getEvent`, `getTamer`, 목록을 돌려주는 `getCards`·`getChips`·`getEvents` 등, `constants`)로만 읽습니다.
+- **찾는 길은 하나**: `core`는 데이터 파일을 직접 import하지 않고 `src/data/index.ts`의 함수(`getCard`, `getForm(line, stage)`, `getEnemy`, `getEncounter`, `getEncounters(act, tier)`, `getChip`, `getEvent`, `getTamer`, `getMutation`, 목록을 돌려주는 `getCards`·`getChips`·`getEvents` 등, `constants`)로만 읽습니다.
 - `constants.ts`에는 위 상수 말고도 단계 순서(`STAGE_ORDER`), 고르기 장수(`CARD_OFFER_SIZE`), 상점 진열 수, 지도 크기와 행 규칙(`MAP_ROW_RULES`), 칩이 없을 때의 비트(`NO_CHIP_BITS`), 막 클리어 메모리 증가량을 둡니다. 이 함수들은 `registry` 객체 하나를 봅니다. 테스트에서 정의를 더하는 방법은 8.1에 있습니다.
 - **무결성 테스트** (`tests/data/integrity.test.ts`): id가 겹치지 않음, 참조하는 id가 모두 있음(조우→적, 형태→필살기, 테이머→시작 덱, 이벤트·적→카드), 적 순환의 행동 id가 있음, 보상에 나오는 희귀도(일반·고급·희귀)마다 카드가 3장 이상, 막마다 일반 적 속성이 2:2:2, 보스는 속성 `none`, 모든 카드에 두 면이 있음, 필살기는 `retain`을 가짐.
 
@@ -453,6 +471,7 @@ interface IntentView {
 - 휴식: HP 60% 미만이면 회복, 아니면 점수가 가장 높은 카드 강화.
 - 이벤트: HP 30% 미만이면 HP를 잃지 않는 선택지, 아니면 첫 선택지.
 - 시작 칩: 첫 번째(카드 리더). 형태 특성: 날카로운 이빨(공격력 +1). (T2-7에서 추가)
+- 변이 (02 15.1): 건너뜀. `--mutation <id>`를 주면 그 변이가 후보 3개에 들었을 때만 고름 (`random`도 같음, 봇 난수를 쓰지 않음).
 - 두 사람의 카드(다영·진): 카드 점수 합이 큰 묶음. (T3-4에서 추가)
 - 카드 비용은 core의 `previewCardCost`로 셉니다 (처음 내는 카드 할인 포함).
 
@@ -467,6 +486,7 @@ npm run sim -- --policy greedy --tamer takato --runs 1000 --hazard 10
 ```
 - `--evolve asap|turn2|never` (기본 `asap`)로 `greedy`의 진화 방식을 바꿉니다.
 - `--hazard N` (기본 0)으로 디지털 해저드 단계를 정합니다 (02 13.6). 시뮬레이터는 모든 해금이 열린 상태로 판을 시작합니다 (02 13.5).
+- `--mutation <id>`: 그 변이가 후보에 든 판에서 고릅니다 (02 15.1). 후보는 core 규칙대로 정해지므로 약 3/8의 판만 고르고 나머지는 건너뜁니다. 그래서 출력에 "고른 판 수", 고른 판의 승률, 같은 시드를 변이 없이 돌린 승률을 따로 냅니다 (mutation 줄기는 다른 줄기와 따로라 고른 시드는 시드 전체에서 고르게 뽑힌 것과 같음).
 - `--report m0`은 02 10절에 필요한 측정(`greedy` 세 가지 진화 방식과 `random`)을 모두 돌려 지표 10개를 한 표로 냅니다.
 - 판마다 시드 `seed-start`부터 1씩 올립니다. 한 판은 행동 5,000번을 넘으면 실패로 처리합니다.
 - 출력: 02 10절의 지표 표, 지표마다 목표 범위와 `통과`/`벗어남`, 조우별 승률·평균 턴 수·평균 HP 손실, 카드별 고른 횟수.
@@ -496,6 +516,7 @@ npm run sim -- --policy greedy --tamer takato --runs 1000 --hazard 10
 | `tests/core/effect-coverage.test.ts` | 효과 종류(op)마다 core 처리, 카드 설명 글, 봇 점수가 있음 (새 종류를 더하면 이 파일의 표가 타입 오류로 알려 줌) |
 | `tests/sim/card-value.test.ts` | 봇의 카드 값 추정: 모든 카드가 1~8점(저주 -10), 새 카드가 0점이 아님 |
 | `tests/ui/save-renames.test.ts` | 옛 저장의 id 바꾸기 (`src/ui/saveRenames.ts`) |
+| `tests/core/mutation.test.ts` | 변이 고르기 흐름, 효과 종류마다 계산(해저드와 함께), 난수 줄기 따로, 변이 효과 빠짐 검사, 옛 저장 (02 15.1) |
 | `tests/sim/golden.test.ts` | 시드 12345 `greedy` 판의 요약(승패, 전투 수, 마지막 HP, 덱)이 저장된 값과 같음 |
 
 - 테스트용 전투는 `tests/helpers`의 함수로 만듭니다 (원하는 덱·손패·적으로 바로 전투 상태를 만드는 함수).
@@ -523,7 +544,7 @@ src/ui/
 ├─ spritePack.ts              도트 팩 (04 P1): 플레이어가 고른 그림 파일로 디지몬 도트를 바꿈. 이 기기의 IndexedDB에만 저장
 ├─ debug.ts                   개발 서버 전용 주소 옵션 (?debug=battle 등)
 ├─ index.css                  Tailwind와 공용 스타일
-├─ screens/                   Title, StartChip(시작 칩 고르기), Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
+├─ screens/                   Title, StartChip(시작 칩 고르기), Mutation(변이 고르기), Map, Battle, Reward, Shop, Rest, Event, Treasure, ActClear, RunEnd
 ├─ components/
 │  ├─ CardView(.css)  Hand  EnemyView  PartnerView  MemoryGauge  Bars(HP·상태)  RunHeader(런 정보 줄)
 │  ├─ PlaybackOverlay         재생 중인 일 연출, 누르면 건너뜀
@@ -534,7 +555,7 @@ src/ui/
 │  └─ Codex(도감)  Settings  Guide(하는 법)  Info(정보·저작권 고지)  ErrorBoundary
 ├─ input/drag.ts              끌어서 내기 (Pointer Events)
 ├─ art/                       도트 그림 (04 7절). index.ts가 id → 그림 표를 모음
-│  ├─ build.ts  v2/           2판 도트 조립기와 그것으로 만든 디지몬 도트 (직접 그림)
+│  ├─ build.ts  v2/           2판 도트 조립기와 그것으로 만든 디지몬 도트 (직접 그림, 테이머 계열마다 한 파일: takato·rika·henry·ai_mako·ryo)
 │  ├─ official.ts  official/  원작 도트 (원작 그림을 줄인 PNG, 출처는 official/SOURCES.md)
 │  ├─ spriteScale.ts          원작 도트의 화면 크기
 │  ├─ stage.ts  stage/        막별 전투 배경 (scripts/art/battle-bg.mjs로 그림)

@@ -14,7 +14,7 @@ import {
 } from '../../core/index';
 import { constants, getCard, getEvent } from '../../data/index';
 import { estimateCardScore } from './cardValue';
-import type { Policy, PolicyContext } from './types';
+import { mutationAction, type Policy, type PolicyContext } from './types';
 
 // ── 카드 점수표 (봇 전용, 게임 데이터에 넣지 않음) ──
 // 손으로 매긴 점수가 우선이고, 없는 카드(새 카드)는 효과에서 추정한 점수(cardValue.ts)를 씀.
@@ -124,6 +124,10 @@ function resolveEffects(state: GameState, effects: readonly Effect[]): Effect[] 
     }
     if (e.op === 'ifEvolvedThisTurn') {
       return resolveEffects(state, battle.evolvedThisTurn ? e.then : (e.else ?? []));
+    }
+    if (e.op === 'ifPlayedThisTurn') {
+      // 지금 낸다면: 이 카드는 아직 세지 않은 값 (02 12.11)
+      return resolveEffects(state, battle.cardsPlayedThisTurn >= e.min ? e.then : (e.else ?? []));
     }
     return [e];
   });
@@ -538,6 +542,8 @@ export const greedyPolicy: Policy = (state, legal, ctx) => {
     case 'startChip':
       // 시작 칩: 카드 리더(첫 턴 2장 뽑기)를 고름 (03 7.1)
       return { type: 'chooseStartChip', index: 0 };
+    case 'mutation':
+      return mutationAction(state, ctx);
     case 'actClear': {
       // 형태 특성: 날카로운 이빨(공격력 +1)을 먼저 고름 (03 7.1)
       const sharp = constants.FORM_TRAITS.indexOf('sharp');

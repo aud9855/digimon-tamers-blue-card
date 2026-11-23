@@ -1,10 +1,18 @@
 // 카드·칩·인텐트 설명 글 (03 5.3). 효과 op마다 문장 틀이 하나씩 있습니다.
-import { getCard, getChip, getEndingLines, getEnemy, getEvent, getTamer } from '../data/index';
+import {
+  getCard,
+  getChip,
+  getEndingLines,
+  getEnemy,
+  getEvent,
+  getMutation,
+  getTamer,
+} from '../data/index';
 import { cardCost } from './battle/cards';
 import { canEvolve, evolveCost } from './battle/evolve';
 import { enemyHitDamage, playerHitDamage } from './battle/damage';
 import { getMove } from './battle/enemy';
-import { floorNonNegative, formPower } from './helpers';
+import { floorNonNegative, formPower, unreachable } from './helpers';
 import { constants } from '../data/index';
 import type {
   ChipDef,
@@ -13,6 +21,7 @@ import type {
   EnemyEffect,
   GameState,
   Keyword,
+  MutationEffect,
   Rarity,
   RunEffect,
   Stage,
@@ -206,6 +215,39 @@ function describeModifiers(modifiers: NonNullable<ChipDef['modifiers']>): string
     parts.push(`매 턴 처음 내는 카드의 비용 ${signed(modifiers.firstCardCostDelta)}`);
   }
   return parts;
+}
+
+const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
+
+/** 변이 효과 하나의 설명 (02 15.1) */
+export function describeMutationEffect(effect: MutationEffect): string {
+  switch (effect.op) {
+    case 'enemyHpPct':
+      return `모든 적 최대 HP ${signed(effect.pct)}%`;
+    case 'enemyDamagePct':
+      return `적의 공격 피해 ${signed(effect.pct)}%`;
+    case 'maxHp':
+      return `최대 HP ${signed(effect.amount)}`;
+    case 'startBits':
+      return `시작 비트 ${signed(effect.amount)}`;
+    case 'shopPricePct':
+      return `상점 가격 ${signed(effect.pct)}%`;
+    case 'rewardCards':
+      return `전투 보상 카드 고르기 ${signed(effect.amount)}장`;
+    case 'modifiers':
+      return describeModifiers(effect.modifiers).join(', ');
+    default:
+      return unreachable(effect, '변이 효과');
+  }
+}
+
+/** 변이의 좋은 점과 나쁜 점 글 (02 15.1, 화면의 변이 카드·덱 정보 창) */
+export function describeMutation(mutationId: string): { good: string; bad: string } {
+  const def = getMutation(mutationId);
+  return {
+    good: def.good.map(describeMutationEffect).join(', '),
+    bad: def.bad.map(describeMutationEffect).join(', '),
+  };
 }
 
 /** 엔딩 장면 (02 13.10): 판을 이겼을 때만 그 테이머의 글, 아니면 null */

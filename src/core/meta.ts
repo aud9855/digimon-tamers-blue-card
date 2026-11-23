@@ -60,6 +60,18 @@ export function recordCodex(profile: Profile, events: readonly GameEvent[]): Pro
   return newForms || newEnemies ? next : profile;
 }
 
+/** 프로필의 이긴 판 수: 테이머별 승리 수의 합 (02 15.2) */
+export function totalWins(profile: Profile): number {
+  return Object.values(profile.runs).reduce((sum, r) => sum + (r?.won ?? 0), 0);
+}
+
+/** 테이머가 열리는 데 필요한 승리 수: 처음부터 열림 0, 첫 승리 1, 두 번째 승리 2 (화면 표시용) */
+export function tamerUnlockWins(tamerId: TamerId): number {
+  if (meta.secondWinTamers.includes(tamerId)) return 2;
+  if (meta.firstWinTamers.includes(tamerId)) return 1;
+  return 0;
+}
+
 /** 판이 끝났을 때(runWon·runLost) 프로필 갱신. 끝나지 않은 판이면 그대로 (02 13.5) */
 export function applyRunResult(
   profile: Profile,
@@ -75,6 +87,8 @@ export function applyRunResult(
   if (!won) return next;
   count.won += 1;
   addUnique<TamerId>(next.unlocks.tamers, meta.firstWinTamers);
+  // 두 번째 승리 (02 15.2): 프로필의 테이머별 승리 수의 합
+  if (totalWins(next) >= 2) addUnique<TamerId>(next.unlocks.tamers, meta.secondWinTamers);
   const chip = meta.startChipUnlockOrder.find((id) => !next.unlocks.startChips.includes(id));
   if (chip) next.unlocks.startChips.push(chip);
   // 해저드 N으로 이기면 N+1이 열림 (02 13.6)

@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { describeHazard, describeTamer, getLegalActions } from '../../core/index';
+import { describeHazard, describeTamer, getLegalActions, tamerUnlockWins } from '../../core/index';
 import { getForm, getTamers } from '../../data/index';
 import { FormSprite, TamerFace } from '../components/Sprites';
 import { Screen } from '../components/Screen';
 import { SettingsButton } from '../components/Settings';
 import { useDisplayState, useGame } from '../store';
+
+/** 잠긴 테이머의 해금 조건 글 (02 13.5, 15.2) */
+function unlockHint(wins: number): string {
+  return wins <= 1 ? '3막을 깨면 열립니다' : `3막을 ${wins}번 깨면 열립니다`;
+}
 
 /** 제목 위 블루 카드 표시 (직접 그림): 빛나는 파란 카드 한 장 */
 function BlueCardLogo() {
@@ -127,7 +132,7 @@ export function TitleScreen() {
                     <span className="text-xs text-rose-300">HP {t.maxHp}</span>
                   </span>
                   <span className="block text-xs text-sky-200">
-                    {locked ? '3막을 깨면 열립니다' : t.trait}
+                    {locked ? unlockHint(tamerUnlockWins(t.id)) : t.trait}
                   </span>
                   <span className="block text-xs leading-snug text-slate-400">
                     {describeTamer(t.id)}

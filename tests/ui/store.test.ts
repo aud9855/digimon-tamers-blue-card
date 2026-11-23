@@ -14,6 +14,8 @@ describe('화면 상태 (03 9.1)', () => {
     useGame.getState().dispatch({ type: 'startRun', tamerId: 'takato' });
     expect(useGame.getState().state.phase).toBe('startChip');
     useGame.getState().dispatch({ type: 'chooseStartChip', index: 0 });
+    expect(useGame.getState().state.phase).toBe('mutation');
+    useGame.getState().dispatch({ type: 'skipMutation' });
     expect(useGame.getState().state.phase).toBe('reward');
     expect(useGame.getState().lastEvents.length).toBeGreaterThan(0);
     useGame.getState().dispatch({ type: 'skipCards' });

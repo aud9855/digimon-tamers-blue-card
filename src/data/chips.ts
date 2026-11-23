@@ -137,4 +137,12 @@ export const chips = [
     trigger: 'onEvolve',
     effects: [{ op: 'heal', amount: 2 }],
   },
+  // 이재익 특성 (숨은 칩, 02 15.2)
+  {
+    id: 'trait_legendary_tamer',
+    name: '전설의 테이머',
+    hidden: true,
+    trigger: 'onEvolve',
+    effects: [{ op: 'draw', count: 1 }],
+  },
 ] satisfies ChipDef[];

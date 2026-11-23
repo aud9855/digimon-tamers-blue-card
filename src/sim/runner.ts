@@ -29,6 +29,8 @@ export interface RunConfig {
   evolve: EvolveMode;
   /** 디지털 해저드 단계 (없으면 0) */
   hazard?: number;
+  /** 제시되면 고를 변이 id (없으면 늘 건너뜀, 02 15.1) */
+  mutation?: string;
 }
 
 /** 전투 결과와 그 전투가 있던 막 */
@@ -57,6 +59,7 @@ export function runOne(seed: number, config: RunConfig): RunRecord {
     tamerId: config.tamerId,
     evolve: config.evolve,
     hazard: config.hazard ?? 0,
+    ...(config.mutation ? { mutation: config.mutation } : {}),
   };
   // 시뮬레이터는 모든 것이 열린 상태로 (02 13.5)
   let state = createInitialState(seed, fullUnlocks());
