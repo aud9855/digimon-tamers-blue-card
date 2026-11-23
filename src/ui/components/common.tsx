@@ -48,7 +48,15 @@ export function DeckPicker({
   preview?: (card: CardInstance) => { defId: string; upgraded: boolean };
 }) {
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-slate-950/95" data-testid="deck-picker">
+    <div
+      className="fixed inset-0 z-40 flex flex-col bg-slate-950/95"
+      style={{
+        // 상태 표시줄·홈 막대(안전 영역) 밖에 내용이 오게
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+      data-testid="deck-picker"
+    >
       <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <h2 className="ui-title text-lg font-black">

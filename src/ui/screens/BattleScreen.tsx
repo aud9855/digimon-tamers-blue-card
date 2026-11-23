@@ -99,6 +99,7 @@ export function BattleView({
     height: fieldHeight,
     width: fieldWidth,
   } = useFieldSize(FIELD_DEFAULT_HEIGHT);
+  const handRows = useHandRows(battle);
   if (!battle || !run) return null;
 
   const enemyCount = battle.enemies.length;
@@ -191,8 +192,8 @@ export function BattleView({
 
         <div className="flex shrink-0 flex-col gap-2">
           <MemoryGauge memory={battle.memory} maxMemory={run.maxMemory} />
-          {/* 손패 칸은 항상 두 줄 높이: 카드 수가 바뀌어도 무대가 출렁이지 않게 */}
-          <div ref={handRef} className="min-h-[224px]">
+          {/* 손패 칸: 평소 한 줄, 6장 이상이면 두 줄. 한 턴 안에서는 줄어들지 않아 카드를 내는 동안 무대가 출렁이지 않음 */}
+          <div ref={handRef} className={handRows >= 2 ? 'min-h-[224px]' : undefined}>
             <Hand
               state={state}
               cards={battle.hand}
@@ -418,7 +419,12 @@ export function BattleScreen() {
       {battle.handChoice && (
         // 두 사람의 카드: 두 묶음 중 하나를 고름 (02 13.3)
         <div
-          className="fixed inset-0 z-30 flex flex-col justify-center-safe gap-4 overflow-y-auto bg-slate-950/90 px-3 py-4"
+          className="fixed inset-0 z-30 flex flex-col justify-center-safe gap-4 overflow-y-auto bg-slate-950/90 px-3"
+          style={{
+            // 상태 표시줄·홈 막대(안전 영역) 밖에 내용이 오게
+            paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)',
+          }}
           data-testid="hand-choice"
         >
           <p className="text-center text-sm text-sky-200">이번 턴에 쓸 묶음을 고르세요</p>
@@ -469,4 +475,20 @@ function OverdrawWarning({ accel, label }: { accel: number; label?: string }) {
       {label && <div className="mt-1 text-xs text-rose-300">{label}</div>}
     </div>
   );
+}
+
+/**
+ * 손패 칸의 줄 수 (화면 배치만, 규칙 아님). 평소 1줄이라 남는 높이는 무대가 씀.
+ * 손패가 6장 이상이 되면 2줄로 늘리고, 같은 전투의 같은 턴 안에서는 다시 줄이지 않음.
+ */
+function useHandRows(battle: GameState['battle']): number {
+  const key = battle ? `${battle.encounterId}:${battle.turn}` : '';
+  const now = battle && battle.hand.length > 5 ? 2 : 1;
+  const [reserved, setReserved] = useState({ key, rows: now });
+  if (reserved.key !== key || now > reserved.rows) {
+    const next = { key, rows: reserved.key === key ? Math.max(reserved.rows, now) : now };
+    setReserved(next);
+    return next.rows;
+  }
+  return reserved.rows;
 }
