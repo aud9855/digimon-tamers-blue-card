@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import {
   applyAction,
   applyRunResult,
+  cloneState,
   createInitialState,
   createProfile,
   recordCodex,
@@ -92,7 +93,9 @@ export const useGame = create<GameStore>((set, get) => {
     timer = null;
     const { view: start, queue, speed } = get();
     if (!start) return;
-    let view = start;
+    // 한 단계에 한 번만 복사: 시간이 걸리지 않는 일은 같은 복사본에 이어서 반영하고,
+    // 보여 줄 일이 나오면 그 복사본을 새 화면 상태로 넘김 (지난 화면 상태는 고치지 않음)
+    const view = cloneState(start);
     const rest = queue.slice();
     while (rest.length > 0) {
       const event = rest.shift() as GameEvent;
@@ -101,17 +104,15 @@ export const useGame = create<GameStore>((set, get) => {
         const c = view.battle?.hand.find((h) => h.uid === event.cardUid);
         if (c) card = { defId: c.defId, upgraded: c.upgraded };
       }
-      const next = structuredClone(view);
-      applyEventToView(next, event);
+      applyEventToView(view, event);
       const duration = eventDuration(event, speed);
       if (duration > 0) {
         const kind = soundFor(event);
         if (kind) playSound(kind);
-        set({ view: next, queue: rest, current: { event, card, seq: ++seq } });
+        set({ view, queue: rest, current: { event, card, seq: ++seq } });
         timer = setTimeout(step, duration);
         return;
       }
-      view = next;
     }
     set({ view: null, queue: [], current: null });
   };
@@ -144,7 +145,8 @@ export const useGame = create<GameStore>((set, get) => {
         set({
           state: result.state,
           lastEvents: result.events,
-          view: structuredClone(before),
+          // step()이 고치기 전에 복사하므로 그대로 넘겨도 before는 바뀌지 않음
+          view: before,
           queue: result.events,
           current: null,
         });
