@@ -1,7 +1,7 @@
 // 02 3.7 진화
 import { constants, getForm, getTamer, hasForm } from '../../data/index';
 import { formTempHp, nextStage, requireBattle, requireRun, stageIndex } from '../helpers';
-import { evolveCostDelta, triggerChips } from '../chips';
+import { evolveCostDelta, evolveWaitBonus, triggerChips } from '../chips';
 import { winIfCleared } from './outcome';
 import type { GameEvent, GameState, Stage } from '../types';
 import { createTempCards } from './piles';
@@ -45,7 +45,7 @@ export function evolveCost(state: GameState): number | null {
   // 기다린 턴 할인 (02 3.7): 할인으로는 1 아래로 안 감
   const waited = Math.max(
     1,
-    baseEvolveCost(next, run.maxStage) - constants.EVOLVE_WAIT_DISCOUNT * (battle.turn - 1),
+    baseEvolveCost(next, run.maxStage) - (constants.EVOLVE_WAIT_DISCOUNT + evolveWaitBonus(state)) * (battle.turn - 1),
   );
   return Math.max(0, waited + skip + evolveCostDelta(state));
 }

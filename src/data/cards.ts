@@ -441,12 +441,12 @@ export const cards = [
     pool: 'none',
     base: {
       cost: 2,
-      effects: [{ op: 'damage', amount: 16, target: 'enemy' }],
+      effects: [{ op: 'damage', amount: 10, target: 'enemy' }],
       keywords: ['retain'],
     },
     upgraded: {
       cost: 2,
-      effects: [{ op: 'damage', amount: 16, target: 'enemy' }],
+      effects: [{ op: 'damage', amount: 10, target: 'enemy' }],
       keywords: ['retain'],
     },
   },

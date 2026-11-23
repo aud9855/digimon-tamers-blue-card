@@ -68,8 +68,7 @@ export const chips = [
     id: 'evo_charger',
     name: '진화 충전기',
     start: true,
-    trigger: 'onFirstTurn',
-    effects: [{ op: 'freeEvolve' }, { op: 'loseHp', amount: 3 }],
+    modifiers: { evolveWaitBonus: 1 },
   },
   {
     id: 'heal_chip',
