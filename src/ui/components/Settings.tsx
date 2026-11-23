@@ -47,7 +47,12 @@ function Modal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-4 py-6"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-4"
+      style={{
+        // 상태 표시줄·홈 막대(안전 영역) 밖에 창이 오게
+        paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)',
+      }}
       data-testid={testId}
     >
       <div className="flex max-h-full w-full max-w-sm flex-col rounded-2xl bg-slate-900">
