@@ -1,7 +1,7 @@
 // 이벤트 (02 7.5)
-import { describeEventChoice } from '../../core/index';
+import { describeEventChoice, getLegalActions } from '../../core/index';
 import { getEvent } from '../../data/index';
-import { ScreenTitle } from '../components/common';
+import { DeckPicker, ScreenTitle } from '../components/common';
 import { RunHeader } from '../components/RunHeader';
 import { Screen } from '../components/Screen';
 import { useDisplayState, useGame } from '../store';
@@ -9,6 +9,23 @@ import { useDisplayState, useGame } from '../store';
 export function EventScreen() {
   const state = useDisplayState();
   const dispatch = useGame((s) => s.dispatch);
+  // 이벤트 효과로 카드를 고르는 중 (02 14.2): 건너뛸 수 없음
+  if (state.pending?.kind === 'eventCard' && state.run) {
+    const upgrade = state.pending.mode === 'upgrade';
+    const pickable = new Set(
+      getLegalActions(state).flatMap((a) => (a.type === 'eventPickCard' ? [a.cardUid] : [])),
+    );
+    return (
+      <Screen backdrop={state.run.act}>
+        <DeckPicker
+          title={upgrade ? '강화할 카드 (강화된 모습)' : '지울 카드'}
+          cards={state.run.deck.filter((c) => pickable.has(c.uid))}
+          preview={upgrade ? (c) => ({ defId: c.defId, upgraded: true }) : undefined}
+          onPick={(card) => dispatch({ type: 'eventPickCard', cardUid: card.uid })}
+        />
+      </Screen>
+    );
+  }
   const pending = state.pending?.kind === 'event' ? state.pending : null;
   if (!pending) return null;
   const event = getEvent(pending.eventId);

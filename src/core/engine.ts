@@ -19,7 +19,7 @@ import {
   shopRemoveCard,
 } from './run/shop';
 import { chooseNode, chooseStartChip, startRun } from './run/start';
-import { eventChoose } from './run/event';
+import { eventCardChoices, eventChoose, eventPickCard } from './run/event';
 import type { Action, GameEvent, GameState } from './types';
 
 /** 지금 할 수 없는 행동을 넣었을 때 던집니다 (03 5절 약속 3). */
@@ -109,6 +109,12 @@ export function getLegalActions(state: GameState): Action[] {
     }
 
     case 'event': {
+      if (state.pending?.kind === 'eventCard') {
+        return eventCardChoices(state, state.pending.mode).map((c) => ({
+          type: 'eventPickCard',
+          cardUid: c.uid,
+        }));
+      }
       if (state.pending?.kind !== 'event') return [];
       return getEvent(state.pending.eventId).choices.map((_, index) => ({
         type: 'eventChoose',
@@ -188,6 +194,8 @@ function dispatch(draft: GameState, events: GameEvent[], action: Action): void {
       return restUpgrade(draft, events, action.cardUid);
     case 'eventChoose':
       return eventChoose(draft, events, action.index);
+    case 'eventPickCard':
+      return eventPickCard(draft, events, action.cardUid);
     case 'chooseStartChip':
       return chooseStartChip(draft, events, action.index);
     case 'chooseFormTrait':

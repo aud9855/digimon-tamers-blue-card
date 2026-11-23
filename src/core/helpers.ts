@@ -119,3 +119,8 @@ export function floorNonNegative(value: number): number {
   // 소수 곱셈 오차(예: 26.999999…)로 1 적게 내림하지 않도록 아주 작은 값을 더함
   return Math.max(0, Math.floor(value + 1e-9));
 }
+
+/** switch에서 모든 종류를 다뤘는지 컴파일러가 확인하게 함. 새 종류를 더하고 처리를 빠뜨리면 타입 오류 */
+export function unreachable(value: never, what: string): never {
+  throw new Error(`처리하지 않은 ${what}: ${JSON.stringify(value)}`);
+}

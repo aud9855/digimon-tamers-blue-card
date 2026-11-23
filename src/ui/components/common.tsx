@@ -32,7 +32,7 @@ export function PrimaryButton({
   );
 }
 
-/** 덱에서 카드 한 장 고르기 (휴식 강화, 상점 지우기) */
+/** 덱에서 카드 한 장 고르기 (휴식 강화, 상점 지우기, 이벤트 효과). onClose가 없으면 닫을 수 없음 */
 export function DeckPicker({
   title,
   cards,
@@ -43,7 +43,7 @@ export function DeckPicker({
   title: string;
   cards: CardInstance[];
   onPick: (card: CardInstance) => void;
-  onClose: () => void;
+  onClose?: () => void;
   /** 고르기 전에 보여 줄 모습 (강화면 강화된 면) */
   preview?: (card: CardInstance) => { defId: string; upgraded: boolean };
 }) {
@@ -54,13 +54,15 @@ export function DeckPicker({
           <h2 className="ui-title text-lg font-black">
             <span>{title}</span>
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-11 rounded-lg px-3 text-sm text-slate-300 active:bg-slate-800"
-          >
-            닫기
-          </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-11 rounded-lg px-3 text-sm text-slate-300 active:bg-slate-800"
+            >
+              닫기
+            </button>
+          )}
         </div>
         <div className="grid flex-1 grid-cols-4 content-start gap-x-2 gap-y-3 overflow-y-auto px-4 pt-2 pb-6">
           {cards.map((card) => {
