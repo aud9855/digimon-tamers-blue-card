@@ -121,7 +121,15 @@ function SettingsContent({ open }: { open: (panel: Panel) => void }) {
 
       <SpritePackSection />
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <button
+          type="button"
+          data-testid="open-codex"
+          onClick={() => open('codex')}
+          className="min-h-11 rounded-lg bg-slate-800 text-sm font-bold active:bg-slate-700"
+        >
+          도감
+        </button>
         <button
           type="button"
           data-testid="open-guide"
