@@ -1,5 +1,6 @@
 // 도감 (02 13.5): 진화해 본 형태, 만난 적, 테이머별 기록. 프로필만 읽습니다.
-import { getEnemies, getForms, getTamers } from '../../data/index';
+import type { TamerDef } from '../../core/index';
+import { constants, getEnemies, getForm, getForms, getTamers, hasForm } from '../../data/index';
 import { useGame } from '../store';
 import { STAGE_LABEL } from './labels';
 import { EnemySprite, FormSprite } from './Sprites';
@@ -18,11 +19,18 @@ export function CodexContent() {
           const r = profile.runs[t.id];
           const open = profile.unlocks.tamers.includes(t.id);
           return (
-            <li key={t.id} className="flex justify-between rounded bg-slate-800 px-3 py-2">
-              <span className={open ? '' : 'text-slate-500'}>{open ? t.name : '???'}</span>
-              <span className="text-slate-300">
-                {r ? `${r.won}승 / ${r.played}판` : '기록 없음'}
-              </span>
+            <li key={t.id} className="rounded bg-slate-800 px-3 py-2">
+              <div className="flex justify-between">
+                <span className={open ? '' : 'text-slate-500'}>{open ? t.name : '???'}</span>
+                <span className="text-slate-300">
+                  {r ? `${r.won}승 / ${r.played}판` : '기록 없음'}
+                </span>
+              </div>
+              {open && (
+                <p className="mt-1 text-xs text-slate-400" data-codex-lineage={t.id}>
+                  {lineageNames(t, forms).join(' → ')}
+                </p>
+              )}
             </li>
           );
         })}
@@ -82,4 +90,12 @@ export function CodexContent() {
       </p>
     </div>
   );
+}
+
+/** 진화 계열 전체 이름: 유년기(도감 표시만) + 게임 형태들. 아직 못 본 형태는 ??? */
+function lineageNames(tamer: TamerDef, seen: Set<string>): string[] {
+  const forms = constants.STAGE_ORDER.filter((s) => hasForm(tamer.line, s)).map((s) =>
+    getForm(tamer.line, s),
+  );
+  return [...(tamer.babyNames ?? []), ...forms.map((f) => (seen.has(f.id) ? f.name : '???'))];
 }

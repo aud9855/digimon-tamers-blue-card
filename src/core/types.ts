@@ -196,6 +196,8 @@ export interface TamerDef {
   startDeck: string[];
   startEffects: RunEffect[];
   startChips: string[];
+  /** 도감에만 보이는 유년기 이름 (유년기 I, II 순). 게임 규칙에는 쓰지 않음 */
+  babyNames?: string[];
 }
 
 // ── 상태 (전부 JSON으로 저장할 수 있어야 함) ──

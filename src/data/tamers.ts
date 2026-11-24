@@ -126,5 +126,7 @@ export const tamers = [
     // 특성 "전설의 테이머": 숨은 칩 (02 15.2)
     startEffects: [],
     startChips: ['trait_legendary_tamer'],
+    // 도감 표시용 (원작 계열: 케토몬 → 호프몬 → 모노드라몬)
+    babyNames: ['케토몬', '호프몬'],
   },
 ] satisfies TamerDef[];
