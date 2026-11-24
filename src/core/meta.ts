@@ -1,5 +1,5 @@
 // 02 13.5 메타 진행: 판 밖의 기록(프로필)과 해금. 모두 순수 함수입니다.
-import { getChips, getEncounter, getTamers, meta } from '../data/index';
+import { getChips, getEncounter, getForm, getTamer, getTamers, meta } from '../data/index';
 import { cloneState } from './clone';
 import type { GameEvent, GameState, Profile, TamerId, Unlocks } from './types';
 
@@ -45,13 +45,23 @@ function addUnique<T>(list: T[], items: readonly T[]): boolean {
   return changed;
 }
 
-/** 도감에 적기: 진화해 본 형태, 전투에 나온 적. 바뀐 것이 없으면 같은 프로필을 돌려줌 */
-export function recordCodex(profile: Profile, events: readonly GameEvent[]): Profile {
+/**
+ * 도감에 적기: 진화해 본 형태, 함께 싸운 파트너의 성장기, 전투에 나온 적.
+ * 성장기는 state(이벤트 뒤의 상태)의 테이머로 정함. 바뀐 것이 없으면 같은 프로필을 돌려줌
+ */
+export function recordCodex(
+  profile: Profile,
+  events: readonly GameEvent[],
+  state?: GameState,
+): Profile {
   const forms: string[] = [];
   const enemies: string[] = [];
   for (const e of events) {
     if (e.type === 'evolved') forms.push(e.formId);
-    if (e.type === 'battleStarted') enemies.push(...getEncounter(e.encounterId).enemies);
+    if (e.type === 'battleStarted') {
+      enemies.push(...getEncounter(e.encounterId).enemies);
+      if (state?.run) forms.push(getForm(getTamer(state.run.tamerId).line, 'rookie').id);
+    }
   }
   if (forms.length === 0 && enemies.length === 0) return profile;
   const next = cloneState(profile);
@@ -78,7 +88,7 @@ export function applyRunResult(
   finalState: GameState,
   events: readonly GameEvent[],
 ): Profile {
-  const next = cloneState(recordCodex(profile, events));
+  const next = cloneState(recordCodex(profile, events, finalState));
   const run = finalState.run;
   if (!run || (finalState.phase !== 'runWon' && finalState.phase !== 'runLost')) return next;
   const won = finalState.phase === 'runWon';

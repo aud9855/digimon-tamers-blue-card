@@ -138,7 +138,7 @@ export const useGame = create<GameStore>((set, get) => {
       const ended = result.events.some((e) => e.type === 'runEnded');
       const profile = ended
         ? applyRunResult(get().profile, result.state, result.events)
-        : recordCodex(get().profile, result.events);
+        : recordCodex(get().profile, result.events, result.state);
       if (ended) set({ unlockNotice: unlockNotice(get().profile, profile) });
       if (profile !== get().profile) set({ profile });
       if (shouldPlay(before, result.events, get().speed)) {
