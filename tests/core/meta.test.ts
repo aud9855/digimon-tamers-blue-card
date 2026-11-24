@@ -188,6 +188,14 @@ describe('도감 recordCodex (02 13.5)', () => {
       ]),
     ).toBe(p1);
   });
+
+  it('전투가 시작되면 그 판 파트너의 성장기를 적음 (진화로는 될 수 없어서)', () => {
+    const state = makeBattle({ enemies: ['goblimon'] });
+    const events: GameEvent[] = [{ type: 'battleStarted', encounterId: 'a1_easy_goblimon' }];
+    expect(recordCodex(createProfile(), events, state).codex.forms).toEqual(['guilmon']);
+    // 상태가 없으면 성장기는 적지 않음 (적만)
+    expect(recordCodex(createProfile(), events).codex.forms).toEqual([]);
+  });
 });
 
 describe('해금 시작 칩 (02 13.5)', () => {
